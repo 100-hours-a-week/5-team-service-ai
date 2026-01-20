@@ -1,0 +1,23 @@
+import logging
+
+from dotenv import load_dotenv
+from fastapi import FastAPI
+
+from app.routers.book_report_validation_router import router as book_report_validation_router
+
+load_dotenv()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
+
+app = FastAPI(title="Book Report Validation API")
+
+
+@app.get("/health", tags=["health"])
+def health_check():
+    return {"status": "ok"}
+
+
+app.include_router(book_report_validation_router)
