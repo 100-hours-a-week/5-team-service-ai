@@ -79,25 +79,17 @@ jobs:
       needs.ci.result == 'success' &&
       github.event_name == 'push'
     runs-on: ubuntu-latest
-    steps:
-      - name: Set environment
-        id: env
-        run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "host=EC2_HOST" >> $GITHUB_OUTPUT
-            echo "env_name=prod" >> $GITHUB_OUTPUT
-          else
-            echo "host=DEV_EC2_HOST" >> $GITHUB_OUTPUT
-            echo "env_name=develop" >> $GITHUB_OUTPUT
-          fi
+    # GitHub Environment 사용 (브랜치에 따라 자동 선택)
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'develop' }}
 
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Transfer to Server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ steps.env.outputs.host == 'EC2_HOST' && secrets.EC2_HOST || secrets.DEV_EC2_HOST }}
+          host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "."
@@ -107,15 +99,15 @@ jobs:
       - name: Create .env and deploy
         uses: appleboy/ssh-action@v1.0.3
         env:
-          ENV_NAME: ${{ steps.env.outputs.env_name }}
-          DB_HOST: ${{ steps.env.outputs.env_name == 'prod' && secrets.PROD_DB_HOST || secrets.DEV_DB_HOST }}
+          ENV_NAME: ${{ github.ref == 'refs/heads/main' && 'prod' || 'develop' }}
+          DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USERNAME: ${{ steps.env.outputs.env_name == 'prod' && secrets.PROD_DB_USERNAME || secrets.DEV_DB_USERNAME }}
-          DB_PASSWORD: ${{ steps.env.outputs.env_name == 'prod' && secrets.PROD_DB_PASSWORD || secrets.DEV_DB_PASSWORD }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         with:
-          host: ${{ steps.env.outputs.host == 'EC2_HOST' && secrets.EC2_HOST || secrets.DEV_EC2_HOST }}
+          host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: ENV_NAME,DB_HOST,DB_PORT,DB_NAME,DB_USERNAME,DB_PASSWORD,GOOGLE_API_KEY
@@ -135,13 +127,15 @@ jobs:
 
       - name: Notify Discord
         if: always()
+        env:
+          ENV_NAME: ${{ github.ref == 'refs/heads/main' && 'prod' || 'develop' }}
         run: |
           if [ "${{ job.status }}" == "success" ]; then
             COLOR=3066993
-            MSG="✅ **AI Server ${{ steps.env.outputs.env_name }} 배포 성공!**"
+            MSG="✅ **AI Server $ENV_NAME 배포 성공!**"
           else
             COLOR=15158528
-            MSG="❌ **AI Server ${{ steps.env.outputs.env_name }} 배포 실패!**"
+            MSG="❌ **AI Server $ENV_NAME 배포 실패!**"
           fi
           curl -H "Content-Type: application/json" \
                -X POST \
