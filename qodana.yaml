@@ -1,0 +1,35 @@
+version: "1.0"
+
+# Qodana 설정: Python AI 서버 코드 품질 분석
+# 보안 취약점 분석은 CodeQL에서 담당
+
+linter: jetbrains/qodana-python:2024.3
+
+profile:
+  name: qodana.recommended
+
+# 코드 품질에 집중하는 검사 그룹
+include:
+  - name: Python/Code style issues
+  - name: Python/Probable bugs
+  - name: Python/Code maturity
+  - name: Python/Performance
+  - name: Python/Type checker
+
+# 보안 관련 검사는 CodeQL에서 처리하므로 제외
+exclude:
+  - name: Security
+  - name: Python/Security
+
+# 분석 제외 경로
+paths-ignore:
+  - venv
+  - .venv
+  - __pycache__
+  - "*.egg-info"
+  - .pytest_cache
+  - .mypy_cache
+  - .ruff_cache
+
+# 실패 임계값 설정
+failThreshold: 100

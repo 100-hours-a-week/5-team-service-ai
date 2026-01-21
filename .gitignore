@@ -41,3 +41,5 @@ data/faiss/
 
 # Logs
 *.log
+
+*.sh

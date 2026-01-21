@@ -1,0 +1,42 @@
+# ai-pr-alert.yml
+name: PR Review Request Notification
+on:
+  pull_request:
+    types: [review_requested]
+
+jobs:
+  notify-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Notification to Reviewer
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # AI 팀 멤버 Discord ID 매핑 (필요시 secrets에 추가)
+          DISCORD_ID_AI_MASON: ${{ secrets.DISCORD_ID_AI_MASON }}
+        run: |
+          # 1. 리뷰어로 지정된 사람의 GitHub 아이디 가져오기
+          REQUESTED_GITHUB_USER="${{ github.event.requested_team.name || github.event.requested_reviewer.login }}"
+
+          # 2. GitHub 아이디를 Discord 멘션으로 변환 (매핑 로직)
+          # TODO: AI 팀 멤버 GitHub ID와 Discord ID 매핑 추가
+          case "$REQUESTED_GITHUB_USER" in
+            "Jiwoo-Leee")
+              MENTION="<@DISCORD_ID_AI_MASON>"
+              ;;
+            *)
+              # 매핑 안 된 사람이면 AI 팀 전체 호출
+              MENTION="@AITeam (리뷰어 매핑 필요)"
+              ;;
+          esac
+
+          # 3. 메시지 전송
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          AUTHOR="${{ github.actor }}"
+
+          MESSAGE="👀 **[AI 코드 리뷰 요청]**\n\n$MENTION 님! **$AUTHOR** 님이 리뷰를 요청했습니다.\n\n제목: **$PR_TITLE**\n링크: $PR_URL"
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{ \"content\": \"$MESSAGE\" }" \
+               $DISCORD_WEBHOOK
