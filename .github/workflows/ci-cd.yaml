@@ -1,0 +1,149 @@
+name: AI Server CI/CD
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+
+concurrency:
+  group: ai-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-source-branch:
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate source branch
+        run: |
+          if [ "${{ github.head_ref }}" != "develop" ] && [[ "${{ github.head_ref }}" != hotfix/* ]]; then
+            echo "❌ Error: Only 'develop' or 'hotfix/*' branches can be merged into 'main'"
+            echo "Source branch: ${{ github.head_ref }}"
+            exit 1
+          fi
+          echo "✅ Source branch validation passed: ${{ github.head_ref }}"
+
+  ci:
+    needs: [check-source-branch]
+    if: always() && (needs.check-source-branch.result == 'success' || needs.check-source-branch.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff pytest
+
+      - name: Lint with Ruff
+        run: ruff check . --output-format=github
+
+      - name: Type check (optional)
+        continue-on-error: true
+        run: |
+          pip install mypy
+          mypy . --ignore-missing-imports || true
+
+      - name: Notify Discord on failure
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{
+                 "content": "❌ **AI Server CI Failed!**",
+                 "embeds": [{
+                   "title": "Build Details",
+                   "description": "Repo: ${{ github.repository }}\nBranch: ${{ github.ref_name }}\nCheck: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                   "color": 15158528
+                 }]
+               }' \
+               ${{ secrets.DISCORD_WEBHOOK_URL }} || true
+
+  deploy:
+    needs: ci
+    if: |
+      always() &&
+      needs.ci.result == 'success' &&
+      github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set environment
+        id: env
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "host=EC2_HOST" >> $GITHUB_OUTPUT
+            echo "env_name=prod" >> $GITHUB_OUTPUT
+          else
+            echo "host=DEV_EC2_HOST" >> $GITHUB_OUTPUT
+            echo "env_name=develop" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Transfer to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ steps.env.outputs.host == 'EC2_HOST' && secrets.EC2_HOST || secrets.DEV_EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "."
+          target: "/home/ubuntu/app/artifacts/ai"
+          overwrite: true
+
+      - name: Create .env and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          ENV_NAME: ${{ steps.env.outputs.env_name }}
+          DB_HOST: ${{ steps.env.outputs.env_name == 'prod' && secrets.PROD_DB_HOST || secrets.DEV_DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ steps.env.outputs.env_name == 'prod' && secrets.PROD_DB_USERNAME || secrets.DEV_DB_USERNAME }}
+          DB_PASSWORD: ${{ steps.env.outputs.env_name == 'prod' && secrets.PROD_DB_PASSWORD || secrets.DEV_DB_PASSWORD }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        with:
+          host: ${{ steps.env.outputs.host == 'EC2_HOST' && secrets.EC2_HOST || secrets.DEV_EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: ENV_NAME,DB_HOST,DB_PORT,DB_NAME,DB_USERNAME,DB_PASSWORD,GOOGLE_API_KEY
+          script: |
+            mkdir -p /home/ubuntu/app/ai
+            cat > /home/ubuntu/app/ai/.env << 'EOF'
+            ENV_NAME=$ENV_NAME
+            DB_HOST=$DB_HOST
+            DB_PORT=$DB_PORT
+            DB_NAME=$DB_NAME
+            DB_USERNAME=$DB_USERNAME
+            DB_PASSWORD=$DB_PASSWORD
+            GOOGLE_API_KEY=$GOOGLE_API_KEY
+            EOF
+            chmod 600 /home/ubuntu/app/ai/.env
+            bash /home/ubuntu/app/deploy.sh ai
+
+      - name: Notify Discord
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            COLOR=3066993
+            MSG="✅ **AI Server ${{ steps.env.outputs.env_name }} 배포 성공!**"
+          else
+            COLOR=15158528
+            MSG="❌ **AI Server ${{ steps.env.outputs.env_name }} 배포 실패!**"
+          fi
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"$MSG\", \"embeds\": [{\"title\": \"${{ github.repository }}\", \"description\": \"Branch: ${{ github.ref_name }}\", \"color\": $COLOR}]}" \
+               ${{ secrets.DISCORD_WEBHOOK_URL }} || true
