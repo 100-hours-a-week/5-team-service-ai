@@ -17,19 +17,18 @@ include:
   - name: Python/Type checker
 
 # 보안 관련 검사는 CodeQL에서 처리하므로 제외
+# 분석 제외 경로도 함께 설정
 exclude:
   - name: Security
   - name: Python/Security
-
-# 분석 제외 경로
-paths-ignore:
-  - venv
-  - .venv
-  - __pycache__
-  - "*.egg-info"
-  - .pytest_cache
-  - .mypy_cache
-  - .ruff_cache
+  - name: All
+    paths:
+      - venv
+      - .venv
+      - __pycache__
+      - .pytest_cache
+      - .mypy_cache
+      - .ruff_cache
 
 # 실패 임계값 설정
 failThreshold: 100
