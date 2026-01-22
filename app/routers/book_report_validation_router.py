@@ -25,15 +25,15 @@ router = APIRouter(prefix="/api/book-reports", tags=["book-reports"])
 
 
 @router.post(
-    "/{report_id}/validate",
+    "/{id}/validate",
     response_model=BookReportValidationResponse,
     status_code=200,
 )
 def validate_book_report(
-    report_id: int,
+    id: int,
     payload: BookReportValidationRequest,
 ) -> BookReportValidationResponse:
     """
     Validate whether a book report is genuine and meaningful.
     """
-    return validation_service.validate_report(report_id, payload)
+    return validation_service.validate_report(id, payload)

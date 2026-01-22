@@ -3,14 +3,14 @@
 ## users.jsonl
 Fields per line:
 - user_id: integer user identifier
-- reading_volume_id: integer bucket for reading volume
-- purpose_ids: list of integers (reading purposes)
-- genre_ids: list of integers (preferred genres)
+- reading_volume_code: string bucket for reading volume (e.g., ONE_OR_LESS, TWO_TO_THREE, ...)
+- purpose_codes: list of strings (reading purposes)
+- genre_codes: list of strings (preferred genres)
 
 ## meetings.jsonl
 Fields per line:
 - id: meeting identifier
-- reading_genre_id: genre bucket for the meeting
+- reading_genre_code: genre bucket for the meeting
 - title: short name
 - description: free-text summary
 - status: RECRUITING | FINISHED | CANCELED

@@ -40,5 +40,19 @@ class Embedder:
         """
         # SentenceTransformer can handle generator input; we ensure list for length.
         text_list: List[str] = list(texts)
-        embeddings = self.model.encode(text_list, convert_to_numpy=True, device=self.model.device)
+        # Prefer no worker pool to avoid leaked semaphore warnings; fall back if the
+        # installed sentence-transformers version does not support num_workers.
+        try:
+            embeddings = self.model.encode(
+                text_list,
+                convert_to_numpy=True,
+                device=self.model.device,
+                num_workers=0,
+            )
+        except TypeError:
+            embeddings = self.model.encode(
+                text_list,
+                convert_to_numpy=True,
+                device=self.model.device,
+            )
         return embeddings.astype(np.float32, copy=False)

@@ -25,7 +25,7 @@ class BookReportValidationService:
 
     def validate_report(
         self,
-        report_id: int,
+        book_report_id: int,
         payload: BookReportValidationRequest,
     ) -> BookReportValidationResponse:
         start_time = time.perf_counter()
@@ -33,7 +33,7 @@ class BookReportValidationService:
         rule_rejected = False
 
         content = (payload.content or "").strip()
-        book_title = payload.book_title
+        title = payload.title
         if not content:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -47,7 +47,7 @@ class BookReportValidationService:
         else:
             gemini_called = True
             try:
-                gemini_result = self.gemini_client.evaluate_book_report(book_title, content)
+                gemini_result = self.gemini_client.evaluate_book_report(title, content)
                 result_status = gemini_result.status
                 rejection_reason = gemini_result.rejection_reason
             except GeminiClientError as exc:
@@ -64,10 +64,8 @@ class BookReportValidationService:
                 ) from exc
 
         response = BookReportValidationResponse(
-            id=report_id,
-            user_id=payload.user_id,
-            meeting_session_id=payload.meeting_session_id,
-            content=content,
+            id=book_report_id,
+            user_id=payload.user_id or 0,
             status=result_status,
             rejection_reason=rejection_reason,
         )
@@ -76,7 +74,7 @@ class BookReportValidationService:
         self.logger.info(
             "book report validation completed",
             extra={
-                "report_id": report_id,
+                "id": book_report_id,
                 "rule_rejected": rule_rejected,
                 "gemini_called": gemini_called,
                 "status": result_status,
