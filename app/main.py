@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from app.routers.book_report_validation_router import router as book_report_validation_router
+from app.api.routes.recommendation import router as recommendation_router
 
 load_dotenv()
 
@@ -21,3 +22,4 @@ def health_check():
 
 
 app.include_router(book_report_validation_router)
+app.include_router(recommendation_router)

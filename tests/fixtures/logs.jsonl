@@ -1,0 +1,1000 @@
+{"user_id": 8, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-01T09:00:00"}
+{"user_id": 2, "meeting_id": 84, "event_type": "click", "ts": "2024-01-01T09:03:00"}
+{"user_id": 20, "meeting_id": 96, "event_type": "join", "ts": "2024-01-01T09:06:00", "dwell_sec": 69}
+{"user_id": 7, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-01T09:09:00"}
+{"user_id": 12, "meeting_id": 27, "event_type": "impression", "ts": "2024-01-01T09:12:00"}
+{"user_id": 4, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-01T09:15:00"}
+{"user_id": 4, "meeting_id": 36, "event_type": "click", "ts": "2024-01-01T09:18:00", "dwell_sec": 164}
+{"user_id": 13, "meeting_id": 49, "event_type": "click", "ts": "2024-01-01T09:21:00"}
+{"user_id": 8, "meeting_id": 60, "event_type": "impression", "ts": "2024-01-01T09:24:00"}
+{"user_id": 20, "meeting_id": 77, "event_type": "impression", "ts": "2024-01-01T09:27:00"}
+{"user_id": 2, "meeting_id": 73, "event_type": "join", "ts": "2024-01-01T09:30:00", "dwell_sec": 224}
+{"user_id": 1, "meeting_id": 70, "event_type": "click", "ts": "2024-01-01T09:33:00"}
+{"user_id": 15, "meeting_id": 70, "event_type": "join", "ts": "2024-01-01T09:36:00"}
+{"user_id": 9, "meeting_id": 73, "event_type": "impression", "ts": "2024-01-01T09:39:00"}
+{"user_id": 16, "meeting_id": 100, "event_type": "click", "ts": "2024-01-01T09:42:00", "dwell_sec": 379}
+{"user_id": 3, "meeting_id": 3, "event_type": "click", "ts": "2024-01-01T09:45:00", "dwell_sec": 235}
+{"user_id": 20, "meeting_id": 48, "event_type": "impression", "ts": "2024-01-01T09:48:00"}
+{"user_id": 11, "meeting_id": 49, "event_type": "click", "ts": "2024-01-01T09:51:00", "dwell_sec": 113}
+{"user_id": 9, "meeting_id": 28, "event_type": "impression", "ts": "2024-01-01T09:54:00"}
+{"user_id": 18, "meeting_id": 36, "event_type": "join", "ts": "2024-01-01T09:57:00", "dwell_sec": 102}
+{"user_id": 16, "meeting_id": 71, "event_type": "impression", "ts": "2024-01-01T10:00:00"}
+{"user_id": 16, "meeting_id": 49, "event_type": "click", "ts": "2024-01-01T10:03:00", "dwell_sec": 13}
+{"user_id": 8, "meeting_id": 23, "event_type": "impression", "ts": "2024-01-01T10:06:00"}
+{"user_id": 16, "meeting_id": 58, "event_type": "impression", "ts": "2024-01-01T10:09:00"}
+{"user_id": 11, "meeting_id": 54, "event_type": "click", "ts": "2024-01-01T10:12:00", "dwell_sec": 237}
+{"user_id": 4, "meeting_id": 27, "event_type": "impression", "ts": "2024-01-01T10:15:00"}
+{"user_id": 6, "meeting_id": 54, "event_type": "click", "ts": "2024-01-01T10:18:00", "dwell_sec": 383}
+{"user_id": 17, "meeting_id": 71, "event_type": "impression", "ts": "2024-01-01T10:21:00"}
+{"user_id": 10, "meeting_id": 25, "event_type": "click", "ts": "2024-01-01T10:24:00", "dwell_sec": 96}
+{"user_id": 5, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-01T10:27:00"}
+{"user_id": 18, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-01T10:30:00"}
+{"user_id": 16, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-01T10:33:00"}
+{"user_id": 10, "meeting_id": 2, "event_type": "impression", "ts": "2024-01-01T10:36:00"}
+{"user_id": 6, "meeting_id": 45, "event_type": "impression", "ts": "2024-01-01T10:39:00"}
+{"user_id": 4, "meeting_id": 49, "event_type": "join", "ts": "2024-01-01T10:42:00"}
+{"user_id": 2, "meeting_id": 7, "event_type": "impression", "ts": "2024-01-01T10:45:00"}
+{"user_id": 10, "meeting_id": 82, "event_type": "impression", "ts": "2024-01-01T10:48:00"}
+{"user_id": 18, "meeting_id": 26, "event_type": "impression", "ts": "2024-01-01T10:51:00"}
+{"user_id": 8, "meeting_id": 61, "event_type": "click", "ts": "2024-01-01T10:54:00"}
+{"user_id": 10, "meeting_id": 94, "event_type": "impression", "ts": "2024-01-01T10:57:00"}
+{"user_id": 19, "meeting_id": 40, "event_type": "join", "ts": "2024-01-01T11:00:00", "dwell_sec": 317}
+{"user_id": 7, "meeting_id": 3, "event_type": "join", "ts": "2024-01-01T11:03:00", "dwell_sec": 46}
+{"user_id": 3, "meeting_id": 17, "event_type": "impression", "ts": "2024-01-01T11:06:00"}
+{"user_id": 20, "meeting_id": 42, "event_type": "impression", "ts": "2024-01-01T11:09:00"}
+{"user_id": 10, "meeting_id": 3, "event_type": "impression", "ts": "2024-01-01T11:12:00"}
+{"user_id": 3, "meeting_id": 49, "event_type": "click", "ts": "2024-01-01T11:15:00", "dwell_sec": 140}
+{"user_id": 14, "meeting_id": 3, "event_type": "click", "ts": "2024-01-01T11:18:00", "dwell_sec": 120}
+{"user_id": 3, "meeting_id": 19, "event_type": "click", "ts": "2024-01-01T11:21:00", "dwell_sec": 162}
+{"user_id": 15, "meeting_id": 37, "event_type": "click", "ts": "2024-01-01T11:24:00", "dwell_sec": 357}
+{"user_id": 9, "meeting_id": 41, "event_type": "impression", "ts": "2024-01-01T11:27:00"}
+{"user_id": 3, "meeting_id": 50, "event_type": "impression", "ts": "2024-01-01T11:30:00"}
+{"user_id": 11, "meeting_id": 95, "event_type": "click", "ts": "2024-01-01T11:33:00", "dwell_sec": 18}
+{"user_id": 19, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-01T11:36:00"}
+{"user_id": 19, "meeting_id": 36, "event_type": "click", "ts": "2024-01-01T11:39:00", "dwell_sec": 392}
+{"user_id": 15, "meeting_id": 53, "event_type": "impression", "ts": "2024-01-01T11:42:00"}
+{"user_id": 14, "meeting_id": 61, "event_type": "join", "ts": "2024-01-01T11:45:00", "dwell_sec": 256}
+{"user_id": 11, "meeting_id": 11, "event_type": "join", "ts": "2024-01-01T11:48:00", "dwell_sec": 58}
+{"user_id": 10, "meeting_id": 49, "event_type": "join", "ts": "2024-01-01T11:51:00", "dwell_sec": 210}
+{"user_id": 3, "meeting_id": 49, "event_type": "join", "ts": "2024-01-01T11:54:00", "dwell_sec": 170}
+{"user_id": 17, "meeting_id": 77, "event_type": "impression", "ts": "2024-01-01T11:57:00"}
+{"user_id": 15, "meeting_id": 54, "event_type": "join", "ts": "2024-01-01T12:00:00", "dwell_sec": 101}
+{"user_id": 16, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-01T12:03:00"}
+{"user_id": 9, "meeting_id": 27, "event_type": "click", "ts": "2024-01-01T12:06:00", "dwell_sec": 152}
+{"user_id": 4, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-01T12:09:00"}
+{"user_id": 8, "meeting_id": 62, "event_type": "impression", "ts": "2024-01-01T12:12:00"}
+{"user_id": 18, "meeting_id": 96, "event_type": "click", "ts": "2024-01-01T12:15:00", "dwell_sec": 120}
+{"user_id": 4, "meeting_id": 60, "event_type": "join", "ts": "2024-01-01T12:18:00", "dwell_sec": 83}
+{"user_id": 17, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-01T12:21:00"}
+{"user_id": 16, "meeting_id": 49, "event_type": "click", "ts": "2024-01-01T12:24:00", "dwell_sec": 287}
+{"user_id": 20, "meeting_id": 19, "event_type": "impression", "ts": "2024-01-01T12:27:00"}
+{"user_id": 3, "meeting_id": 90, "event_type": "impression", "ts": "2024-01-01T12:30:00"}
+{"user_id": 14, "meeting_id": 79, "event_type": "impression", "ts": "2024-01-01T12:33:00"}
+{"user_id": 9, "meeting_id": 79, "event_type": "impression", "ts": "2024-01-01T12:36:00"}
+{"user_id": 19, "meeting_id": 36, "event_type": "join", "ts": "2024-01-01T12:39:00", "dwell_sec": 342}
+{"user_id": 18, "meeting_id": 14, "event_type": "impression", "ts": "2024-01-01T12:42:00"}
+{"user_id": 18, "meeting_id": 34, "event_type": "impression", "ts": "2024-01-01T12:45:00"}
+{"user_id": 7, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-01T12:48:00"}
+{"user_id": 8, "meeting_id": 11, "event_type": "join", "ts": "2024-01-01T12:51:00"}
+{"user_id": 16, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-01T12:54:00"}
+{"user_id": 5, "meeting_id": 50, "event_type": "click", "ts": "2024-01-01T12:57:00", "dwell_sec": 23}
+{"user_id": 11, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-01T13:00:00"}
+{"user_id": 4, "meeting_id": 57, "event_type": "join", "ts": "2024-01-01T13:03:00", "dwell_sec": 238}
+{"user_id": 5, "meeting_id": 14, "event_type": "impression", "ts": "2024-01-01T13:06:00"}
+{"user_id": 9, "meeting_id": 78, "event_type": "impression", "ts": "2024-01-01T13:09:00"}
+{"user_id": 3, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-01T13:12:00"}
+{"user_id": 13, "meeting_id": 69, "event_type": "join", "ts": "2024-01-01T13:15:00"}
+{"user_id": 18, "meeting_id": 63, "event_type": "click", "ts": "2024-01-01T13:18:00", "dwell_sec": 40}
+{"user_id": 10, "meeting_id": 69, "event_type": "impression", "ts": "2024-01-01T13:21:00"}
+{"user_id": 4, "meeting_id": 11, "event_type": "join", "ts": "2024-01-01T13:24:00"}
+{"user_id": 10, "meeting_id": 33, "event_type": "click", "ts": "2024-01-01T13:27:00"}
+{"user_id": 10, "meeting_id": 80, "event_type": "impression", "ts": "2024-01-01T13:30:00"}
+{"user_id": 8, "meeting_id": 44, "event_type": "impression", "ts": "2024-01-01T13:33:00"}
+{"user_id": 6, "meeting_id": 56, "event_type": "impression", "ts": "2024-01-01T13:36:00"}
+{"user_id": 13, "meeting_id": 8, "event_type": "impression", "ts": "2024-01-01T13:39:00"}
+{"user_id": 5, "meeting_id": 61, "event_type": "click", "ts": "2024-01-01T13:42:00", "dwell_sec": 331}
+{"user_id": 1, "meeting_id": 27, "event_type": "impression", "ts": "2024-01-01T13:45:00"}
+{"user_id": 18, "meeting_id": 36, "event_type": "join", "ts": "2024-01-01T13:48:00", "dwell_sec": 231}
+{"user_id": 14, "meeting_id": 39, "event_type": "join", "ts": "2024-01-01T13:51:00", "dwell_sec": 238}
+{"user_id": 16, "meeting_id": 11, "event_type": "join", "ts": "2024-01-01T13:54:00", "dwell_sec": 200}
+{"user_id": 1, "meeting_id": 36, "event_type": "click", "ts": "2024-01-01T13:57:00"}
+{"user_id": 2, "meeting_id": 61, "event_type": "click", "ts": "2024-01-01T14:00:00"}
+{"user_id": 8, "meeting_id": 37, "event_type": "click", "ts": "2024-01-01T14:03:00", "dwell_sec": 185}
+{"user_id": 9, "meeting_id": 19, "event_type": "impression", "ts": "2024-01-01T14:06:00"}
+{"user_id": 4, "meeting_id": 33, "event_type": "click", "ts": "2024-01-01T14:09:00"}
+{"user_id": 2, "meeting_id": 49, "event_type": "click", "ts": "2024-01-01T14:12:00", "dwell_sec": 379}
+{"user_id": 11, "meeting_id": 94, "event_type": "impression", "ts": "2024-01-01T14:15:00"}
+{"user_id": 18, "meeting_id": 33, "event_type": "click", "ts": "2024-01-01T14:18:00"}
+{"user_id": 9, "meeting_id": 51, "event_type": "impression", "ts": "2024-01-01T14:21:00"}
+{"user_id": 10, "meeting_id": 49, "event_type": "join", "ts": "2024-01-01T14:24:00"}
+{"user_id": 3, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-01T14:27:00"}
+{"user_id": 13, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-01T14:30:00"}
+{"user_id": 3, "meeting_id": 47, "event_type": "join", "ts": "2024-01-01T14:33:00"}
+{"user_id": 15, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-01T14:36:00"}
+{"user_id": 9, "meeting_id": 74, "event_type": "impression", "ts": "2024-01-01T14:39:00"}
+{"user_id": 4, "meeting_id": 48, "event_type": "click", "ts": "2024-01-01T14:42:00", "dwell_sec": 246}
+{"user_id": 18, "meeting_id": 91, "event_type": "impression", "ts": "2024-01-01T14:45:00"}
+{"user_id": 3, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-01T14:48:00"}
+{"user_id": 14, "meeting_id": 36, "event_type": "click", "ts": "2024-01-01T14:51:00", "dwell_sec": 28}
+{"user_id": 4, "meeting_id": 49, "event_type": "join", "ts": "2024-01-01T14:54:00", "dwell_sec": 280}
+{"user_id": 18, "meeting_id": 47, "event_type": "impression", "ts": "2024-01-01T14:57:00"}
+{"user_id": 5, "meeting_id": 74, "event_type": "impression", "ts": "2024-01-01T15:00:00"}
+{"user_id": 20, "meeting_id": 49, "event_type": "join", "ts": "2024-01-01T15:03:00", "dwell_sec": 148}
+{"user_id": 15, "meeting_id": 37, "event_type": "impression", "ts": "2024-01-01T15:06:00"}
+{"user_id": 12, "meeting_id": 25, "event_type": "impression", "ts": "2024-01-01T15:09:00"}
+{"user_id": 18, "meeting_id": 69, "event_type": "impression", "ts": "2024-01-01T15:12:00"}
+{"user_id": 13, "meeting_id": 96, "event_type": "join", "ts": "2024-01-01T15:15:00", "dwell_sec": 67}
+{"user_id": 7, "meeting_id": 12, "event_type": "join", "ts": "2024-01-01T15:18:00", "dwell_sec": 310}
+{"user_id": 8, "meeting_id": 70, "event_type": "join", "ts": "2024-01-01T15:21:00"}
+{"user_id": 7, "meeting_id": 54, "event_type": "click", "ts": "2024-01-01T15:24:00", "dwell_sec": 124}
+{"user_id": 20, "meeting_id": 14, "event_type": "impression", "ts": "2024-01-01T15:27:00"}
+{"user_id": 5, "meeting_id": 88, "event_type": "impression", "ts": "2024-01-01T15:30:00"}
+{"user_id": 4, "meeting_id": 33, "event_type": "join", "ts": "2024-01-01T15:33:00", "dwell_sec": 18}
+{"user_id": 8, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-01T15:36:00"}
+{"user_id": 2, "meeting_id": 36, "event_type": "click", "ts": "2024-01-01T15:39:00", "dwell_sec": 220}
+{"user_id": 16, "meeting_id": 74, "event_type": "impression", "ts": "2024-01-01T15:42:00"}
+{"user_id": 19, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-01T15:45:00"}
+{"user_id": 20, "meeting_id": 51, "event_type": "impression", "ts": "2024-01-01T15:48:00"}
+{"user_id": 17, "meeting_id": 78, "event_type": "impression", "ts": "2024-01-01T15:51:00"}
+{"user_id": 1, "meeting_id": 64, "event_type": "impression", "ts": "2024-01-01T15:54:00"}
+{"user_id": 13, "meeting_id": 49, "event_type": "impression", "ts": "2024-01-01T15:57:00"}
+{"user_id": 15, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-01T16:00:00"}
+{"user_id": 20, "meeting_id": 8, "event_type": "impression", "ts": "2024-01-01T16:03:00"}
+{"user_id": 20, "meeting_id": 12, "event_type": "impression", "ts": "2024-01-01T16:06:00"}
+{"user_id": 13, "meeting_id": 70, "event_type": "click", "ts": "2024-01-01T16:09:00"}
+{"user_id": 20, "meeting_id": 47, "event_type": "impression", "ts": "2024-01-01T16:12:00"}
+{"user_id": 4, "meeting_id": 80, "event_type": "impression", "ts": "2024-01-01T16:15:00"}
+{"user_id": 7, "meeting_id": 54, "event_type": "join", "ts": "2024-01-01T16:18:00", "dwell_sec": 121}
+{"user_id": 13, "meeting_id": 84, "event_type": "impression", "ts": "2024-01-01T16:21:00"}
+{"user_id": 14, "meeting_id": 10, "event_type": "impression", "ts": "2024-01-01T16:24:00"}
+{"user_id": 5, "meeting_id": 27, "event_type": "impression", "ts": "2024-01-01T16:27:00"}
+{"user_id": 3, "meeting_id": 97, "event_type": "click", "ts": "2024-01-01T16:30:00", "dwell_sec": 54}
+{"user_id": 18, "meeting_id": 33, "event_type": "click", "ts": "2024-01-01T16:33:00", "dwell_sec": 292}
+{"user_id": 12, "meeting_id": 11, "event_type": "click", "ts": "2024-01-01T16:36:00"}
+{"user_id": 10, "meeting_id": 96, "event_type": "join", "ts": "2024-01-01T16:39:00", "dwell_sec": 185}
+{"user_id": 5, "meeting_id": 51, "event_type": "impression", "ts": "2024-01-01T16:42:00"}
+{"user_id": 12, "meeting_id": 97, "event_type": "click", "ts": "2024-01-01T16:45:00"}
+{"user_id": 19, "meeting_id": 76, "event_type": "impression", "ts": "2024-01-01T16:48:00"}
+{"user_id": 18, "meeting_id": 44, "event_type": "impression", "ts": "2024-01-01T16:51:00"}
+{"user_id": 18, "meeting_id": 79, "event_type": "join", "ts": "2024-01-01T16:54:00", "dwell_sec": 341}
+{"user_id": 9, "meeting_id": 33, "event_type": "join", "ts": "2024-01-01T16:57:00"}
+{"user_id": 1, "meeting_id": 35, "event_type": "impression", "ts": "2024-01-01T17:00:00"}
+{"user_id": 13, "meeting_id": 14, "event_type": "impression", "ts": "2024-01-01T17:03:00"}
+{"user_id": 1, "meeting_id": 73, "event_type": "impression", "ts": "2024-01-01T17:06:00"}
+{"user_id": 13, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-01T17:09:00"}
+{"user_id": 12, "meeting_id": 35, "event_type": "impression", "ts": "2024-01-01T17:12:00"}
+{"user_id": 19, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-01T17:15:00"}
+{"user_id": 6, "meeting_id": 20, "event_type": "click", "ts": "2024-01-01T17:18:00"}
+{"user_id": 15, "meeting_id": 8, "event_type": "impression", "ts": "2024-01-01T17:21:00"}
+{"user_id": 14, "meeting_id": 49, "event_type": "click", "ts": "2024-01-01T17:24:00", "dwell_sec": 391}
+{"user_id": 4, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-01T17:27:00"}
+{"user_id": 16, "meeting_id": 68, "event_type": "impression", "ts": "2024-01-01T17:30:00"}
+{"user_id": 8, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-01T17:33:00"}
+{"user_id": 1, "meeting_id": 60, "event_type": "impression", "ts": "2024-01-01T17:36:00"}
+{"user_id": 5, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-01T17:39:00"}
+{"user_id": 1, "meeting_id": 97, "event_type": "click", "ts": "2024-01-01T17:42:00", "dwell_sec": 225}
+{"user_id": 8, "meeting_id": 38, "event_type": "impression", "ts": "2024-01-01T17:45:00"}
+{"user_id": 12, "meeting_id": 85, "event_type": "impression", "ts": "2024-01-01T17:48:00"}
+{"user_id": 2, "meeting_id": 88, "event_type": "impression", "ts": "2024-01-01T17:51:00"}
+{"user_id": 3, "meeting_id": 48, "event_type": "impression", "ts": "2024-01-01T17:54:00"}
+{"user_id": 13, "meeting_id": 61, "event_type": "join", "ts": "2024-01-01T17:57:00"}
+{"user_id": 1, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-01T18:00:00"}
+{"user_id": 15, "meeting_id": 61, "event_type": "join", "ts": "2024-01-01T18:03:00"}
+{"user_id": 8, "meeting_id": 97, "event_type": "join", "ts": "2024-01-01T18:06:00", "dwell_sec": 210}
+{"user_id": 10, "meeting_id": 40, "event_type": "impression", "ts": "2024-01-01T18:09:00"}
+{"user_id": 3, "meeting_id": 33, "event_type": "click", "ts": "2024-01-01T18:12:00", "dwell_sec": 63}
+{"user_id": 12, "meeting_id": 20, "event_type": "impression", "ts": "2024-01-01T18:15:00"}
+{"user_id": 5, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-01T18:18:00"}
+{"user_id": 7, "meeting_id": 14, "event_type": "impression", "ts": "2024-01-01T18:21:00"}
+{"user_id": 3, "meeting_id": 15, "event_type": "impression", "ts": "2024-01-01T18:24:00"}
+{"user_id": 16, "meeting_id": 77, "event_type": "impression", "ts": "2024-01-01T18:27:00"}
+{"user_id": 19, "meeting_id": 56, "event_type": "impression", "ts": "2024-01-01T18:30:00"}
+{"user_id": 19, "meeting_id": 95, "event_type": "impression", "ts": "2024-01-01T18:33:00"}
+{"user_id": 11, "meeting_id": 42, "event_type": "click", "ts": "2024-01-01T18:36:00", "dwell_sec": 39}
+{"user_id": 9, "meeting_id": 62, "event_type": "impression", "ts": "2024-01-01T18:39:00"}
+{"user_id": 10, "meeting_id": 97, "event_type": "click", "ts": "2024-01-01T18:42:00", "dwell_sec": 24}
+{"user_id": 3, "meeting_id": 84, "event_type": "impression", "ts": "2024-01-01T18:45:00"}
+{"user_id": 20, "meeting_id": 12, "event_type": "click", "ts": "2024-01-01T18:48:00", "dwell_sec": 201}
+{"user_id": 2, "meeting_id": 55, "event_type": "impression", "ts": "2024-01-01T18:51:00"}
+{"user_id": 7, "meeting_id": 82, "event_type": "impression", "ts": "2024-01-01T18:54:00"}
+{"user_id": 5, "meeting_id": 49, "event_type": "impression", "ts": "2024-01-01T18:57:00"}
+{"user_id": 3, "meeting_id": 70, "event_type": "join", "ts": "2024-01-01T19:00:00", "dwell_sec": 93}
+{"user_id": 15, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-01T19:03:00"}
+{"user_id": 12, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-01T19:06:00"}
+{"user_id": 14, "meeting_id": 30, "event_type": "impression", "ts": "2024-01-01T19:09:00"}
+{"user_id": 11, "meeting_id": 96, "event_type": "click", "ts": "2024-01-01T19:12:00", "dwell_sec": 53}
+{"user_id": 20, "meeting_id": 36, "event_type": "click", "ts": "2024-01-01T19:15:00"}
+{"user_id": 5, "meeting_id": 58, "event_type": "impression", "ts": "2024-01-01T19:18:00"}
+{"user_id": 5, "meeting_id": 11, "event_type": "join", "ts": "2024-01-01T19:21:00", "dwell_sec": 48}
+{"user_id": 11, "meeting_id": 38, "event_type": "impression", "ts": "2024-01-01T19:24:00"}
+{"user_id": 3, "meeting_id": 54, "event_type": "join", "ts": "2024-01-01T19:27:00", "dwell_sec": 221}
+{"user_id": 10, "meeting_id": 3, "event_type": "impression", "ts": "2024-01-01T19:30:00"}
+{"user_id": 16, "meeting_id": 22, "event_type": "impression", "ts": "2024-01-01T19:33:00"}
+{"user_id": 5, "meeting_id": 100, "event_type": "impression", "ts": "2024-01-01T19:36:00"}
+{"user_id": 4, "meeting_id": 86, "event_type": "impression", "ts": "2024-01-01T19:39:00"}
+{"user_id": 17, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-01T19:42:00"}
+{"user_id": 20, "meeting_id": 35, "event_type": "impression", "ts": "2024-01-01T19:45:00"}
+{"user_id": 6, "meeting_id": 38, "event_type": "impression", "ts": "2024-01-01T19:48:00"}
+{"user_id": 20, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-01T19:51:00"}
+{"user_id": 2, "meeting_id": 49, "event_type": "join", "ts": "2024-01-01T19:54:00", "dwell_sec": 351}
+{"user_id": 10, "meeting_id": 79, "event_type": "click", "ts": "2024-01-01T19:57:00"}
+{"user_id": 10, "meeting_id": 3, "event_type": "click", "ts": "2024-01-01T20:00:00"}
+{"user_id": 12, "meeting_id": 25, "event_type": "click", "ts": "2024-01-01T20:03:00", "dwell_sec": 297}
+{"user_id": 13, "meeting_id": 36, "event_type": "join", "ts": "2024-01-01T20:06:00", "dwell_sec": 219}
+{"user_id": 5, "meeting_id": 78, "event_type": "join", "ts": "2024-01-01T20:09:00"}
+{"user_id": 12, "meeting_id": 49, "event_type": "impression", "ts": "2024-01-01T20:12:00"}
+{"user_id": 4, "meeting_id": 54, "event_type": "click", "ts": "2024-01-01T20:15:00", "dwell_sec": 395}
+{"user_id": 17, "meeting_id": 46, "event_type": "impression", "ts": "2024-01-01T20:18:00"}
+{"user_id": 8, "meeting_id": 45, "event_type": "impression", "ts": "2024-01-01T20:21:00"}
+{"user_id": 14, "meeting_id": 4, "event_type": "join", "ts": "2024-01-01T20:24:00", "dwell_sec": 262}
+{"user_id": 3, "meeting_id": 39, "event_type": "impression", "ts": "2024-01-01T20:27:00"}
+{"user_id": 4, "meeting_id": 3, "event_type": "impression", "ts": "2024-01-01T20:30:00"}
+{"user_id": 5, "meeting_id": 33, "event_type": "join", "ts": "2024-01-01T20:33:00", "dwell_sec": 246}
+{"user_id": 15, "meeting_id": 49, "event_type": "click", "ts": "2024-01-01T20:36:00", "dwell_sec": 45}
+{"user_id": 5, "meeting_id": 22, "event_type": "impression", "ts": "2024-01-01T20:39:00"}
+{"user_id": 17, "meeting_id": 72, "event_type": "impression", "ts": "2024-01-01T20:42:00"}
+{"user_id": 8, "meeting_id": 78, "event_type": "impression", "ts": "2024-01-01T20:45:00"}
+{"user_id": 14, "meeting_id": 4, "event_type": "impression", "ts": "2024-01-01T20:48:00"}
+{"user_id": 4, "meeting_id": 97, "event_type": "click", "ts": "2024-01-01T20:51:00"}
+{"user_id": 17, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-01T20:54:00"}
+{"user_id": 14, "meeting_id": 36, "event_type": "click", "ts": "2024-01-01T20:57:00", "dwell_sec": 185}
+{"user_id": 3, "meeting_id": 42, "event_type": "impression", "ts": "2024-01-01T21:00:00"}
+{"user_id": 17, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-01T21:03:00"}
+{"user_id": 17, "meeting_id": 79, "event_type": "impression", "ts": "2024-01-01T21:06:00"}
+{"user_id": 2, "meeting_id": 49, "event_type": "click", "ts": "2024-01-01T21:09:00", "dwell_sec": 196}
+{"user_id": 3, "meeting_id": 2, "event_type": "impression", "ts": "2024-01-01T21:12:00"}
+{"user_id": 4, "meeting_id": 72, "event_type": "impression", "ts": "2024-01-01T21:15:00"}
+{"user_id": 5, "meeting_id": 70, "event_type": "click", "ts": "2024-01-01T21:18:00", "dwell_sec": 284}
+{"user_id": 15, "meeting_id": 64, "event_type": "impression", "ts": "2024-01-01T21:21:00"}
+{"user_id": 5, "meeting_id": 33, "event_type": "join", "ts": "2024-01-01T21:24:00", "dwell_sec": 239}
+{"user_id": 7, "meeting_id": 21, "event_type": "impression", "ts": "2024-01-01T21:27:00"}
+{"user_id": 17, "meeting_id": 36, "event_type": "join", "ts": "2024-01-01T21:30:00", "dwell_sec": 283}
+{"user_id": 7, "meeting_id": 3, "event_type": "impression", "ts": "2024-01-01T21:33:00"}
+{"user_id": 2, "meeting_id": 88, "event_type": "impression", "ts": "2024-01-01T21:36:00"}
+{"user_id": 12, "meeting_id": 97, "event_type": "join", "ts": "2024-01-01T21:39:00", "dwell_sec": 209}
+{"user_id": 11, "meeting_id": 50, "event_type": "click", "ts": "2024-01-01T21:42:00"}
+{"user_id": 17, "meeting_id": 50, "event_type": "impression", "ts": "2024-01-01T21:45:00"}
+{"user_id": 14, "meeting_id": 8, "event_type": "impression", "ts": "2024-01-01T21:48:00"}
+{"user_id": 6, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-01T21:51:00"}
+{"user_id": 3, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-01T21:54:00"}
+{"user_id": 15, "meeting_id": 32, "event_type": "impression", "ts": "2024-01-01T21:57:00"}
+{"user_id": 12, "meeting_id": 49, "event_type": "click", "ts": "2024-01-01T22:00:00", "dwell_sec": 377}
+{"user_id": 9, "meeting_id": 11, "event_type": "join", "ts": "2024-01-01T22:03:00", "dwell_sec": 34}
+{"user_id": 12, "meeting_id": 63, "event_type": "impression", "ts": "2024-01-01T22:06:00"}
+{"user_id": 6, "meeting_id": 74, "event_type": "impression", "ts": "2024-01-01T22:09:00"}
+{"user_id": 15, "meeting_id": 61, "event_type": "join", "ts": "2024-01-01T22:12:00", "dwell_sec": 39}
+{"user_id": 12, "meeting_id": 64, "event_type": "impression", "ts": "2024-01-01T22:15:00"}
+{"user_id": 20, "meeting_id": 57, "event_type": "impression", "ts": "2024-01-01T22:18:00"}
+{"user_id": 12, "meeting_id": 46, "event_type": "impression", "ts": "2024-01-01T22:21:00"}
+{"user_id": 19, "meeting_id": 76, "event_type": "impression", "ts": "2024-01-01T22:24:00"}
+{"user_id": 11, "meeting_id": 37, "event_type": "impression", "ts": "2024-01-01T22:27:00"}
+{"user_id": 1, "meeting_id": 97, "event_type": "click", "ts": "2024-01-01T22:30:00"}
+{"user_id": 18, "meeting_id": 39, "event_type": "impression", "ts": "2024-01-01T22:33:00"}
+{"user_id": 15, "meeting_id": 77, "event_type": "impression", "ts": "2024-01-01T22:36:00"}
+{"user_id": 16, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-01T22:39:00"}
+{"user_id": 3, "meeting_id": 13, "event_type": "impression", "ts": "2024-01-01T22:42:00"}
+{"user_id": 15, "meeting_id": 92, "event_type": "impression", "ts": "2024-01-01T22:45:00"}
+{"user_id": 12, "meeting_id": 41, "event_type": "join", "ts": "2024-01-01T22:48:00"}
+{"user_id": 10, "meeting_id": 31, "event_type": "impression", "ts": "2024-01-01T22:51:00"}
+{"user_id": 12, "meeting_id": 33, "event_type": "join", "ts": "2024-01-01T22:54:00", "dwell_sec": 67}
+{"user_id": 16, "meeting_id": 31, "event_type": "join", "ts": "2024-01-01T22:57:00", "dwell_sec": 288}
+{"user_id": 5, "meeting_id": 54, "event_type": "click", "ts": "2024-01-01T23:00:00", "dwell_sec": 49}
+{"user_id": 16, "meeting_id": 40, "event_type": "impression", "ts": "2024-01-01T23:03:00"}
+{"user_id": 19, "meeting_id": 77, "event_type": "impression", "ts": "2024-01-01T23:06:00"}
+{"user_id": 3, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-01T23:09:00"}
+{"user_id": 12, "meeting_id": 68, "event_type": "impression", "ts": "2024-01-01T23:12:00"}
+{"user_id": 18, "meeting_id": 84, "event_type": "impression", "ts": "2024-01-01T23:15:00"}
+{"user_id": 14, "meeting_id": 33, "event_type": "click", "ts": "2024-01-01T23:18:00", "dwell_sec": 33}
+{"user_id": 6, "meeting_id": 36, "event_type": "join", "ts": "2024-01-01T23:21:00", "dwell_sec": 368}
+{"user_id": 17, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-01T23:24:00"}
+{"user_id": 7, "meeting_id": 33, "event_type": "join", "ts": "2024-01-01T23:27:00", "dwell_sec": 287}
+{"user_id": 20, "meeting_id": 62, "event_type": "impression", "ts": "2024-01-01T23:30:00"}
+{"user_id": 6, "meeting_id": 51, "event_type": "impression", "ts": "2024-01-01T23:33:00"}
+{"user_id": 20, "meeting_id": 33, "event_type": "click", "ts": "2024-01-01T23:36:00"}
+{"user_id": 2, "meeting_id": 73, "event_type": "click", "ts": "2024-01-01T23:39:00"}
+{"user_id": 19, "meeting_id": 4, "event_type": "impression", "ts": "2024-01-01T23:42:00"}
+{"user_id": 19, "meeting_id": 22, "event_type": "impression", "ts": "2024-01-01T23:45:00"}
+{"user_id": 16, "meeting_id": 63, "event_type": "impression", "ts": "2024-01-01T23:48:00"}
+{"user_id": 16, "meeting_id": 36, "event_type": "join", "ts": "2024-01-01T23:51:00", "dwell_sec": 355}
+{"user_id": 2, "meeting_id": 47, "event_type": "impression", "ts": "2024-01-01T23:54:00"}
+{"user_id": 15, "meeting_id": 42, "event_type": "impression", "ts": "2024-01-01T23:57:00"}
+{"user_id": 11, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-02T00:00:00"}
+{"user_id": 13, "meeting_id": 70, "event_type": "join", "ts": "2024-01-02T00:03:00", "dwell_sec": 194}
+{"user_id": 8, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-02T00:06:00"}
+{"user_id": 8, "meeting_id": 29, "event_type": "impression", "ts": "2024-01-02T00:09:00"}
+{"user_id": 13, "meeting_id": 5, "event_type": "impression", "ts": "2024-01-02T00:12:00"}
+{"user_id": 11, "meeting_id": 33, "event_type": "join", "ts": "2024-01-02T00:15:00"}
+{"user_id": 16, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T00:18:00"}
+{"user_id": 16, "meeting_id": 90, "event_type": "impression", "ts": "2024-01-02T00:21:00"}
+{"user_id": 17, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-02T00:24:00"}
+{"user_id": 19, "meeting_id": 25, "event_type": "impression", "ts": "2024-01-02T00:27:00"}
+{"user_id": 16, "meeting_id": 5, "event_type": "impression", "ts": "2024-01-02T00:30:00"}
+{"user_id": 16, "meeting_id": 87, "event_type": "click", "ts": "2024-01-02T00:33:00", "dwell_sec": 9}
+{"user_id": 12, "meeting_id": 36, "event_type": "join", "ts": "2024-01-02T00:36:00"}
+{"user_id": 19, "meeting_id": 41, "event_type": "impression", "ts": "2024-01-02T00:39:00"}
+{"user_id": 3, "meeting_id": 36, "event_type": "click", "ts": "2024-01-02T00:42:00", "dwell_sec": 235}
+{"user_id": 20, "meeting_id": 61, "event_type": "click", "ts": "2024-01-02T00:45:00", "dwell_sec": 54}
+{"user_id": 11, "meeting_id": 80, "event_type": "impression", "ts": "2024-01-02T00:48:00"}
+{"user_id": 7, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T00:51:00", "dwell_sec": 210}
+{"user_id": 5, "meeting_id": 4, "event_type": "impression", "ts": "2024-01-02T00:54:00"}
+{"user_id": 15, "meeting_id": 67, "event_type": "click", "ts": "2024-01-02T00:57:00", "dwell_sec": 268}
+{"user_id": 11, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-02T01:00:00"}
+{"user_id": 10, "meeting_id": 99, "event_type": "impression", "ts": "2024-01-02T01:03:00"}
+{"user_id": 18, "meeting_id": 54, "event_type": "click", "ts": "2024-01-02T01:06:00", "dwell_sec": 293}
+{"user_id": 12, "meeting_id": 82, "event_type": "impression", "ts": "2024-01-02T01:09:00"}
+{"user_id": 14, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-02T01:12:00"}
+{"user_id": 1, "meeting_id": 93, "event_type": "click", "ts": "2024-01-02T01:15:00", "dwell_sec": 140}
+{"user_id": 19, "meeting_id": 100, "event_type": "join", "ts": "2024-01-02T01:18:00", "dwell_sec": 374}
+{"user_id": 17, "meeting_id": 49, "event_type": "impression", "ts": "2024-01-02T01:21:00"}
+{"user_id": 5, "meeting_id": 11, "event_type": "click", "ts": "2024-01-02T01:24:00"}
+{"user_id": 4, "meeting_id": 57, "event_type": "impression", "ts": "2024-01-02T01:27:00"}
+{"user_id": 14, "meeting_id": 45, "event_type": "impression", "ts": "2024-01-02T01:30:00"}
+{"user_id": 14, "meeting_id": 69, "event_type": "impression", "ts": "2024-01-02T01:33:00"}
+{"user_id": 16, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-02T01:36:00"}
+{"user_id": 5, "meeting_id": 96, "event_type": "join", "ts": "2024-01-02T01:39:00", "dwell_sec": 292}
+{"user_id": 17, "meeting_id": 66, "event_type": "impression", "ts": "2024-01-02T01:42:00"}
+{"user_id": 15, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-02T01:45:00"}
+{"user_id": 9, "meeting_id": 70, "event_type": "join", "ts": "2024-01-02T01:48:00", "dwell_sec": 103}
+{"user_id": 8, "meeting_id": 36, "event_type": "join", "ts": "2024-01-02T01:51:00"}
+{"user_id": 7, "meeting_id": 91, "event_type": "join", "ts": "2024-01-02T01:54:00", "dwell_sec": 255}
+{"user_id": 9, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-02T01:57:00"}
+{"user_id": 18, "meeting_id": 57, "event_type": "impression", "ts": "2024-01-02T02:00:00"}
+{"user_id": 12, "meeting_id": 98, "event_type": "impression", "ts": "2024-01-02T02:03:00"}
+{"user_id": 2, "meeting_id": 38, "event_type": "join", "ts": "2024-01-02T02:06:00", "dwell_sec": 370}
+{"user_id": 9, "meeting_id": 95, "event_type": "impression", "ts": "2024-01-02T02:09:00"}
+{"user_id": 9, "meeting_id": 54, "event_type": "click", "ts": "2024-01-02T02:12:00"}
+{"user_id": 19, "meeting_id": 61, "event_type": "click", "ts": "2024-01-02T02:15:00", "dwell_sec": 30}
+{"user_id": 2, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T02:18:00", "dwell_sec": 174}
+{"user_id": 1, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T02:21:00"}
+{"user_id": 16, "meeting_id": 49, "event_type": "join", "ts": "2024-01-02T02:24:00", "dwell_sec": 392}
+{"user_id": 3, "meeting_id": 96, "event_type": "join", "ts": "2024-01-02T02:27:00", "dwell_sec": 123}
+{"user_id": 2, "meeting_id": 71, "event_type": "impression", "ts": "2024-01-02T02:30:00"}
+{"user_id": 2, "meeting_id": 33, "event_type": "join", "ts": "2024-01-02T02:33:00"}
+{"user_id": 10, "meeting_id": 50, "event_type": "impression", "ts": "2024-01-02T02:36:00"}
+{"user_id": 20, "meeting_id": 61, "event_type": "join", "ts": "2024-01-02T02:39:00", "dwell_sec": 176}
+{"user_id": 18, "meeting_id": 99, "event_type": "impression", "ts": "2024-01-02T02:42:00"}
+{"user_id": 5, "meeting_id": 91, "event_type": "impression", "ts": "2024-01-02T02:45:00"}
+{"user_id": 4, "meeting_id": 3, "event_type": "join", "ts": "2024-01-02T02:48:00", "dwell_sec": 379}
+{"user_id": 6, "meeting_id": 27, "event_type": "impression", "ts": "2024-01-02T02:51:00"}
+{"user_id": 10, "meeting_id": 35, "event_type": "impression", "ts": "2024-01-02T02:54:00"}
+{"user_id": 20, "meeting_id": 23, "event_type": "click", "ts": "2024-01-02T02:57:00"}
+{"user_id": 11, "meeting_id": 66, "event_type": "join", "ts": "2024-01-02T03:00:00", "dwell_sec": 347}
+{"user_id": 16, "meeting_id": 98, "event_type": "impression", "ts": "2024-01-02T03:03:00"}
+{"user_id": 9, "meeting_id": 26, "event_type": "impression", "ts": "2024-01-02T03:06:00"}
+{"user_id": 9, "meeting_id": 46, "event_type": "impression", "ts": "2024-01-02T03:09:00"}
+{"user_id": 1, "meeting_id": 61, "event_type": "join", "ts": "2024-01-02T03:12:00", "dwell_sec": 189}
+{"user_id": 15, "meeting_id": 97, "event_type": "click", "ts": "2024-01-02T03:15:00", "dwell_sec": 212}
+{"user_id": 10, "meeting_id": 91, "event_type": "click", "ts": "2024-01-02T03:18:00", "dwell_sec": 332}
+{"user_id": 8, "meeting_id": 61, "event_type": "join", "ts": "2024-01-02T03:21:00", "dwell_sec": 73}
+{"user_id": 20, "meeting_id": 47, "event_type": "impression", "ts": "2024-01-02T03:24:00"}
+{"user_id": 16, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-02T03:27:00"}
+{"user_id": 8, "meeting_id": 28, "event_type": "click", "ts": "2024-01-02T03:30:00", "dwell_sec": 310}
+{"user_id": 17, "meeting_id": 49, "event_type": "join", "ts": "2024-01-02T03:33:00"}
+{"user_id": 2, "meeting_id": 56, "event_type": "impression", "ts": "2024-01-02T03:36:00"}
+{"user_id": 19, "meeting_id": 26, "event_type": "join", "ts": "2024-01-02T03:39:00", "dwell_sec": 89}
+{"user_id": 4, "meeting_id": 53, "event_type": "impression", "ts": "2024-01-02T03:42:00"}
+{"user_id": 3, "meeting_id": 49, "event_type": "click", "ts": "2024-01-02T03:45:00"}
+{"user_id": 5, "meeting_id": 5, "event_type": "impression", "ts": "2024-01-02T03:48:00"}
+{"user_id": 2, "meeting_id": 47, "event_type": "impression", "ts": "2024-01-02T03:51:00"}
+{"user_id": 1, "meeting_id": 36, "event_type": "click", "ts": "2024-01-02T03:54:00", "dwell_sec": 6}
+{"user_id": 14, "meeting_id": 96, "event_type": "click", "ts": "2024-01-02T03:57:00", "dwell_sec": 37}
+{"user_id": 3, "meeting_id": 6, "event_type": "impression", "ts": "2024-01-02T04:00:00"}
+{"user_id": 14, "meeting_id": 36, "event_type": "join", "ts": "2024-01-02T04:03:00", "dwell_sec": 74}
+{"user_id": 14, "meeting_id": 83, "event_type": "click", "ts": "2024-01-02T04:06:00", "dwell_sec": 200}
+{"user_id": 13, "meeting_id": 95, "event_type": "impression", "ts": "2024-01-02T04:09:00"}
+{"user_id": 18, "meeting_id": 68, "event_type": "impression", "ts": "2024-01-02T04:12:00"}
+{"user_id": 4, "meeting_id": 88, "event_type": "impression", "ts": "2024-01-02T04:15:00"}
+{"user_id": 17, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-02T04:18:00"}
+{"user_id": 1, "meeting_id": 98, "event_type": "impression", "ts": "2024-01-02T04:21:00"}
+{"user_id": 18, "meeting_id": 60, "event_type": "click", "ts": "2024-01-02T04:24:00", "dwell_sec": 199}
+{"user_id": 5, "meeting_id": 70, "event_type": "join", "ts": "2024-01-02T04:27:00", "dwell_sec": 376}
+{"user_id": 20, "meeting_id": 11, "event_type": "click", "ts": "2024-01-02T04:30:00"}
+{"user_id": 3, "meeting_id": 3, "event_type": "join", "ts": "2024-01-02T04:33:00", "dwell_sec": 22}
+{"user_id": 2, "meeting_id": 67, "event_type": "impression", "ts": "2024-01-02T04:36:00"}
+{"user_id": 15, "meeting_id": 4, "event_type": "impression", "ts": "2024-01-02T04:39:00"}
+{"user_id": 2, "meeting_id": 23, "event_type": "impression", "ts": "2024-01-02T04:42:00"}
+{"user_id": 8, "meeting_id": 100, "event_type": "impression", "ts": "2024-01-02T04:45:00"}
+{"user_id": 19, "meeting_id": 70, "event_type": "join", "ts": "2024-01-02T04:48:00", "dwell_sec": 349}
+{"user_id": 17, "meeting_id": 33, "event_type": "join", "ts": "2024-01-02T04:51:00", "dwell_sec": 158}
+{"user_id": 19, "meeting_id": 55, "event_type": "impression", "ts": "2024-01-02T04:54:00"}
+{"user_id": 14, "meeting_id": 81, "event_type": "join", "ts": "2024-01-02T04:57:00", "dwell_sec": 29}
+{"user_id": 13, "meeting_id": 86, "event_type": "join", "ts": "2024-01-02T05:00:00"}
+{"user_id": 5, "meeting_id": 42, "event_type": "impression", "ts": "2024-01-02T05:03:00"}
+{"user_id": 18, "meeting_id": 19, "event_type": "impression", "ts": "2024-01-02T05:06:00"}
+{"user_id": 10, "meeting_id": 86, "event_type": "impression", "ts": "2024-01-02T05:09:00"}
+{"user_id": 2, "meeting_id": 49, "event_type": "join", "ts": "2024-01-02T05:12:00", "dwell_sec": 218}
+{"user_id": 9, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T05:15:00", "dwell_sec": 336}
+{"user_id": 12, "meeting_id": 46, "event_type": "impression", "ts": "2024-01-02T05:18:00"}
+{"user_id": 7, "meeting_id": 71, "event_type": "impression", "ts": "2024-01-02T05:21:00"}
+{"user_id": 20, "meeting_id": 38, "event_type": "impression", "ts": "2024-01-02T05:24:00"}
+{"user_id": 19, "meeting_id": 25, "event_type": "click", "ts": "2024-01-02T05:27:00"}
+{"user_id": 10, "meeting_id": 70, "event_type": "click", "ts": "2024-01-02T05:30:00"}
+{"user_id": 4, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-02T05:33:00"}
+{"user_id": 20, "meeting_id": 32, "event_type": "click", "ts": "2024-01-02T05:36:00"}
+{"user_id": 11, "meeting_id": 25, "event_type": "impression", "ts": "2024-01-02T05:39:00"}
+{"user_id": 12, "meeting_id": 54, "event_type": "click", "ts": "2024-01-02T05:42:00", "dwell_sec": 189}
+{"user_id": 4, "meeting_id": 50, "event_type": "impression", "ts": "2024-01-02T05:45:00"}
+{"user_id": 7, "meeting_id": 70, "event_type": "join", "ts": "2024-01-02T05:48:00", "dwell_sec": 216}
+{"user_id": 5, "meeting_id": 88, "event_type": "impression", "ts": "2024-01-02T05:51:00"}
+{"user_id": 19, "meeting_id": 55, "event_type": "impression", "ts": "2024-01-02T05:54:00"}
+{"user_id": 7, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T05:57:00", "dwell_sec": 199}
+{"user_id": 11, "meeting_id": 54, "event_type": "click", "ts": "2024-01-02T06:00:00", "dwell_sec": 255}
+{"user_id": 15, "meeting_id": 49, "event_type": "join", "ts": "2024-01-02T06:03:00", "dwell_sec": 185}
+{"user_id": 16, "meeting_id": 71, "event_type": "impression", "ts": "2024-01-02T06:06:00"}
+{"user_id": 2, "meeting_id": 91, "event_type": "impression", "ts": "2024-01-02T06:09:00"}
+{"user_id": 3, "meeting_id": 85, "event_type": "impression", "ts": "2024-01-02T06:12:00"}
+{"user_id": 14, "meeting_id": 96, "event_type": "join", "ts": "2024-01-02T06:15:00", "dwell_sec": 327}
+{"user_id": 1, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-02T06:18:00"}
+{"user_id": 2, "meeting_id": 47, "event_type": "impression", "ts": "2024-01-02T06:21:00"}
+{"user_id": 16, "meeting_id": 61, "event_type": "click", "ts": "2024-01-02T06:24:00", "dwell_sec": 13}
+{"user_id": 1, "meeting_id": 55, "event_type": "impression", "ts": "2024-01-02T06:27:00"}
+{"user_id": 18, "meeting_id": 71, "event_type": "impression", "ts": "2024-01-02T06:30:00"}
+{"user_id": 6, "meeting_id": 11, "event_type": "join", "ts": "2024-01-02T06:33:00", "dwell_sec": 54}
+{"user_id": 20, "meeting_id": 25, "event_type": "impression", "ts": "2024-01-02T06:36:00"}
+{"user_id": 9, "meeting_id": 82, "event_type": "impression", "ts": "2024-01-02T06:39:00"}
+{"user_id": 15, "meeting_id": 11, "event_type": "click", "ts": "2024-01-02T06:42:00", "dwell_sec": 361}
+{"user_id": 3, "meeting_id": 69, "event_type": "impression", "ts": "2024-01-02T06:45:00"}
+{"user_id": 2, "meeting_id": 98, "event_type": "click", "ts": "2024-01-02T06:48:00", "dwell_sec": 199}
+{"user_id": 1, "meeting_id": 49, "event_type": "impression", "ts": "2024-01-02T06:51:00"}
+{"user_id": 11, "meeting_id": 11, "event_type": "click", "ts": "2024-01-02T06:54:00", "dwell_sec": 53}
+{"user_id": 7, "meeting_id": 30, "event_type": "join", "ts": "2024-01-02T06:57:00"}
+{"user_id": 2, "meeting_id": 36, "event_type": "click", "ts": "2024-01-02T07:00:00"}
+{"user_id": 19, "meeting_id": 54, "event_type": "click", "ts": "2024-01-02T07:03:00", "dwell_sec": 96}
+{"user_id": 19, "meeting_id": 3, "event_type": "join", "ts": "2024-01-02T07:06:00", "dwell_sec": 369}
+{"user_id": 6, "meeting_id": 39, "event_type": "join", "ts": "2024-01-02T07:09:00", "dwell_sec": 295}
+{"user_id": 11, "meeting_id": 54, "event_type": "join", "ts": "2024-01-02T07:12:00", "dwell_sec": 383}
+{"user_id": 3, "meeting_id": 99, "event_type": "impression", "ts": "2024-01-02T07:15:00"}
+{"user_id": 2, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-02T07:18:00"}
+{"user_id": 3, "meeting_id": 24, "event_type": "impression", "ts": "2024-01-02T07:21:00"}
+{"user_id": 20, "meeting_id": 77, "event_type": "impression", "ts": "2024-01-02T07:24:00"}
+{"user_id": 1, "meeting_id": 77, "event_type": "impression", "ts": "2024-01-02T07:27:00"}
+{"user_id": 16, "meeting_id": 58, "event_type": "click", "ts": "2024-01-02T07:30:00", "dwell_sec": 288}
+{"user_id": 13, "meeting_id": 61, "event_type": "join", "ts": "2024-01-02T07:33:00", "dwell_sec": 321}
+{"user_id": 3, "meeting_id": 26, "event_type": "impression", "ts": "2024-01-02T07:36:00"}
+{"user_id": 5, "meeting_id": 15, "event_type": "impression", "ts": "2024-01-02T07:39:00"}
+{"user_id": 3, "meeting_id": 97, "event_type": "click", "ts": "2024-01-02T07:42:00", "dwell_sec": 162}
+{"user_id": 4, "meeting_id": 76, "event_type": "impression", "ts": "2024-01-02T07:45:00"}
+{"user_id": 15, "meeting_id": 19, "event_type": "impression", "ts": "2024-01-02T07:48:00"}
+{"user_id": 1, "meeting_id": 97, "event_type": "click", "ts": "2024-01-02T07:51:00", "dwell_sec": 288}
+{"user_id": 11, "meeting_id": 60, "event_type": "impression", "ts": "2024-01-02T07:54:00"}
+{"user_id": 13, "meeting_id": 11, "event_type": "join", "ts": "2024-01-02T07:57:00"}
+{"user_id": 19, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T08:00:00", "dwell_sec": 355}
+{"user_id": 10, "meeting_id": 13, "event_type": "impression", "ts": "2024-01-02T08:03:00"}
+{"user_id": 6, "meeting_id": 14, "event_type": "impression", "ts": "2024-01-02T08:06:00"}
+{"user_id": 16, "meeting_id": 43, "event_type": "impression", "ts": "2024-01-02T08:09:00"}
+{"user_id": 16, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T08:12:00", "dwell_sec": 105}
+{"user_id": 1, "meeting_id": 13, "event_type": "impression", "ts": "2024-01-02T08:15:00"}
+{"user_id": 13, "meeting_id": 61, "event_type": "join", "ts": "2024-01-02T08:18:00"}
+{"user_id": 20, "meeting_id": 35, "event_type": "impression", "ts": "2024-01-02T08:21:00"}
+{"user_id": 7, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-02T08:24:00"}
+{"user_id": 13, "meeting_id": 18, "event_type": "impression", "ts": "2024-01-02T08:27:00"}
+{"user_id": 19, "meeting_id": 49, "event_type": "join", "ts": "2024-01-02T08:30:00"}
+{"user_id": 13, "meeting_id": 30, "event_type": "impression", "ts": "2024-01-02T08:33:00"}
+{"user_id": 7, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-02T08:36:00"}
+{"user_id": 1, "meeting_id": 54, "event_type": "click", "ts": "2024-01-02T08:39:00"}
+{"user_id": 15, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-02T08:42:00"}
+{"user_id": 14, "meeting_id": 9, "event_type": "click", "ts": "2024-01-02T08:45:00", "dwell_sec": 76}
+{"user_id": 14, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T08:48:00"}
+{"user_id": 16, "meeting_id": 99, "event_type": "impression", "ts": "2024-01-02T08:51:00"}
+{"user_id": 18, "meeting_id": 11, "event_type": "click", "ts": "2024-01-02T08:54:00", "dwell_sec": 189}
+{"user_id": 3, "meeting_id": 77, "event_type": "click", "ts": "2024-01-02T08:57:00", "dwell_sec": 132}
+{"user_id": 2, "meeting_id": 61, "event_type": "click", "ts": "2024-01-02T09:00:00", "dwell_sec": 335}
+{"user_id": 14, "meeting_id": 70, "event_type": "click", "ts": "2024-01-02T09:03:00", "dwell_sec": 55}
+{"user_id": 17, "meeting_id": 52, "event_type": "impression", "ts": "2024-01-02T09:06:00"}
+{"user_id": 15, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T09:09:00", "dwell_sec": 242}
+{"user_id": 5, "meeting_id": 54, "event_type": "click", "ts": "2024-01-02T09:12:00", "dwell_sec": 17}
+{"user_id": 3, "meeting_id": 32, "event_type": "impression", "ts": "2024-01-02T09:15:00"}
+{"user_id": 5, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-02T09:18:00"}
+{"user_id": 7, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-02T09:21:00"}
+{"user_id": 4, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-02T09:24:00"}
+{"user_id": 11, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-02T09:27:00"}
+{"user_id": 4, "meeting_id": 4, "event_type": "impression", "ts": "2024-01-02T09:30:00"}
+{"user_id": 4, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-02T09:33:00"}
+{"user_id": 17, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T09:36:00", "dwell_sec": 86}
+{"user_id": 15, "meeting_id": 44, "event_type": "impression", "ts": "2024-01-02T09:39:00"}
+{"user_id": 6, "meeting_id": 41, "event_type": "impression", "ts": "2024-01-02T09:42:00"}
+{"user_id": 13, "meeting_id": 65, "event_type": "impression", "ts": "2024-01-02T09:45:00"}
+{"user_id": 7, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-02T09:48:00"}
+{"user_id": 1, "meeting_id": 44, "event_type": "impression", "ts": "2024-01-02T09:51:00"}
+{"user_id": 19, "meeting_id": 97, "event_type": "click", "ts": "2024-01-02T09:54:00", "dwell_sec": 279}
+{"user_id": 15, "meeting_id": 34, "event_type": "impression", "ts": "2024-01-02T09:57:00"}
+{"user_id": 16, "meeting_id": 67, "event_type": "impression", "ts": "2024-01-02T10:00:00"}
+{"user_id": 20, "meeting_id": 63, "event_type": "impression", "ts": "2024-01-02T10:03:00"}
+{"user_id": 4, "meeting_id": 40, "event_type": "impression", "ts": "2024-01-02T10:06:00"}
+{"user_id": 20, "meeting_id": 86, "event_type": "impression", "ts": "2024-01-02T10:09:00"}
+{"user_id": 10, "meeting_id": 67, "event_type": "impression", "ts": "2024-01-02T10:12:00"}
+{"user_id": 11, "meeting_id": 33, "event_type": "join", "ts": "2024-01-02T10:15:00", "dwell_sec": 161}
+{"user_id": 5, "meeting_id": 37, "event_type": "impression", "ts": "2024-01-02T10:18:00"}
+{"user_id": 5, "meeting_id": 43, "event_type": "impression", "ts": "2024-01-02T10:21:00"}
+{"user_id": 18, "meeting_id": 49, "event_type": "click", "ts": "2024-01-02T10:24:00", "dwell_sec": 335}
+{"user_id": 16, "meeting_id": 33, "event_type": "join", "ts": "2024-01-02T10:27:00", "dwell_sec": 100}
+{"user_id": 2, "meeting_id": 47, "event_type": "impression", "ts": "2024-01-02T10:30:00"}
+{"user_id": 5, "meeting_id": 63, "event_type": "join", "ts": "2024-01-02T10:33:00", "dwell_sec": 201}
+{"user_id": 14, "meeting_id": 49, "event_type": "join", "ts": "2024-01-02T10:36:00", "dwell_sec": 217}
+{"user_id": 3, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T10:39:00", "dwell_sec": 394}
+{"user_id": 8, "meeting_id": 3, "event_type": "impression", "ts": "2024-01-02T10:42:00"}
+{"user_id": 15, "meeting_id": 17, "event_type": "impression", "ts": "2024-01-02T10:45:00"}
+{"user_id": 18, "meeting_id": 64, "event_type": "click", "ts": "2024-01-02T10:48:00", "dwell_sec": 298}
+{"user_id": 12, "meeting_id": 78, "event_type": "impression", "ts": "2024-01-02T10:51:00"}
+{"user_id": 15, "meeting_id": 75, "event_type": "impression", "ts": "2024-01-02T10:54:00"}
+{"user_id": 4, "meeting_id": 99, "event_type": "impression", "ts": "2024-01-02T10:57:00"}
+{"user_id": 10, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T11:00:00"}
+{"user_id": 3, "meeting_id": 28, "event_type": "impression", "ts": "2024-01-02T11:03:00"}
+{"user_id": 8, "meeting_id": 100, "event_type": "impression", "ts": "2024-01-02T11:06:00"}
+{"user_id": 12, "meeting_id": 73, "event_type": "impression", "ts": "2024-01-02T11:09:00"}
+{"user_id": 6, "meeting_id": 11, "event_type": "join", "ts": "2024-01-02T11:12:00", "dwell_sec": 110}
+{"user_id": 12, "meeting_id": 73, "event_type": "join", "ts": "2024-01-02T11:15:00", "dwell_sec": 310}
+{"user_id": 10, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-02T11:18:00"}
+{"user_id": 17, "meeting_id": 29, "event_type": "impression", "ts": "2024-01-02T11:21:00"}
+{"user_id": 5, "meeting_id": 97, "event_type": "join", "ts": "2024-01-02T11:24:00"}
+{"user_id": 5, "meeting_id": 36, "event_type": "click", "ts": "2024-01-02T11:27:00"}
+{"user_id": 11, "meeting_id": 14, "event_type": "impression", "ts": "2024-01-02T11:30:00"}
+{"user_id": 13, "meeting_id": 87, "event_type": "join", "ts": "2024-01-02T11:33:00", "dwell_sec": 300}
+{"user_id": 15, "meeting_id": 11, "event_type": "click", "ts": "2024-01-02T11:36:00", "dwell_sec": 398}
+{"user_id": 9, "meeting_id": 52, "event_type": "impression", "ts": "2024-01-02T11:39:00"}
+{"user_id": 16, "meeting_id": 59, "event_type": "click", "ts": "2024-01-02T11:42:00", "dwell_sec": 6}
+{"user_id": 15, "meeting_id": 12, "event_type": "join", "ts": "2024-01-02T11:45:00", "dwell_sec": 362}
+{"user_id": 18, "meeting_id": 6, "event_type": "impression", "ts": "2024-01-02T11:48:00"}
+{"user_id": 7, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-02T11:51:00"}
+{"user_id": 10, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-02T11:54:00"}
+{"user_id": 19, "meeting_id": 58, "event_type": "impression", "ts": "2024-01-02T11:57:00"}
+{"user_id": 2, "meeting_id": 88, "event_type": "join", "ts": "2024-01-02T12:00:00", "dwell_sec": 325}
+{"user_id": 6, "meeting_id": 97, "event_type": "click", "ts": "2024-01-02T12:03:00", "dwell_sec": 5}
+{"user_id": 10, "meeting_id": 33, "event_type": "join", "ts": "2024-01-02T12:06:00", "dwell_sec": 145}
+{"user_id": 3, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-02T12:09:00"}
+{"user_id": 6, "meeting_id": 93, "event_type": "impression", "ts": "2024-01-02T12:12:00"}
+{"user_id": 8, "meeting_id": 62, "event_type": "impression", "ts": "2024-01-02T12:15:00"}
+{"user_id": 4, "meeting_id": 9, "event_type": "impression", "ts": "2024-01-02T12:18:00"}
+{"user_id": 5, "meeting_id": 49, "event_type": "impression", "ts": "2024-01-02T12:21:00"}
+{"user_id": 1, "meeting_id": 49, "event_type": "click", "ts": "2024-01-02T12:24:00", "dwell_sec": 180}
+{"user_id": 5, "meeting_id": 55, "event_type": "join", "ts": "2024-01-02T12:27:00", "dwell_sec": 122}
+{"user_id": 4, "meeting_id": 72, "event_type": "impression", "ts": "2024-01-02T12:30:00"}
+{"user_id": 10, "meeting_id": 37, "event_type": "impression", "ts": "2024-01-02T12:33:00"}
+{"user_id": 5, "meeting_id": 77, "event_type": "impression", "ts": "2024-01-02T12:36:00"}
+{"user_id": 17, "meeting_id": 97, "event_type": "click", "ts": "2024-01-02T12:39:00", "dwell_sec": 317}
+{"user_id": 5, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T12:42:00"}
+{"user_id": 3, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T12:45:00"}
+{"user_id": 13, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-02T12:48:00"}
+{"user_id": 5, "meeting_id": 44, "event_type": "impression", "ts": "2024-01-02T12:51:00"}
+{"user_id": 8, "meeting_id": 64, "event_type": "impression", "ts": "2024-01-02T12:54:00"}
+{"user_id": 10, "meeting_id": 61, "event_type": "click", "ts": "2024-01-02T12:57:00"}
+{"user_id": 10, "meeting_id": 85, "event_type": "click", "ts": "2024-01-02T13:00:00", "dwell_sec": 315}
+{"user_id": 10, "meeting_id": 74, "event_type": "impression", "ts": "2024-01-02T13:03:00"}
+{"user_id": 16, "meeting_id": 31, "event_type": "click", "ts": "2024-01-02T13:06:00", "dwell_sec": 128}
+{"user_id": 17, "meeting_id": 60, "event_type": "impression", "ts": "2024-01-02T13:09:00"}
+{"user_id": 11, "meeting_id": 70, "event_type": "join", "ts": "2024-01-02T13:12:00", "dwell_sec": 296}
+{"user_id": 6, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-02T13:15:00"}
+{"user_id": 3, "meeting_id": 99, "event_type": "click", "ts": "2024-01-02T13:18:00", "dwell_sec": 39}
+{"user_id": 2, "meeting_id": 22, "event_type": "impression", "ts": "2024-01-02T13:21:00"}
+{"user_id": 17, "meeting_id": 36, "event_type": "join", "ts": "2024-01-02T13:24:00"}
+{"user_id": 18, "meeting_id": 41, "event_type": "impression", "ts": "2024-01-02T13:27:00"}
+{"user_id": 3, "meeting_id": 15, "event_type": "impression", "ts": "2024-01-02T13:30:00"}
+{"user_id": 7, "meeting_id": 52, "event_type": "impression", "ts": "2024-01-02T13:33:00"}
+{"user_id": 13, "meeting_id": 70, "event_type": "join", "ts": "2024-01-02T13:36:00", "dwell_sec": 395}
+{"user_id": 10, "meeting_id": 97, "event_type": "join", "ts": "2024-01-02T13:39:00", "dwell_sec": 378}
+{"user_id": 3, "meeting_id": 3, "event_type": "join", "ts": "2024-01-02T13:42:00"}
+{"user_id": 2, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-02T13:45:00"}
+{"user_id": 6, "meeting_id": 74, "event_type": "impression", "ts": "2024-01-02T13:48:00"}
+{"user_id": 1, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-02T13:51:00"}
+{"user_id": 17, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-02T13:54:00"}
+{"user_id": 9, "meeting_id": 83, "event_type": "impression", "ts": "2024-01-02T13:57:00"}
+{"user_id": 9, "meeting_id": 12, "event_type": "impression", "ts": "2024-01-02T14:00:00"}
+{"user_id": 11, "meeting_id": 96, "event_type": "click", "ts": "2024-01-02T14:03:00"}
+{"user_id": 19, "meeting_id": 6, "event_type": "impression", "ts": "2024-01-02T14:06:00"}
+{"user_id": 12, "meeting_id": 54, "event_type": "click", "ts": "2024-01-02T14:09:00", "dwell_sec": 295}
+{"user_id": 4, "meeting_id": 15, "event_type": "impression", "ts": "2024-01-02T14:12:00"}
+{"user_id": 8, "meeting_id": 97, "event_type": "join", "ts": "2024-01-02T14:15:00"}
+{"user_id": 1, "meeting_id": 88, "event_type": "impression", "ts": "2024-01-02T14:18:00"}
+{"user_id": 13, "meeting_id": 49, "event_type": "impression", "ts": "2024-01-02T14:21:00"}
+{"user_id": 18, "meeting_id": 96, "event_type": "join", "ts": "2024-01-02T14:24:00"}
+{"user_id": 11, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T14:27:00", "dwell_sec": 373}
+{"user_id": 19, "meeting_id": 84, "event_type": "impression", "ts": "2024-01-02T14:30:00"}
+{"user_id": 2, "meeting_id": 51, "event_type": "impression", "ts": "2024-01-02T14:33:00"}
+{"user_id": 2, "meeting_id": 81, "event_type": "impression", "ts": "2024-01-02T14:36:00"}
+{"user_id": 10, "meeting_id": 49, "event_type": "join", "ts": "2024-01-02T14:39:00"}
+{"user_id": 15, "meeting_id": 9, "event_type": "impression", "ts": "2024-01-02T14:42:00"}
+{"user_id": 19, "meeting_id": 21, "event_type": "impression", "ts": "2024-01-02T14:45:00"}
+{"user_id": 15, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T14:48:00", "dwell_sec": 257}
+{"user_id": 18, "meeting_id": 94, "event_type": "join", "ts": "2024-01-02T14:51:00"}
+{"user_id": 14, "meeting_id": 1, "event_type": "impression", "ts": "2024-01-02T14:54:00"}
+{"user_id": 1, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-02T14:57:00"}
+{"user_id": 10, "meeting_id": 11, "event_type": "join", "ts": "2024-01-02T15:00:00", "dwell_sec": 276}
+{"user_id": 5, "meeting_id": 96, "event_type": "join", "ts": "2024-01-02T15:03:00"}
+{"user_id": 17, "meeting_id": 95, "event_type": "impression", "ts": "2024-01-02T15:06:00"}
+{"user_id": 15, "meeting_id": 92, "event_type": "impression", "ts": "2024-01-02T15:09:00"}
+{"user_id": 17, "meeting_id": 97, "event_type": "join", "ts": "2024-01-02T15:12:00", "dwell_sec": 206}
+{"user_id": 14, "meeting_id": 57, "event_type": "impression", "ts": "2024-01-02T15:15:00"}
+{"user_id": 9, "meeting_id": 36, "event_type": "click", "ts": "2024-01-02T15:18:00"}
+{"user_id": 11, "meeting_id": 70, "event_type": "join", "ts": "2024-01-02T15:21:00", "dwell_sec": 124}
+{"user_id": 19, "meeting_id": 21, "event_type": "impression", "ts": "2024-01-02T15:24:00"}
+{"user_id": 15, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-02T15:27:00"}
+{"user_id": 18, "meeting_id": 41, "event_type": "impression", "ts": "2024-01-02T15:30:00"}
+{"user_id": 15, "meeting_id": 77, "event_type": "impression", "ts": "2024-01-02T15:33:00"}
+{"user_id": 4, "meeting_id": 28, "event_type": "impression", "ts": "2024-01-02T15:36:00"}
+{"user_id": 10, "meeting_id": 81, "event_type": "impression", "ts": "2024-01-02T15:39:00"}
+{"user_id": 7, "meeting_id": 96, "event_type": "join", "ts": "2024-01-02T15:42:00"}
+{"user_id": 8, "meeting_id": 9, "event_type": "impression", "ts": "2024-01-02T15:45:00"}
+{"user_id": 10, "meeting_id": 96, "event_type": "join", "ts": "2024-01-02T15:48:00", "dwell_sec": 94}
+{"user_id": 15, "meeting_id": 41, "event_type": "impression", "ts": "2024-01-02T15:51:00"}
+{"user_id": 15, "meeting_id": 97, "event_type": "click", "ts": "2024-01-02T15:54:00", "dwell_sec": 76}
+{"user_id": 8, "meeting_id": 6, "event_type": "impression", "ts": "2024-01-02T15:57:00"}
+{"user_id": 12, "meeting_id": 83, "event_type": "impression", "ts": "2024-01-02T16:00:00"}
+{"user_id": 19, "meeting_id": 11, "event_type": "click", "ts": "2024-01-02T16:03:00", "dwell_sec": 43}
+{"user_id": 15, "meeting_id": 6, "event_type": "impression", "ts": "2024-01-02T16:06:00"}
+{"user_id": 4, "meeting_id": 70, "event_type": "join", "ts": "2024-01-02T16:09:00", "dwell_sec": 241}
+{"user_id": 14, "meeting_id": 95, "event_type": "impression", "ts": "2024-01-02T16:12:00"}
+{"user_id": 13, "meeting_id": 96, "event_type": "join", "ts": "2024-01-02T16:15:00", "dwell_sec": 93}
+{"user_id": 9, "meeting_id": 93, "event_type": "impression", "ts": "2024-01-02T16:18:00"}
+{"user_id": 2, "meeting_id": 91, "event_type": "impression", "ts": "2024-01-02T16:21:00"}
+{"user_id": 16, "meeting_id": 36, "event_type": "click", "ts": "2024-01-02T16:24:00", "dwell_sec": 286}
+{"user_id": 13, "meeting_id": 9, "event_type": "impression", "ts": "2024-01-02T16:27:00"}
+{"user_id": 17, "meeting_id": 20, "event_type": "impression", "ts": "2024-01-02T16:30:00"}
+{"user_id": 18, "meeting_id": 100, "event_type": "impression", "ts": "2024-01-02T16:33:00"}
+{"user_id": 12, "meeting_id": 92, "event_type": "click", "ts": "2024-01-02T16:36:00", "dwell_sec": 253}
+{"user_id": 11, "meeting_id": 56, "event_type": "impression", "ts": "2024-01-02T16:39:00"}
+{"user_id": 11, "meeting_id": 18, "event_type": "impression", "ts": "2024-01-02T16:42:00"}
+{"user_id": 2, "meeting_id": 36, "event_type": "click", "ts": "2024-01-02T16:45:00"}
+{"user_id": 19, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-02T16:48:00"}
+{"user_id": 8, "meeting_id": 13, "event_type": "join", "ts": "2024-01-02T16:51:00", "dwell_sec": 141}
+{"user_id": 2, "meeting_id": 79, "event_type": "impression", "ts": "2024-01-02T16:54:00"}
+{"user_id": 13, "meeting_id": 74, "event_type": "click", "ts": "2024-01-02T16:57:00", "dwell_sec": 93}
+{"user_id": 12, "meeting_id": 60, "event_type": "impression", "ts": "2024-01-02T17:00:00"}
+{"user_id": 19, "meeting_id": 70, "event_type": "join", "ts": "2024-01-02T17:03:00", "dwell_sec": 293}
+{"user_id": 18, "meeting_id": 64, "event_type": "join", "ts": "2024-01-02T17:06:00", "dwell_sec": 256}
+{"user_id": 20, "meeting_id": 5, "event_type": "impression", "ts": "2024-01-02T17:09:00"}
+{"user_id": 1, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-02T17:12:00"}
+{"user_id": 5, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-02T17:15:00"}
+{"user_id": 11, "meeting_id": 18, "event_type": "impression", "ts": "2024-01-02T17:18:00"}
+{"user_id": 5, "meeting_id": 14, "event_type": "impression", "ts": "2024-01-02T17:21:00"}
+{"user_id": 3, "meeting_id": 47, "event_type": "click", "ts": "2024-01-02T17:24:00", "dwell_sec": 344}
+{"user_id": 10, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-02T17:27:00"}
+{"user_id": 14, "meeting_id": 98, "event_type": "impression", "ts": "2024-01-02T17:30:00"}
+{"user_id": 11, "meeting_id": 84, "event_type": "click", "ts": "2024-01-02T17:33:00", "dwell_sec": 292}
+{"user_id": 8, "meeting_id": 46, "event_type": "click", "ts": "2024-01-02T17:36:00", "dwell_sec": 94}
+{"user_id": 10, "meeting_id": 73, "event_type": "impression", "ts": "2024-01-02T17:39:00"}
+{"user_id": 19, "meeting_id": 72, "event_type": "impression", "ts": "2024-01-02T17:42:00"}
+{"user_id": 19, "meeting_id": 100, "event_type": "impression", "ts": "2024-01-02T17:45:00"}
+{"user_id": 20, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-02T17:48:00"}
+{"user_id": 16, "meeting_id": 56, "event_type": "impression", "ts": "2024-01-02T17:51:00"}
+{"user_id": 8, "meeting_id": 74, "event_type": "impression", "ts": "2024-01-02T17:54:00"}
+{"user_id": 3, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-02T17:57:00"}
+{"user_id": 15, "meeting_id": 70, "event_type": "join", "ts": "2024-01-02T18:00:00", "dwell_sec": 112}
+{"user_id": 9, "meeting_id": 7, "event_type": "impression", "ts": "2024-01-02T18:03:00"}
+{"user_id": 13, "meeting_id": 96, "event_type": "click", "ts": "2024-01-02T18:06:00", "dwell_sec": 219}
+{"user_id": 13, "meeting_id": 64, "event_type": "join", "ts": "2024-01-02T18:09:00", "dwell_sec": 197}
+{"user_id": 19, "meeting_id": 49, "event_type": "impression", "ts": "2024-01-02T18:12:00"}
+{"user_id": 15, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T18:15:00", "dwell_sec": 22}
+{"user_id": 4, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-02T18:18:00"}
+{"user_id": 13, "meeting_id": 17, "event_type": "impression", "ts": "2024-01-02T18:21:00"}
+{"user_id": 3, "meeting_id": 8, "event_type": "impression", "ts": "2024-01-02T18:24:00"}
+{"user_id": 16, "meeting_id": 99, "event_type": "impression", "ts": "2024-01-02T18:27:00"}
+{"user_id": 20, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T18:30:00"}
+{"user_id": 7, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-02T18:33:00"}
+{"user_id": 18, "meeting_id": 54, "event_type": "join", "ts": "2024-01-02T18:36:00", "dwell_sec": 149}
+{"user_id": 13, "meeting_id": 10, "event_type": "impression", "ts": "2024-01-02T18:39:00"}
+{"user_id": 2, "meeting_id": 20, "event_type": "click", "ts": "2024-01-02T18:42:00", "dwell_sec": 223}
+{"user_id": 20, "meeting_id": 83, "event_type": "impression", "ts": "2024-01-02T18:45:00"}
+{"user_id": 7, "meeting_id": 10, "event_type": "impression", "ts": "2024-01-02T18:48:00"}
+{"user_id": 3, "meeting_id": 32, "event_type": "impression", "ts": "2024-01-02T18:51:00"}
+{"user_id": 13, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-02T18:54:00"}
+{"user_id": 9, "meeting_id": 92, "event_type": "impression", "ts": "2024-01-02T18:57:00"}
+{"user_id": 6, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-02T19:00:00"}
+{"user_id": 6, "meeting_id": 38, "event_type": "impression", "ts": "2024-01-02T19:03:00"}
+{"user_id": 15, "meeting_id": 28, "event_type": "impression", "ts": "2024-01-02T19:06:00"}
+{"user_id": 19, "meeting_id": 85, "event_type": "impression", "ts": "2024-01-02T19:09:00"}
+{"user_id": 4, "meeting_id": 75, "event_type": "impression", "ts": "2024-01-02T19:12:00"}
+{"user_id": 18, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-02T19:15:00"}
+{"user_id": 8, "meeting_id": 75, "event_type": "impression", "ts": "2024-01-02T19:18:00"}
+{"user_id": 14, "meeting_id": 67, "event_type": "click", "ts": "2024-01-02T19:21:00"}
+{"user_id": 8, "meeting_id": 74, "event_type": "click", "ts": "2024-01-02T19:24:00", "dwell_sec": 45}
+{"user_id": 2, "meeting_id": 87, "event_type": "impression", "ts": "2024-01-02T19:27:00"}
+{"user_id": 19, "meeting_id": 93, "event_type": "impression", "ts": "2024-01-02T19:30:00"}
+{"user_id": 15, "meeting_id": 97, "event_type": "click", "ts": "2024-01-02T19:33:00", "dwell_sec": 90}
+{"user_id": 2, "meeting_id": 17, "event_type": "join", "ts": "2024-01-02T19:36:00", "dwell_sec": 354}
+{"user_id": 5, "meeting_id": 100, "event_type": "impression", "ts": "2024-01-02T19:39:00"}
+{"user_id": 3, "meeting_id": 97, "event_type": "join", "ts": "2024-01-02T19:42:00", "dwell_sec": 208}
+{"user_id": 15, "meeting_id": 67, "event_type": "click", "ts": "2024-01-02T19:45:00"}
+{"user_id": 19, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-02T19:48:00"}
+{"user_id": 14, "meeting_id": 43, "event_type": "impression", "ts": "2024-01-02T19:51:00"}
+{"user_id": 19, "meeting_id": 56, "event_type": "impression", "ts": "2024-01-02T19:54:00"}
+{"user_id": 19, "meeting_id": 14, "event_type": "click", "ts": "2024-01-02T19:57:00"}
+{"user_id": 14, "meeting_id": 45, "event_type": "click", "ts": "2024-01-02T20:00:00", "dwell_sec": 340}
+{"user_id": 2, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-02T20:03:00"}
+{"user_id": 20, "meeting_id": 41, "event_type": "impression", "ts": "2024-01-02T20:06:00"}
+{"user_id": 13, "meeting_id": 96, "event_type": "click", "ts": "2024-01-02T20:09:00"}
+{"user_id": 16, "meeting_id": 25, "event_type": "impression", "ts": "2024-01-02T20:12:00"}
+{"user_id": 11, "meeting_id": 3, "event_type": "join", "ts": "2024-01-02T20:15:00"}
+{"user_id": 16, "meeting_id": 30, "event_type": "impression", "ts": "2024-01-02T20:18:00"}
+{"user_id": 5, "meeting_id": 3, "event_type": "join", "ts": "2024-01-02T20:21:00", "dwell_sec": 385}
+{"user_id": 9, "meeting_id": 84, "event_type": "impression", "ts": "2024-01-02T20:24:00"}
+{"user_id": 7, "meeting_id": 97, "event_type": "click", "ts": "2024-01-02T20:27:00", "dwell_sec": 213}
+{"user_id": 2, "meeting_id": 48, "event_type": "click", "ts": "2024-01-02T20:30:00", "dwell_sec": 86}
+{"user_id": 13, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-02T20:33:00"}
+{"user_id": 19, "meeting_id": 87, "event_type": "impression", "ts": "2024-01-02T20:36:00"}
+{"user_id": 7, "meeting_id": 20, "event_type": "impression", "ts": "2024-01-02T20:39:00"}
+{"user_id": 2, "meeting_id": 49, "event_type": "join", "ts": "2024-01-02T20:42:00"}
+{"user_id": 17, "meeting_id": 49, "event_type": "click", "ts": "2024-01-02T20:45:00", "dwell_sec": 68}
+{"user_id": 20, "meeting_id": 49, "event_type": "click", "ts": "2024-01-02T20:48:00", "dwell_sec": 247}
+{"user_id": 9, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T20:51:00"}
+{"user_id": 2, "meeting_id": 11, "event_type": "click", "ts": "2024-01-02T20:54:00", "dwell_sec": 297}
+{"user_id": 8, "meeting_id": 3, "event_type": "click", "ts": "2024-01-02T20:57:00", "dwell_sec": 142}
+{"user_id": 16, "meeting_id": 96, "event_type": "click", "ts": "2024-01-02T21:00:00"}
+{"user_id": 8, "meeting_id": 96, "event_type": "click", "ts": "2024-01-02T21:03:00", "dwell_sec": 161}
+{"user_id": 14, "meeting_id": 36, "event_type": "click", "ts": "2024-01-02T21:06:00"}
+{"user_id": 15, "meeting_id": 3, "event_type": "join", "ts": "2024-01-02T21:09:00", "dwell_sec": 271}
+{"user_id": 1, "meeting_id": 97, "event_type": "join", "ts": "2024-01-02T21:12:00", "dwell_sec": 344}
+{"user_id": 20, "meeting_id": 72, "event_type": "join", "ts": "2024-01-02T21:15:00", "dwell_sec": 157}
+{"user_id": 9, "meeting_id": 70, "event_type": "click", "ts": "2024-01-02T21:18:00", "dwell_sec": 146}
+{"user_id": 10, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-02T21:21:00"}
+{"user_id": 8, "meeting_id": 53, "event_type": "impression", "ts": "2024-01-02T21:24:00"}
+{"user_id": 13, "meeting_id": 77, "event_type": "join", "ts": "2024-01-02T21:27:00", "dwell_sec": 353}
+{"user_id": 16, "meeting_id": 3, "event_type": "impression", "ts": "2024-01-02T21:30:00"}
+{"user_id": 13, "meeting_id": 11, "event_type": "join", "ts": "2024-01-02T21:33:00", "dwell_sec": 23}
+{"user_id": 11, "meeting_id": 25, "event_type": "click", "ts": "2024-01-02T21:36:00"}
+{"user_id": 16, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-02T21:39:00"}
+{"user_id": 10, "meeting_id": 54, "event_type": "join", "ts": "2024-01-02T21:42:00"}
+{"user_id": 10, "meeting_id": 24, "event_type": "join", "ts": "2024-01-02T21:45:00", "dwell_sec": 70}
+{"user_id": 6, "meeting_id": 54, "event_type": "click", "ts": "2024-01-02T21:48:00"}
+{"user_id": 12, "meeting_id": 3, "event_type": "join", "ts": "2024-01-02T21:51:00", "dwell_sec": 162}
+{"user_id": 12, "meeting_id": 91, "event_type": "impression", "ts": "2024-01-02T21:54:00"}
+{"user_id": 4, "meeting_id": 32, "event_type": "impression", "ts": "2024-01-02T21:57:00"}
+{"user_id": 19, "meeting_id": 88, "event_type": "impression", "ts": "2024-01-02T22:00:00"}
+{"user_id": 7, "meeting_id": 49, "event_type": "click", "ts": "2024-01-02T22:03:00", "dwell_sec": 353}
+{"user_id": 2, "meeting_id": 32, "event_type": "impression", "ts": "2024-01-02T22:06:00"}
+{"user_id": 11, "meeting_id": 3, "event_type": "join", "ts": "2024-01-02T22:09:00", "dwell_sec": 296}
+{"user_id": 11, "meeting_id": 19, "event_type": "join", "ts": "2024-01-02T22:12:00"}
+{"user_id": 11, "meeting_id": 8, "event_type": "impression", "ts": "2024-01-02T22:15:00"}
+{"user_id": 1, "meeting_id": 96, "event_type": "click", "ts": "2024-01-02T22:18:00", "dwell_sec": 112}
+{"user_id": 16, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T22:21:00"}
+{"user_id": 14, "meeting_id": 11, "event_type": "click", "ts": "2024-01-02T22:24:00", "dwell_sec": 249}
+{"user_id": 7, "meeting_id": 3, "event_type": "impression", "ts": "2024-01-02T22:27:00"}
+{"user_id": 17, "meeting_id": 42, "event_type": "click", "ts": "2024-01-02T22:30:00", "dwell_sec": 351}
+{"user_id": 8, "meeting_id": 73, "event_type": "impression", "ts": "2024-01-02T22:33:00"}
+{"user_id": 4, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T22:36:00", "dwell_sec": 306}
+{"user_id": 2, "meeting_id": 6, "event_type": "impression", "ts": "2024-01-02T22:39:00"}
+{"user_id": 17, "meeting_id": 31, "event_type": "impression", "ts": "2024-01-02T22:42:00"}
+{"user_id": 11, "meeting_id": 33, "event_type": "click", "ts": "2024-01-02T22:45:00"}
+{"user_id": 6, "meeting_id": 75, "event_type": "impression", "ts": "2024-01-02T22:48:00"}
+{"user_id": 1, "meeting_id": 52, "event_type": "join", "ts": "2024-01-02T22:51:00", "dwell_sec": 377}
+{"user_id": 19, "meeting_id": 96, "event_type": "join", "ts": "2024-01-02T22:54:00", "dwell_sec": 68}
+{"user_id": 2, "meeting_id": 65, "event_type": "impression", "ts": "2024-01-02T22:57:00"}
+{"user_id": 18, "meeting_id": 63, "event_type": "impression", "ts": "2024-01-02T23:00:00"}
+{"user_id": 4, "meeting_id": 96, "event_type": "click", "ts": "2024-01-02T23:03:00", "dwell_sec": 15}
+{"user_id": 15, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-02T23:06:00"}
+{"user_id": 16, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-02T23:09:00"}
+{"user_id": 10, "meeting_id": 96, "event_type": "click", "ts": "2024-01-02T23:12:00", "dwell_sec": 56}
+{"user_id": 5, "meeting_id": 61, "event_type": "click", "ts": "2024-01-02T23:15:00", "dwell_sec": 58}
+{"user_id": 10, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-02T23:18:00"}
+{"user_id": 7, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-02T23:21:00"}
+{"user_id": 7, "meeting_id": 67, "event_type": "click", "ts": "2024-01-02T23:24:00", "dwell_sec": 214}
+{"user_id": 16, "meeting_id": 3, "event_type": "impression", "ts": "2024-01-02T23:27:00"}
+{"user_id": 11, "meeting_id": 49, "event_type": "join", "ts": "2024-01-02T23:30:00", "dwell_sec": 11}
+{"user_id": 16, "meeting_id": 74, "event_type": "click", "ts": "2024-01-02T23:33:00", "dwell_sec": 51}
+{"user_id": 9, "meeting_id": 97, "event_type": "click", "ts": "2024-01-02T23:36:00", "dwell_sec": 238}
+{"user_id": 2, "meeting_id": 49, "event_type": "join", "ts": "2024-01-02T23:39:00", "dwell_sec": 94}
+{"user_id": 11, "meeting_id": 47, "event_type": "join", "ts": "2024-01-02T23:42:00", "dwell_sec": 64}
+{"user_id": 2, "meeting_id": 75, "event_type": "impression", "ts": "2024-01-02T23:45:00"}
+{"user_id": 6, "meeting_id": 13, "event_type": "impression", "ts": "2024-01-02T23:48:00"}
+{"user_id": 20, "meeting_id": 92, "event_type": "impression", "ts": "2024-01-02T23:51:00"}
+{"user_id": 12, "meeting_id": 72, "event_type": "impression", "ts": "2024-01-02T23:54:00"}
+{"user_id": 13, "meeting_id": 11, "event_type": "join", "ts": "2024-01-02T23:57:00"}
+{"user_id": 16, "meeting_id": 39, "event_type": "impression", "ts": "2024-01-03T00:00:00"}
+{"user_id": 4, "meeting_id": 33, "event_type": "click", "ts": "2024-01-03T00:03:00", "dwell_sec": 376}
+{"user_id": 6, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-03T00:06:00"}
+{"user_id": 16, "meeting_id": 94, "event_type": "impression", "ts": "2024-01-03T00:09:00"}
+{"user_id": 20, "meeting_id": 33, "event_type": "join", "ts": "2024-01-03T00:12:00", "dwell_sec": 188}
+{"user_id": 5, "meeting_id": 94, "event_type": "click", "ts": "2024-01-03T00:15:00", "dwell_sec": 254}
+{"user_id": 2, "meeting_id": 42, "event_type": "impression", "ts": "2024-01-03T00:18:00"}
+{"user_id": 1, "meeting_id": 65, "event_type": "impression", "ts": "2024-01-03T00:21:00"}
+{"user_id": 19, "meeting_id": 61, "event_type": "click", "ts": "2024-01-03T00:24:00", "dwell_sec": 347}
+{"user_id": 4, "meeting_id": 61, "event_type": "join", "ts": "2024-01-03T00:27:00", "dwell_sec": 377}
+{"user_id": 13, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-03T00:30:00"}
+{"user_id": 20, "meeting_id": 84, "event_type": "impression", "ts": "2024-01-03T00:33:00"}
+{"user_id": 6, "meeting_id": 64, "event_type": "impression", "ts": "2024-01-03T00:36:00"}
+{"user_id": 16, "meeting_id": 49, "event_type": "impression", "ts": "2024-01-03T00:39:00"}
+{"user_id": 11, "meeting_id": 49, "event_type": "join", "ts": "2024-01-03T00:42:00", "dwell_sec": 147}
+{"user_id": 13, "meeting_id": 23, "event_type": "impression", "ts": "2024-01-03T00:45:00"}
+{"user_id": 15, "meeting_id": 25, "event_type": "impression", "ts": "2024-01-03T00:48:00"}
+{"user_id": 3, "meeting_id": 57, "event_type": "impression", "ts": "2024-01-03T00:51:00"}
+{"user_id": 16, "meeting_id": 97, "event_type": "join", "ts": "2024-01-03T00:54:00"}
+{"user_id": 2, "meeting_id": 41, "event_type": "impression", "ts": "2024-01-03T00:57:00"}
+{"user_id": 20, "meeting_id": 97, "event_type": "click", "ts": "2024-01-03T01:00:00"}
+{"user_id": 7, "meeting_id": 72, "event_type": "click", "ts": "2024-01-03T01:03:00", "dwell_sec": 238}
+{"user_id": 8, "meeting_id": 96, "event_type": "join", "ts": "2024-01-03T01:06:00"}
+{"user_id": 20, "meeting_id": 77, "event_type": "impression", "ts": "2024-01-03T01:09:00"}
+{"user_id": 15, "meeting_id": 65, "event_type": "impression", "ts": "2024-01-03T01:12:00"}
+{"user_id": 8, "meeting_id": 76, "event_type": "impression", "ts": "2024-01-03T01:15:00"}
+{"user_id": 10, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-03T01:18:00"}
+{"user_id": 4, "meeting_id": 37, "event_type": "impression", "ts": "2024-01-03T01:21:00"}
+{"user_id": 5, "meeting_id": 16, "event_type": "impression", "ts": "2024-01-03T01:24:00"}
+{"user_id": 4, "meeting_id": 11, "event_type": "join", "ts": "2024-01-03T01:27:00", "dwell_sec": 105}
+{"user_id": 13, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-03T01:30:00"}
+{"user_id": 7, "meeting_id": 83, "event_type": "impression", "ts": "2024-01-03T01:33:00"}
+{"user_id": 2, "meeting_id": 11, "event_type": "click", "ts": "2024-01-03T01:36:00"}
+{"user_id": 15, "meeting_id": 49, "event_type": "join", "ts": "2024-01-03T01:39:00", "dwell_sec": 263}
+{"user_id": 17, "meeting_id": 50, "event_type": "impression", "ts": "2024-01-03T01:42:00"}
+{"user_id": 19, "meeting_id": 11, "event_type": "click", "ts": "2024-01-03T01:45:00", "dwell_sec": 265}
+{"user_id": 19, "meeting_id": 89, "event_type": "click", "ts": "2024-01-03T01:48:00", "dwell_sec": 70}
+{"user_id": 20, "meeting_id": 65, "event_type": "impression", "ts": "2024-01-03T01:51:00"}
+{"user_id": 14, "meeting_id": 11, "event_type": "join", "ts": "2024-01-03T01:54:00"}
+{"user_id": 13, "meeting_id": 36, "event_type": "join", "ts": "2024-01-03T01:57:00"}
+{"user_id": 5, "meeting_id": 33, "event_type": "join", "ts": "2024-01-03T02:00:00", "dwell_sec": 363}
+{"user_id": 11, "meeting_id": 54, "event_type": "join", "ts": "2024-01-03T02:03:00"}
+{"user_id": 7, "meeting_id": 3, "event_type": "join", "ts": "2024-01-03T02:06:00", "dwell_sec": 153}
+{"user_id": 6, "meeting_id": 17, "event_type": "click", "ts": "2024-01-03T02:09:00", "dwell_sec": 360}
+{"user_id": 18, "meeting_id": 70, "event_type": "click", "ts": "2024-01-03T02:12:00", "dwell_sec": 297}
+{"user_id": 10, "meeting_id": 54, "event_type": "join", "ts": "2024-01-03T02:15:00"}
+{"user_id": 4, "meeting_id": 2, "event_type": "impression", "ts": "2024-01-03T02:18:00"}
+{"user_id": 2, "meeting_id": 14, "event_type": "impression", "ts": "2024-01-03T02:21:00"}
+{"user_id": 6, "meeting_id": 75, "event_type": "impression", "ts": "2024-01-03T02:24:00"}
+{"user_id": 2, "meeting_id": 33, "event_type": "join", "ts": "2024-01-03T02:27:00", "dwell_sec": 156}
+{"user_id": 12, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-03T02:30:00"}
+{"user_id": 8, "meeting_id": 54, "event_type": "join", "ts": "2024-01-03T02:33:00"}
+{"user_id": 2, "meeting_id": 36, "event_type": "click", "ts": "2024-01-03T02:36:00"}
+{"user_id": 11, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-03T02:39:00"}
+{"user_id": 7, "meeting_id": 36, "event_type": "join", "ts": "2024-01-03T02:42:00", "dwell_sec": 231}
+{"user_id": 12, "meeting_id": 91, "event_type": "join", "ts": "2024-01-03T02:45:00"}
+{"user_id": 7, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-03T02:48:00"}
+{"user_id": 3, "meeting_id": 18, "event_type": "impression", "ts": "2024-01-03T02:51:00"}
+{"user_id": 17, "meeting_id": 17, "event_type": "impression", "ts": "2024-01-03T02:54:00"}
+{"user_id": 9, "meeting_id": 3, "event_type": "impression", "ts": "2024-01-03T02:57:00"}
+{"user_id": 9, "meeting_id": 61, "event_type": "click", "ts": "2024-01-03T03:00:00", "dwell_sec": 243}
+{"user_id": 11, "meeting_id": 33, "event_type": "click", "ts": "2024-01-03T03:03:00", "dwell_sec": 325}
+{"user_id": 19, "meeting_id": 49, "event_type": "click", "ts": "2024-01-03T03:06:00", "dwell_sec": 42}
+{"user_id": 6, "meeting_id": 3, "event_type": "click", "ts": "2024-01-03T03:09:00", "dwell_sec": 263}
+{"user_id": 13, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-03T03:12:00"}
+{"user_id": 7, "meeting_id": 23, "event_type": "impression", "ts": "2024-01-03T03:15:00"}
+{"user_id": 7, "meeting_id": 36, "event_type": "click", "ts": "2024-01-03T03:18:00"}
+{"user_id": 1, "meeting_id": 54, "event_type": "click", "ts": "2024-01-03T03:21:00", "dwell_sec": 182}
+{"user_id": 20, "meeting_id": 93, "event_type": "impression", "ts": "2024-01-03T03:24:00"}
+{"user_id": 11, "meeting_id": 96, "event_type": "join", "ts": "2024-01-03T03:27:00", "dwell_sec": 63}
+{"user_id": 10, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-03T03:30:00"}
+{"user_id": 12, "meeting_id": 53, "event_type": "impression", "ts": "2024-01-03T03:33:00"}
+{"user_id": 16, "meeting_id": 52, "event_type": "impression", "ts": "2024-01-03T03:36:00"}
+{"user_id": 7, "meeting_id": 92, "event_type": "impression", "ts": "2024-01-03T03:39:00"}
+{"user_id": 4, "meeting_id": 8, "event_type": "impression", "ts": "2024-01-03T03:42:00"}
+{"user_id": 18, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-03T03:45:00"}
+{"user_id": 7, "meeting_id": 62, "event_type": "impression", "ts": "2024-01-03T03:48:00"}
+{"user_id": 14, "meeting_id": 88, "event_type": "click", "ts": "2024-01-03T03:51:00"}
+{"user_id": 14, "meeting_id": 84, "event_type": "impression", "ts": "2024-01-03T03:54:00"}
+{"user_id": 5, "meeting_id": 96, "event_type": "click", "ts": "2024-01-03T03:57:00", "dwell_sec": 372}
+{"user_id": 2, "meeting_id": 9, "event_type": "impression", "ts": "2024-01-03T04:00:00"}
+{"user_id": 3, "meeting_id": 27, "event_type": "impression", "ts": "2024-01-03T04:03:00"}
+{"user_id": 14, "meeting_id": 36, "event_type": "click", "ts": "2024-01-03T04:06:00", "dwell_sec": 327}
+{"user_id": 13, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-03T04:09:00"}
+{"user_id": 3, "meeting_id": 61, "event_type": "click", "ts": "2024-01-03T04:12:00"}
+{"user_id": 12, "meeting_id": 97, "event_type": "click", "ts": "2024-01-03T04:15:00"}
+{"user_id": 10, "meeting_id": 79, "event_type": "impression", "ts": "2024-01-03T04:18:00"}
+{"user_id": 13, "meeting_id": 49, "event_type": "click", "ts": "2024-01-03T04:21:00", "dwell_sec": 343}
+{"user_id": 8, "meeting_id": 15, "event_type": "impression", "ts": "2024-01-03T04:24:00"}
+{"user_id": 18, "meeting_id": 39, "event_type": "impression", "ts": "2024-01-03T04:27:00"}
+{"user_id": 10, "meeting_id": 63, "event_type": "impression", "ts": "2024-01-03T04:30:00"}
+{"user_id": 12, "meeting_id": 94, "event_type": "click", "ts": "2024-01-03T04:33:00"}
+{"user_id": 5, "meeting_id": 89, "event_type": "impression", "ts": "2024-01-03T04:36:00"}
+{"user_id": 20, "meeting_id": 1, "event_type": "impression", "ts": "2024-01-03T04:39:00"}
+{"user_id": 3, "meeting_id": 54, "event_type": "impression", "ts": "2024-01-03T04:42:00"}
+{"user_id": 12, "meeting_id": 74, "event_type": "impression", "ts": "2024-01-03T04:45:00"}
+{"user_id": 17, "meeting_id": 93, "event_type": "impression", "ts": "2024-01-03T04:48:00"}
+{"user_id": 20, "meeting_id": 19, "event_type": "impression", "ts": "2024-01-03T04:51:00"}
+{"user_id": 19, "meeting_id": 33, "event_type": "join", "ts": "2024-01-03T04:54:00"}
+{"user_id": 15, "meeting_id": 71, "event_type": "join", "ts": "2024-01-03T04:57:00", "dwell_sec": 42}
+{"user_id": 4, "meeting_id": 7, "event_type": "impression", "ts": "2024-01-03T05:00:00"}
+{"user_id": 11, "meeting_id": 58, "event_type": "impression", "ts": "2024-01-03T05:03:00"}
+{"user_id": 8, "meeting_id": 67, "event_type": "impression", "ts": "2024-01-03T05:06:00"}
+{"user_id": 7, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-03T05:09:00"}
+{"user_id": 20, "meeting_id": 47, "event_type": "impression", "ts": "2024-01-03T05:12:00"}
+{"user_id": 19, "meeting_id": 33, "event_type": "click", "ts": "2024-01-03T05:15:00", "dwell_sec": 166}
+{"user_id": 8, "meeting_id": 70, "event_type": "join", "ts": "2024-01-03T05:18:00"}
+{"user_id": 12, "meeting_id": 36, "event_type": "click", "ts": "2024-01-03T05:21:00", "dwell_sec": 380}
+{"user_id": 15, "meeting_id": 49, "event_type": "impression", "ts": "2024-01-03T05:24:00"}
+{"user_id": 18, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-03T05:27:00"}
+{"user_id": 3, "meeting_id": 64, "event_type": "impression", "ts": "2024-01-03T05:30:00"}
+{"user_id": 18, "meeting_id": 18, "event_type": "join", "ts": "2024-01-03T05:33:00", "dwell_sec": 380}
+{"user_id": 1, "meeting_id": 97, "event_type": "join", "ts": "2024-01-03T05:36:00"}
+{"user_id": 13, "meeting_id": 75, "event_type": "click", "ts": "2024-01-03T05:39:00"}
+{"user_id": 9, "meeting_id": 3, "event_type": "impression", "ts": "2024-01-03T05:42:00"}
+{"user_id": 16, "meeting_id": 100, "event_type": "impression", "ts": "2024-01-03T05:45:00"}
+{"user_id": 8, "meeting_id": 11, "event_type": "click", "ts": "2024-01-03T05:48:00"}
+{"user_id": 15, "meeting_id": 18, "event_type": "click", "ts": "2024-01-03T05:51:00", "dwell_sec": 51}
+{"user_id": 8, "meeting_id": 51, "event_type": "impression", "ts": "2024-01-03T05:54:00"}
+{"user_id": 6, "meeting_id": 79, "event_type": "join", "ts": "2024-01-03T05:57:00"}
+{"user_id": 19, "meeting_id": 16, "event_type": "impression", "ts": "2024-01-03T06:00:00"}
+{"user_id": 16, "meeting_id": 33, "event_type": "join", "ts": "2024-01-03T06:03:00"}
+{"user_id": 8, "meeting_id": 76, "event_type": "impression", "ts": "2024-01-03T06:06:00"}
+{"user_id": 2, "meeting_id": 37, "event_type": "impression", "ts": "2024-01-03T06:09:00"}
+{"user_id": 13, "meeting_id": 70, "event_type": "click", "ts": "2024-01-03T06:12:00", "dwell_sec": 237}
+{"user_id": 4, "meeting_id": 70, "event_type": "join", "ts": "2024-01-03T06:15:00"}
+{"user_id": 9, "meeting_id": 84, "event_type": "impression", "ts": "2024-01-03T06:18:00"}
+{"user_id": 13, "meeting_id": 11, "event_type": "click", "ts": "2024-01-03T06:21:00", "dwell_sec": 339}
+{"user_id": 13, "meeting_id": 36, "event_type": "join", "ts": "2024-01-03T06:24:00"}
+{"user_id": 12, "meeting_id": 41, "event_type": "impression", "ts": "2024-01-03T06:27:00"}
+{"user_id": 20, "meeting_id": 49, "event_type": "impression", "ts": "2024-01-03T06:30:00"}
+{"user_id": 15, "meeting_id": 90, "event_type": "impression", "ts": "2024-01-03T06:33:00"}
+{"user_id": 9, "meeting_id": 8, "event_type": "impression", "ts": "2024-01-03T06:36:00"}
+{"user_id": 12, "meeting_id": 19, "event_type": "impression", "ts": "2024-01-03T06:39:00"}
+{"user_id": 8, "meeting_id": 85, "event_type": "click", "ts": "2024-01-03T06:42:00", "dwell_sec": 174}
+{"user_id": 16, "meeting_id": 49, "event_type": "click", "ts": "2024-01-03T06:45:00", "dwell_sec": 87}
+{"user_id": 2, "meeting_id": 3, "event_type": "click", "ts": "2024-01-03T06:48:00", "dwell_sec": 308}
+{"user_id": 2, "meeting_id": 62, "event_type": "impression", "ts": "2024-01-03T06:51:00"}
+{"user_id": 9, "meeting_id": 33, "event_type": "join", "ts": "2024-01-03T06:54:00"}
+{"user_id": 19, "meeting_id": 41, "event_type": "impression", "ts": "2024-01-03T06:57:00"}
+{"user_id": 10, "meeting_id": 94, "event_type": "click", "ts": "2024-01-03T07:00:00"}
+{"user_id": 16, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-03T07:03:00"}
+{"user_id": 20, "meeting_id": 11, "event_type": "join", "ts": "2024-01-03T07:06:00", "dwell_sec": 303}
+{"user_id": 9, "meeting_id": 54, "event_type": "join", "ts": "2024-01-03T07:09:00", "dwell_sec": 356}
+{"user_id": 19, "meeting_id": 47, "event_type": "impression", "ts": "2024-01-03T07:12:00"}
+{"user_id": 5, "meeting_id": 38, "event_type": "impression", "ts": "2024-01-03T07:15:00"}
+{"user_id": 17, "meeting_id": 21, "event_type": "impression", "ts": "2024-01-03T07:18:00"}
+{"user_id": 4, "meeting_id": 78, "event_type": "click", "ts": "2024-01-03T07:21:00", "dwell_sec": 319}
+{"user_id": 17, "meeting_id": 69, "event_type": "click", "ts": "2024-01-03T07:24:00"}
+{"user_id": 20, "meeting_id": 66, "event_type": "impression", "ts": "2024-01-03T07:27:00"}
+{"user_id": 14, "meeting_id": 1, "event_type": "impression", "ts": "2024-01-03T07:30:00"}
+{"user_id": 2, "meeting_id": 37, "event_type": "impression", "ts": "2024-01-03T07:33:00"}
+{"user_id": 13, "meeting_id": 49, "event_type": "click", "ts": "2024-01-03T07:36:00", "dwell_sec": 384}
+{"user_id": 4, "meeting_id": 74, "event_type": "join", "ts": "2024-01-03T07:39:00", "dwell_sec": 135}
+{"user_id": 3, "meeting_id": 24, "event_type": "impression", "ts": "2024-01-03T07:42:00"}
+{"user_id": 14, "meeting_id": 90, "event_type": "impression", "ts": "2024-01-03T07:45:00"}
+{"user_id": 1, "meeting_id": 1, "event_type": "impression", "ts": "2024-01-03T07:48:00"}
+{"user_id": 13, "meeting_id": 96, "event_type": "click", "ts": "2024-01-03T07:51:00", "dwell_sec": 357}
+{"user_id": 5, "meeting_id": 97, "event_type": "join", "ts": "2024-01-03T07:54:00", "dwell_sec": 304}
+{"user_id": 14, "meeting_id": 87, "event_type": "impression", "ts": "2024-01-03T07:57:00"}
+{"user_id": 7, "meeting_id": 11, "event_type": "click", "ts": "2024-01-03T08:00:00", "dwell_sec": 290}
+{"user_id": 18, "meeting_id": 37, "event_type": "impression", "ts": "2024-01-03T08:03:00"}
+{"user_id": 19, "meeting_id": 99, "event_type": "impression", "ts": "2024-01-03T08:06:00"}
+{"user_id": 5, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-03T08:09:00"}
+{"user_id": 15, "meeting_id": 3, "event_type": "join", "ts": "2024-01-03T08:12:00"}
+{"user_id": 13, "meeting_id": 54, "event_type": "join", "ts": "2024-01-03T08:15:00"}
+{"user_id": 6, "meeting_id": 96, "event_type": "join", "ts": "2024-01-03T08:18:00", "dwell_sec": 330}
+{"user_id": 5, "meeting_id": 9, "event_type": "impression", "ts": "2024-01-03T08:21:00"}
+{"user_id": 3, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-03T08:24:00"}
+{"user_id": 3, "meeting_id": 23, "event_type": "impression", "ts": "2024-01-03T08:27:00"}
+{"user_id": 20, "meeting_id": 11, "event_type": "click", "ts": "2024-01-03T08:30:00", "dwell_sec": 151}
+{"user_id": 16, "meeting_id": 33, "event_type": "click", "ts": "2024-01-03T08:33:00", "dwell_sec": 108}
+{"user_id": 10, "meeting_id": 67, "event_type": "join", "ts": "2024-01-03T08:36:00", "dwell_sec": 311}
+{"user_id": 20, "meeting_id": 70, "event_type": "impression", "ts": "2024-01-03T08:39:00"}
+{"user_id": 8, "meeting_id": 3, "event_type": "impression", "ts": "2024-01-03T08:42:00"}
+{"user_id": 9, "meeting_id": 12, "event_type": "click", "ts": "2024-01-03T08:45:00"}
+{"user_id": 19, "meeting_id": 40, "event_type": "impression", "ts": "2024-01-03T08:48:00"}
+{"user_id": 3, "meeting_id": 2, "event_type": "impression", "ts": "2024-01-03T08:51:00"}
+{"user_id": 19, "meeting_id": 54, "event_type": "join", "ts": "2024-01-03T08:54:00", "dwell_sec": 146}
+{"user_id": 15, "meeting_id": 97, "event_type": "impression", "ts": "2024-01-03T08:57:00"}
+{"user_id": 6, "meeting_id": 36, "event_type": "join", "ts": "2024-01-03T09:00:00", "dwell_sec": 59}
+{"user_id": 4, "meeting_id": 70, "event_type": "click", "ts": "2024-01-03T09:03:00"}
+{"user_id": 9, "meeting_id": 74, "event_type": "join", "ts": "2024-01-03T09:06:00", "dwell_sec": 198}
+{"user_id": 11, "meeting_id": 97, "event_type": "click", "ts": "2024-01-03T09:09:00"}
+{"user_id": 19, "meeting_id": 48, "event_type": "impression", "ts": "2024-01-03T09:12:00"}
+{"user_id": 3, "meeting_id": 36, "event_type": "join", "ts": "2024-01-03T09:15:00", "dwell_sec": 117}
+{"user_id": 14, "meeting_id": 70, "event_type": "click", "ts": "2024-01-03T09:18:00"}
+{"user_id": 9, "meeting_id": 2, "event_type": "impression", "ts": "2024-01-03T09:21:00"}
+{"user_id": 11, "meeting_id": 10, "event_type": "impression", "ts": "2024-01-03T09:24:00"}
+{"user_id": 16, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-03T09:27:00"}
+{"user_id": 19, "meeting_id": 23, "event_type": "impression", "ts": "2024-01-03T09:30:00"}
+{"user_id": 7, "meeting_id": 96, "event_type": "impression", "ts": "2024-01-03T09:33:00"}
+{"user_id": 8, "meeting_id": 20, "event_type": "impression", "ts": "2024-01-03T09:36:00"}
+{"user_id": 8, "meeting_id": 3, "event_type": "join", "ts": "2024-01-03T09:39:00"}
+{"user_id": 4, "meeting_id": 78, "event_type": "impression", "ts": "2024-01-03T09:42:00"}
+{"user_id": 20, "meeting_id": 49, "event_type": "join", "ts": "2024-01-03T09:45:00", "dwell_sec": 282}
+{"user_id": 20, "meeting_id": 48, "event_type": "join", "ts": "2024-01-03T09:48:00", "dwell_sec": 299}
+{"user_id": 9, "meeting_id": 54, "event_type": "join", "ts": "2024-01-03T09:51:00", "dwell_sec": 389}
+{"user_id": 16, "meeting_id": 11, "event_type": "click", "ts": "2024-01-03T09:54:00"}
+{"user_id": 6, "meeting_id": 36, "event_type": "impression", "ts": "2024-01-03T09:57:00"}
+{"user_id": 17, "meeting_id": 11, "event_type": "impression", "ts": "2024-01-03T10:00:00"}
+{"user_id": 1, "meeting_id": 69, "event_type": "impression", "ts": "2024-01-03T10:03:00"}
+{"user_id": 11, "meeting_id": 97, "event_type": "click", "ts": "2024-01-03T10:06:00", "dwell_sec": 137}
+{"user_id": 9, "meeting_id": 28, "event_type": "impression", "ts": "2024-01-03T10:09:00"}
+{"user_id": 12, "meeting_id": 61, "event_type": "impression", "ts": "2024-01-03T10:12:00"}
+{"user_id": 14, "meeting_id": 43, "event_type": "impression", "ts": "2024-01-03T10:15:00"}
+{"user_id": 9, "meeting_id": 11, "event_type": "click", "ts": "2024-01-03T10:18:00", "dwell_sec": 297}
+{"user_id": 8, "meeting_id": 58, "event_type": "impression", "ts": "2024-01-03T10:21:00"}
+{"user_id": 18, "meeting_id": 3, "event_type": "join", "ts": "2024-01-03T10:24:00", "dwell_sec": 200}
+{"user_id": 5, "meeting_id": 81, "event_type": "impression", "ts": "2024-01-03T10:27:00"}
+{"user_id": 14, "meeting_id": 2, "event_type": "impression", "ts": "2024-01-03T10:30:00"}
+{"user_id": 17, "meeting_id": 100, "event_type": "impression", "ts": "2024-01-03T10:33:00"}
+{"user_id": 16, "meeting_id": 33, "event_type": "impression", "ts": "2024-01-03T10:36:00"}
+{"user_id": 19, "meeting_id": 56, "event_type": "impression", "ts": "2024-01-03T10:39:00"}
+{"user_id": 6, "meeting_id": 10, "event_type": "impression", "ts": "2024-01-03T10:42:00"}
+{"user_id": 16, "meeting_id": 82, "event_type": "impression", "ts": "2024-01-03T10:45:00"}
+{"user_id": 9, "meeting_id": 70, "event_type": "join", "ts": "2024-01-03T10:48:00", "dwell_sec": 291}
+{"user_id": 1, "meeting_id": 45, "event_type": "click", "ts": "2024-01-03T10:51:00", "dwell_sec": 184}
+{"user_id": 19, "meeting_id": 26, "event_type": "join", "ts": "2024-01-03T10:54:00", "dwell_sec": 337}
+{"user_id": 10, "meeting_id": 98, "event_type": "impression", "ts": "2024-01-03T10:57:00"}
