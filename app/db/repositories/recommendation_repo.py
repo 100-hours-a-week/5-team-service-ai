@@ -73,13 +73,12 @@ class RecommendationRepo:
             INSERT INTO user_meeting_recommendation (user_id, meeting_id, week_start_date, `rank`)
             VALUES (:user_id, :meeting_id, :week_start_date, :rank)
             ON DUPLICATE KEY UPDATE
-                `rank` = VALUES(`rank`),
-                created_at = CURRENT_TIMESTAMP(6);
+                `rank` = VALUES(`rank`);
             """
         )
-        db.execute(sql, rows)
+        result = db.execute(sql, rows)
         db.commit()
-        return len(rows)
+        return result.rowcount
 
     @staticmethod
     def _convert_json_fields(row: Mapping) -> dict:
