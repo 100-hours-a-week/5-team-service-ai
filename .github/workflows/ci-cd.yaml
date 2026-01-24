@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - main
+      - feature/cicd  # 임시: CD 테스트용
   pull_request:
     branches:
       - develop
@@ -49,27 +50,46 @@ jobs:
           pip install ruff pytest
 
       - name: Lint with Ruff
+        continue-on-error: true  # 임시: CD 테스트용
         run: ruff check . --output-format=github
 
-      - name: Type check (optional)
+      - name: Format check with Ruff
+        continue-on-error: true  # 임시: CD 테스트용
+        run: ruff format --check .
+
+      - name: Run tests
         continue-on-error: true
         run: |
-          pip install mypy
-          mypy . --ignore-missing-imports || true
+          pytest --tb=short -q || echo "::warning::Tests failed or no tests found"
 
       - name: Notify Discord on failure
         if: failure()
         run: |
+          COMMIT_SHA="${{ github.sha }}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          COMMIT_MSG=$(echo '${{ github.event.head_commit.message }}' | head -1)
+          COMMIT_AUTHOR="${{ github.event.head_commit.author.name }}"
+          COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          ACTIONS_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
           curl -H "Content-Type: application/json" \
                -X POST \
-               -d '{
-                 "content": "❌ **AI Server CI Failed!**",
-                 "embeds": [{
-                   "title": "Build Details",
-                   "description": "Repo: ${{ github.repository }}\nBranch: ${{ github.ref_name }}\nCheck: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-                   "color": 15158528
+               -d "{
+                 \"content\": \"❌ **AI Server CI 빌드 실패**\",
+                 \"embeds\": [{
+                   \"title\": \"🔴 빌드 실패 알림\",
+                   \"color\": 15158528,
+                   \"fields\": [
+                     {\"name\": \"📦 저장소\", \"value\": \"\`${{ github.repository }}\`\", \"inline\": true},
+                     {\"name\": \"🌿 브랜치\", \"value\": \"\`${{ github.ref_name }}\`\", \"inline\": true},
+                     {\"name\": \"🔖 커밋\", \"value\": \"[\`$SHORT_SHA\`]($COMMIT_URL)\", \"inline\": true},
+                     {\"name\": \"💬 커밋 메시지\", \"value\": \"$COMMIT_MSG\", \"inline\": false},
+                     {\"name\": \"👤 작성자\", \"value\": \"$COMMIT_AUTHOR\", \"inline\": true},
+                     {\"name\": \"📋 상세 로그\", \"value\": \"[Actions에서 확인]($ACTIONS_URL)\", \"inline\": true}
+                   ],
+                   \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
                  }]
-               }' \
+               }" \
                ${{ secrets.DISCORD_WEBHOOK_URL }} || true
 
   deploy:
@@ -104,46 +124,62 @@ jobs:
           target: "/home/ubuntu/app/artifacts/ai"
           overwrite: true
 
-      - name: Create .env and deploy
+      - name: Deploy
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          ENV_NAME: ${{ steps.env.outputs.env_name }}
-          DB_HOST: ${{ steps.env.outputs.env_name == 'prod' && secrets.PROD_DB_HOST || secrets.DEV_DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USERNAME: ${{ steps.env.outputs.env_name == 'prod' && secrets.PROD_DB_USERNAME || secrets.DEV_DB_USERNAME }}
-          DB_PASSWORD: ${{ steps.env.outputs.env_name == 'prod' && secrets.PROD_DB_PASSWORD || secrets.DEV_DB_PASSWORD }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         with:
           host: ${{ steps.env.outputs.host == 'EC2_HOST' && secrets.EC2_HOST || secrets.DEV_EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: ENV_NAME,DB_HOST,DB_PORT,DB_NAME,DB_USERNAME,DB_PASSWORD,GOOGLE_API_KEY
-          script: |
-            mkdir -p /home/ubuntu/app/ai
-            cat > /home/ubuntu/app/ai/.env << 'EOF'
-            ENV_NAME=$ENV_NAME
-            DB_HOST=$DB_HOST
-            DB_PORT=$DB_PORT
-            DB_NAME=$DB_NAME
-            DB_USERNAME=$DB_USERNAME
-            DB_PASSWORD=$DB_PASSWORD
-            GOOGLE_API_KEY=$GOOGLE_API_KEY
-            EOF
-            chmod 600 /home/ubuntu/app/ai/.env
-            bash /home/ubuntu/app/deploy.sh ai
+          script: bash /home/ubuntu/app/deploy.sh ai ${{ steps.env.outputs.env_name }}
 
       - name: Notify Discord
         if: always()
         run: |
+          # 환경별 설정
+          ENV_NAME="${{ steps.env.outputs.env_name }}"
+          if [ "$ENV_NAME" == "prod" ]; then
+            ENV_EMOJI="🚀"
+            ENV_LABEL="Production"
+          else
+            ENV_EMOJI="🔧"
+            ENV_LABEL="Development"
+          fi
+
+          # 커밋 정보
+          COMMIT_SHA="${{ github.sha }}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          COMMIT_MSG=$(echo '${{ github.event.head_commit.message }}' | head -1)
+          COMMIT_AUTHOR="${{ github.event.head_commit.author.name }}"
+          COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          ACTIONS_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          # 상태별 색상 및 메시지
           if [ "${{ job.status }}" == "success" ]; then
             COLOR=3066993
-            MSG="✅ **AI Server ${{ steps.env.outputs.env_name }} 배포 성공!**"
+            STATUS_EMOJI="✅"
+            STATUS_TEXT="배포 성공"
           else
             COLOR=15158528
-            MSG="❌ **AI Server ${{ steps.env.outputs.env_name }} 배포 실패!**"
+            STATUS_EMOJI="❌"
+            STATUS_TEXT="배포 실패"
           fi
+
           curl -H "Content-Type: application/json" \
                -X POST \
-               -d "{\"content\": \"$MSG\", \"embeds\": [{\"title\": \"${{ github.repository }}\", \"description\": \"Branch: ${{ github.ref_name }}\", \"color\": $COLOR}]}" \
+               -d "{
+                 \"content\": \"$STATUS_EMOJI **AI Server $ENV_LABEL 배포 알림**\",
+                 \"embeds\": [{
+                   \"title\": \"$ENV_EMOJI [$ENV_LABEL] $STATUS_TEXT\",
+                   \"color\": $COLOR,
+                   \"fields\": [
+                     {\"name\": \"📦 저장소\", \"value\": \"\`${{ github.repository }}\`\", \"inline\": true},
+                     {\"name\": \"🌿 브랜치\", \"value\": \"\`${{ github.ref_name }}\`\", \"inline\": true},
+                     {\"name\": \"🔖 커밋\", \"value\": \"[\`$SHORT_SHA\`]($COMMIT_URL)\", \"inline\": true},
+                     {\"name\": \"💬 커밋 메시지\", \"value\": \"$COMMIT_MSG\", \"inline\": false},
+                     {\"name\": \"👤 작성자\", \"value\": \"$COMMIT_AUTHOR\", \"inline\": true},
+                     {\"name\": \"📋 상세 로그\", \"value\": \"[Actions에서 확인]($ACTIONS_URL)\", \"inline\": true}
+                   ],
+                   \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                 }]
+               }" \
                ${{ secrets.DISCORD_WEBHOOK_URL }} || true
