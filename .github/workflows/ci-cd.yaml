@@ -116,26 +116,19 @@ jobs:
             echo "env_name=develop" >> $GITHUB_OUTPUT
           fi
 
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Transfer to Server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ steps.env.outputs.host == 'EC2_HOST' && secrets.EC2_HOST || secrets.DEV_EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: ".,!**/.git/**"
-          target: "/home/ubuntu/app/artifacts/ai"
-          overwrite: true
-
-      - name: Deploy
+      - name: Deploy via Git Pull
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ steps.env.outputs.host == 'EC2_HOST' && secrets.EC2_HOST || secrets.DEV_EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          script: bash /home/ubuntu/app/deploy.sh ai ${{ steps.env.outputs.env_name }}
+          script: |
+            cd /home/ubuntu/app/ai-repo
+            
+            git fetch --all
+            git reset --hard origin/${{ github.ref_name }}
+            
+            bash /home/ubuntu/app/deploy.sh ai ${{ steps.env.outputs.env_name }}
 
       - name: Notify Discord
         if: always()
