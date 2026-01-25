@@ -125,7 +125,7 @@ jobs:
           host: ${{ steps.env.outputs.host == 'EC2_HOST' && secrets.EC2_HOST || secrets.DEV_EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "."
+          source: ".,!**/.git/**"
           target: "/home/ubuntu/app/artifacts/ai"
           overwrite: true
 
