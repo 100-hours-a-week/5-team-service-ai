@@ -5,7 +5,6 @@ on:
     branches:
       - develop
       - main
-      - feature/cicd  # 임시: CD 테스트용
   pull_request:
     branches:
       - develop
@@ -46,15 +45,21 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          
+          # [CI 필수 수정] requirements.txt에서 torch가 빠졌으므로, CI에서 테스트 돌리려면 따로 설치해줘야 함
+          if [ -f "requirements-torch.txt" ]; then
+            pip install -r requirements-torch.txt --index-url https://download.pytorch.org/whl/cpu
+          fi
+          
           pip install -r requirements.txt
           pip install ruff pytest
 
       - name: Lint with Ruff
-        continue-on-error: true  # 임시: CD 테스트용
+        continue-on-error: true
         run: ruff check . --output-format=github
 
       - name: Format check with Ruff
-        continue-on-error: true  # 임시: CD 테스트용
+        continue-on-error: true
         run: ruff format --check .
 
       - name: Run tests
@@ -135,7 +140,6 @@ jobs:
       - name: Notify Discord
         if: always()
         run: |
-          # 환경별 설정
           ENV_NAME="${{ steps.env.outputs.env_name }}"
           if [ "$ENV_NAME" == "prod" ]; then
             ENV_EMOJI="🚀"
@@ -145,7 +149,6 @@ jobs:
             ENV_LABEL="Development"
           fi
 
-          # 커밋 정보
           COMMIT_SHA="${{ github.sha }}"
           SHORT_SHA="${COMMIT_SHA:0:7}"
           COMMIT_MSG=$(echo '${{ github.event.head_commit.message }}' | head -1)
@@ -153,7 +156,6 @@ jobs:
           COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
           ACTIONS_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          # 상태별 색상 및 메시지
           if [ "${{ job.status }}" == "success" ]; then
             COLOR=3066993
             STATUS_EMOJI="✅"
