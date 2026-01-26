@@ -21,6 +21,14 @@ class Settings(BaseSettings):
     gemini_timeout_seconds: int = Field(20, alias="GEMINI_TIMEOUT_SECONDS")
     gemini_max_output_tokens: int = Field(1024, alias="GEMINI_MAX_OUTPUT_TOKENS")
 
+    # Recommendation batch scheduler
+    enable_reco_scheduler: bool = Field(False, alias="ENABLE_RECO_SCHEDULER")
+    # Default: every Monday 09:00 Seoul time (crontab format)
+    reco_scheduler_cron: str = Field("0 9 * * 1", alias="RECO_SCHEDULER_CRON")
+    reco_scheduler_timezone: str = Field("Asia/Seoul", alias="RECO_SCHEDULER_TZ")
+    reco_scheduler_top_k: int = Field(4, alias="RECO_SCHEDULER_TOP_K")
+    reco_scheduler_search_k: int = Field(20, alias="RECO_SCHEDULER_SEARCH_K")
+
     # Tuning points: adjust thresholds to tighten/loosen the rule-based guardrails.
     min_content_length: int = Field(50, alias="RULE_MIN_CONTENT_LENGTH")
     max_content_length: int = Field(5000, alias="RULE_MAX_CONTENT_LENGTH")

@@ -41,3 +41,7 @@ data/faiss/
 
 # Logs
 *.log
+
+# Local-only test fixtures and scripts
+tests/
+scripts/

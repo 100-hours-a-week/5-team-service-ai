@@ -1,20 +1,20 @@
-{"user_id": 1, "reading_volume_id": 1, "purpose_ids": [6], "genre_ids": [4, 2]}
-{"user_id": 2, "reading_volume_id": 2, "purpose_ids": [1, 5, 6], "genre_ids": [7, 1, 8]}
-{"user_id": 3, "reading_volume_id": 1, "purpose_ids": [2], "genre_ids": [1, 5, 2]}
-{"user_id": 4, "reading_volume_id": 5, "purpose_ids": [2, 4], "genre_ids": [5, 7, 1]}
-{"user_id": 5, "reading_volume_id": 2, "purpose_ids": [4, 3, 5], "genre_ids": [4]}
-{"user_id": 6, "reading_volume_id": 3, "purpose_ids": [1], "genre_ids": [2, 3]}
-{"user_id": 7, "reading_volume_id": 3, "purpose_ids": [3, 1, 4], "genre_ids": [2, 4, 1]}
-{"user_id": 8, "reading_volume_id": 5, "purpose_ids": [6, 5], "genre_ids": [4, 6]}
-{"user_id": 9, "reading_volume_id": 1, "purpose_ids": [6], "genre_ids": [5]}
-{"user_id": 10, "reading_volume_id": 1, "purpose_ids": [1], "genre_ids": [5, 4]}
-{"user_id": 11, "reading_volume_id": 3, "purpose_ids": [3], "genre_ids": [4, 6]}
-{"user_id": 12, "reading_volume_id": 3, "purpose_ids": [6, 1, 2], "genre_ids": [4, 2, 8]}
-{"user_id": 13, "reading_volume_id": 4, "purpose_ids": [6, 5], "genre_ids": [6]}
-{"user_id": 14, "reading_volume_id": 1, "purpose_ids": [1], "genre_ids": [7, 3]}
-{"user_id": 15, "reading_volume_id": 1, "purpose_ids": [5], "genre_ids": [6, 2, 8]}
-{"user_id": 16, "reading_volume_id": 4, "purpose_ids": [6, 4], "genre_ids": [5]}
-{"user_id": 17, "reading_volume_id": 2, "purpose_ids": [6], "genre_ids": [5, 6, 8]}
-{"user_id": 18, "reading_volume_id": 4, "purpose_ids": [4, 3, 2], "genre_ids": [8]}
-{"user_id": 19, "reading_volume_id": 1, "purpose_ids": [1], "genre_ids": [3]}
-{"user_id": 20, "reading_volume_id": 4, "purpose_ids": [1, 4, 5], "genre_ids": [8, 5, 3]}
+{"user_id": 1, "reading_volume_code": "ONE_OR_LESS", "purpose_codes": ["MEET_NEW_PEOPLE"], "genre_codes": ["HUMANITIES_PHIL", "ECONOMY_BUSINESS"]}
+{"user_id": 2, "reading_volume_code": "TWO_TO_THREE", "purpose_codes": ["FINISH_TOGETHER", "HEALING_AND_HOBBY", "MEET_NEW_PEOPLE"], "genre_codes": ["SCIENCE_TECH", "NOVEL", "HISTORY"]}
+{"user_id": 3, "reading_volume_code": "ONE_OR_LESS", "purpose_codes": ["BUILD_READING_ROUTINE"], "genre_codes": ["NOVEL", "SOCIETY_POLITICS", "ECONOMY_BUSINESS"]}
+{"user_id": 4, "reading_volume_code": "EIGHT_OR_MORE", "purpose_codes": ["BUILD_READING_ROUTINE", "KNOWLEDGE_GROWTH"], "genre_codes": ["SOCIETY_POLITICS", "SCIENCE_TECH", "NOVEL"]}
+{"user_id": 5, "reading_volume_code": "TWO_TO_THREE", "purpose_codes": ["KNOWLEDGE_GROWTH", "SHARE_AND_DISCUSS", "HEALING_AND_HOBBY"], "genre_codes": ["HUMANITIES_PHIL"]}
+{"user_id": 6, "reading_volume_code": "FOUR_TO_FIVE", "purpose_codes": ["FINISH_TOGETHER"], "genre_codes": ["ECONOMY_BUSINESS", "ESSAY"]}
+{"user_id": 7, "reading_volume_code": "FOUR_TO_FIVE", "purpose_codes": ["SHARE_AND_DISCUSS", "FINISH_TOGETHER", "KNOWLEDGE_GROWTH"], "genre_codes": ["ECONOMY_BUSINESS", "HUMANITIES_PHIL", "NOVEL"]}
+{"user_id": 8, "reading_volume_code": "EIGHT_OR_MORE", "purpose_codes": ["MEET_NEW_PEOPLE", "HEALING_AND_HOBBY"], "genre_codes": ["HUMANITIES_PHIL", "SELF_DEVELOPMENT"]}
+{"user_id": 9, "reading_volume_code": "ONE_OR_LESS", "purpose_codes": ["MEET_NEW_PEOPLE"], "genre_codes": ["SOCIETY_POLITICS"]}
+{"user_id": 10, "reading_volume_code": "ONE_OR_LESS", "purpose_codes": ["FINISH_TOGETHER"], "genre_codes": ["SOCIETY_POLITICS", "HUMANITIES_PHIL"]}
+{"user_id": 11, "reading_volume_code": "FOUR_TO_FIVE", "purpose_codes": ["SHARE_AND_DISCUSS"], "genre_codes": ["HUMANITIES_PHIL", "SELF_DEVELOPMENT"]}
+{"user_id": 12, "reading_volume_code": "FOUR_TO_FIVE", "purpose_codes": ["MEET_NEW_PEOPLE", "FINISH_TOGETHER", "BUILD_READING_ROUTINE"], "genre_codes": ["HUMANITIES_PHIL", "ECONOMY_BUSINESS", "HISTORY"]}
+{"user_id": 13, "reading_volume_code": "FIVE_TO_SEVEN", "purpose_codes": ["MEET_NEW_PEOPLE", "HEALING_AND_HOBBY"], "genre_codes": ["SELF_DEVELOPMENT"]}
+{"user_id": 14, "reading_volume_code": "ONE_OR_LESS", "purpose_codes": ["FINISH_TOGETHER"], "genre_codes": ["SCIENCE_TECH", "ESSAY"]}
+{"user_id": 15, "reading_volume_code": "ONE_OR_LESS", "purpose_codes": ["HEALING_AND_HOBBY"], "genre_codes": ["SELF_DEVELOPMENT", "ECONOMY_BUSINESS", "HISTORY"]}
+{"user_id": 16, "reading_volume_code": "FIVE_TO_SEVEN", "purpose_codes": ["MEET_NEW_PEOPLE", "KNOWLEDGE_GROWTH"], "genre_codes": ["SOCIETY_POLITICS"]}
+{"user_id": 17, "reading_volume_code": "TWO_TO_THREE", "purpose_codes": ["MEET_NEW_PEOPLE"], "genre_codes": ["SOCIETY_POLITICS", "SELF_DEVELOPMENT", "HISTORY"]}
+{"user_id": 18, "reading_volume_code": "FIVE_TO_SEVEN", "purpose_codes": ["KNOWLEDGE_GROWTH", "SHARE_AND_DISCUSS", "BUILD_READING_ROUTINE"], "genre_codes": ["HISTORY"]}
+{"user_id": 19, "reading_volume_code": "ONE_OR_LESS", "purpose_codes": ["FINISH_TOGETHER"], "genre_codes": ["ESSAY"]}
+{"user_id": 20, "reading_volume_code": "FIVE_TO_SEVEN", "purpose_codes": ["FINISH_TOGETHER", "KNOWLEDGE_GROWTH", "HEALING_AND_HOBBY"], "genre_codes": ["HISTORY", "SOCIETY_POLITICS", "ESSAY"]}
