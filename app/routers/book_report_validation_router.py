@@ -29,11 +29,11 @@ router = APIRouter(prefix="/api/book-reports", tags=["book-reports"])
     response_model=BookReportValidationResponse,
     status_code=200,
 )
-def validate_book_report(
+async def validate_book_report(
     id: int,
     payload: BookReportValidationRequest,
 ) -> BookReportValidationResponse:
     """
     Validate whether a book report is genuine and meaningful.
     """
-    return validation_service.validate_report(id, payload)
+    return await validation_service.validate_report(id, payload)

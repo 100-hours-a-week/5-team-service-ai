@@ -23,7 +23,7 @@ class BookReportValidationService:
         self.settings = settings
         self.logger = logging.getLogger(__name__)
 
-    def validate_report(
+    async def validate_report(
         self,
         book_report_id: int,
         payload: BookReportValidationRequest,
@@ -47,7 +47,7 @@ class BookReportValidationService:
         else:
             gemini_called = True
             try:
-                gemini_result = self.gemini_client.evaluate_book_report(title, content)
+                gemini_result = await self.gemini_client.evaluate_book_report(title, content)
                 result_status = gemini_result.status
                 rejection_reason = gemini_result.rejection_reason
             except GeminiClientError as exc:
@@ -64,8 +64,6 @@ class BookReportValidationService:
                 ) from exc
 
         response = BookReportValidationResponse(
-            id=book_report_id,
-            user_id=payload.user_id or 0,
             status=result_status,
             rejection_reason=rejection_reason,
         )
