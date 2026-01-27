@@ -11,7 +11,7 @@ except ImportError as exc:  # pragma: no cover - import guard
     raise ImportError(
         "google-genai가 설치되어야 합니다. 'pip install -r requirements.txt'로 최신 의존성을 설치하세요."
     ) from exc
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_fixed
+from tenacity import AsyncRetrying, retry_if_exception, stop_after_attempt, wait_fixed
 
 
 class GeminiClientError(Exception):
@@ -37,6 +37,7 @@ class GeminiClient:
     ) -> None:
         self.logger = logging.getLogger(__name__)
         self.client = genai.Client(api_key=api_key)
+        self.async_client = self.client.aio
         self.model_name = model_name
         self.model_preferences = model_preferences
         self.timeout_seconds = timeout_seconds
@@ -56,12 +57,14 @@ class GeminiClient:
         except Exception as exc:  # noqa: BLE001
             self.logger.warning("Failed to list Gemini models: %s", exc)
 
-    def _resolve_model(self) -> str:
+    async def _resolve_model(self) -> str:
         if self._resolved_model:
             return self._resolved_model
 
         try:
-            models = list(self.client.models.list())
+            # async list; falls back to sync client on failure
+            models_iter = self.async_client.models.list()
+            models = [m async for m in models_iter]
         except Exception as exc:  # noqa: BLE001
             self.logger.warning(
                 "Gemini 모델 목록 조회에 실패했습니다. 설정된 모델/선호도에 따라 계속 시도합니다: %s",
@@ -169,32 +172,33 @@ class GeminiClient:
 
         return GeminiResult(status=status, rejection_reason=rejection_reason)
 
-    @retry(
-        reraise=True,
-        stop=stop_after_attempt(2),
-        wait=wait_fixed(1),
-        retry=retry_if_exception(lambda exc: not isinstance(exc, TypeError)),
-    )
-    def _generate(self, prompt: str, model_name: str):
-        return self.client.models.generate_content(
-            model=model_name,
-            contents=prompt,
-            config=genai_types.GenerateContentConfig(
-                max_output_tokens=self.max_output_tokens,
-                temperature=0.1,
-                response_mime_type="application/json",
-            ),
-        )
+    async def _generate(self, prompt: str, model_name: str):
+        async for attempt in AsyncRetrying(
+            reraise=True,
+            stop=stop_after_attempt(2),
+            wait=wait_fixed(1),
+            retry=retry_if_exception(lambda exc: not isinstance(exc, TypeError)),
+        ):
+            with attempt:
+                return await self.async_client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=genai_types.GenerateContentConfig(
+                        max_output_tokens=self.max_output_tokens,
+                        temperature=0.1,
+                        response_mime_type="application/json",
+                    ),
+                )
 
-    def evaluate_book_report(self, book_title: str | None, content: str) -> GeminiResult:
-        model_name = self._resolve_model()
+    async def evaluate_book_report(self, book_title: str | None, content: str) -> GeminiResult:
+        model_name = await self._resolve_model()
         prompt = self._build_prompt(book_title, content, force_json_only=False)
         last_error: Exception | None = None
         last_response_text: str | None = None
 
         for attempt in range(1, self.max_parse_attempts + 1):
             try:
-                response = self._generate(prompt, model_name)
+                response = await self._generate(prompt, model_name)
                 response_text = self._extract_text(response)
                 last_response_text = response_text
                 return self._parse_response_text(response_text)
