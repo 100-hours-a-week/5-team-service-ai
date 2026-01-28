@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     max_noise_char_ratio: float = Field(0.25, alias="RULE_MAX_NOISE_CHAR_RATIO")
     max_links_or_tags: int = Field(2, alias="RULE_MAX_LINKS_OR_TAGS")
 
+    # Simple API key for internal calls
+    api_key: str = Field("ai", alias="API_KEY")
+
     @field_validator("gemini_model_preferences", mode="before")
     @classmethod
     def _split_preferences(cls, value):
