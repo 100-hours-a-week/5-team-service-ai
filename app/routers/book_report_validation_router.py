@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.clients.gemini_client import GeminiClient
 from app.core.config import get_settings
+from app.core.security import require_api_key
 from app.schemas.book_report_schema import (
     BookReportValidationRequest,
     BookReportValidationResponse,
@@ -21,7 +22,11 @@ gemini_client = GeminiClient(
 )
 validation_service = BookReportValidationService(gemini_client, settings)
 
-router = APIRouter(prefix="/api/book-reports", tags=["book-reports"])
+router = APIRouter(
+    prefix="/ai/book-reports",
+    tags=["book-reports"],
+    dependencies=[Depends(require_api_key)],
+)
 
 
 @router.post(

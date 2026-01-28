@@ -7,11 +7,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.batch.weekly_batch import generate_from_db
+from app.core.security import require_api_key
 from app.db.session import get_db
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api", tags=["recommendations"])
+router = APIRouter(prefix="/ai", tags=["recommendations"], dependencies=[Depends(require_api_key)])
 
 
 class RecommendationRequest(BaseModel):
