@@ -31,7 +31,7 @@ class Settings(BaseSettings):
 
     # Tuning points: adjust thresholds to tighten/loosen the rule-based guardrails.
     min_content_length: int = Field(50, alias="RULE_MIN_CONTENT_LENGTH")
-    max_content_length: int = Field(200, alias="RULE_MAX_CONTENT_LENGTH")
+    max_content_length: int = Field(5000, alias="RULE_MAX_CONTENT_LENGTH")
     max_repeat_word_ratio: float = Field(0.35, alias="RULE_MAX_REPEAT_WORD_RATIO")
     max_repeated_sentences: int = Field(3, alias="RULE_MAX_REPEATED_SENTENCES")
     max_noise_char_ratio: float = Field(0.25, alias="RULE_MAX_NOISE_CHAR_RATIO")
