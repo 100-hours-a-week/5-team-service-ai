@@ -49,7 +49,7 @@ class BookReportValidationService:
             try:
                 gemini_result = await self.gemini_client.evaluate_book_report(title, content)
                 result_status = gemini_result.status
-                rejection_reason = gemini_result.rejection_reason
+                rejection_reason = self._truncate_reason(gemini_result.rejection_reason)
             except GeminiClientError as exc:
                 self.logger.error("Gemini validation failed: %s", exc, exc_info=exc)
                 code = status.HTTP_503_SERVICE_UNAVAILABLE
@@ -86,9 +86,6 @@ class BookReportValidationService:
         if len(content) < self.settings.min_content_length:
             return True, "독후감 길이가 최소 기준에 미달합니다."
 
-        if len(content) > self.settings.max_content_length:
-            return True, "독후감 길이가 최대 기준을 초과합니다."
-
         words = re.findall(r"[가-힣A-Za-z0-9']+", content.lower())
         if words:
             counts = Counter(words)
@@ -123,3 +120,25 @@ class BookReportValidationService:
         condensed = re.sub(r"\s+", " ", content)
         phrases = re.findall(r"([가-힣A-Za-z0-9]{3,20})\1{2,}", condensed)
         return len(phrases) > 0
+
+    def _truncate_reason(self, reason: str | None, max_len: int = 200) -> str | None:
+        """
+        Ensure rejection_reason is <= max_len characters, prefer cutting at a sentence boundary.
+
+        Falls back to ellipsis if no boundary exists.
+        """
+        if reason is None:
+            return None
+        text = reason.strip()
+        if len(text) <= max_len:
+            return text
+
+        # Take a window and try to end at the last sentence terminator within it.
+        window = text[:max_len]
+        last_end = None
+        for m in re.finditer(r"[.?!。！？]", window):
+            last_end = m.end()
+        if last_end and last_end >= max_len // 2:
+            return window[:last_end].rstrip()
+
+        return window.rstrip() + "..."
