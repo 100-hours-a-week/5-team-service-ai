@@ -52,7 +52,7 @@ class RecommendationRepo:
                 m.capacity,
                 m.current_count,
                 m.leader_intro
-            FROM meeting m
+            FROM meetings m
             JOIN reading_genres rg ON rg.id = m.reading_genre_id
             WHERE m.deleted_at IS NULL
             """
