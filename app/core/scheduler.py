@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 
 import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -45,18 +44,7 @@ def start_scheduler() -> BackgroundScheduler | None:
         "search_k": settings.reco_scheduler_search_k,
     }
 
-    # Run once on startup (in the scheduler thread) to avoid waiting until the next cron tick.
-    bootstrap_time = datetime.now(tz=scheduler.timezone)
-    scheduler.add_job(
-        _job,
-        "date",
-        run_date=bootstrap_time,
-        kwargs=job_kwargs,
-        id="weekly_recommendations_bootstrap",
-        replace_existing=True,
-    )
-
-    # Keep the existing weekly cron schedule.
+    # Weekly cron schedule only.
     scheduler.add_job(
         _job,
         trigger,
@@ -66,7 +54,6 @@ def start_scheduler() -> BackgroundScheduler | None:
     )
 
     scheduler.start()
-    next_run_job = scheduler.get_job("weekly_recommendations")
     logger.info(
         "reco scheduler started",
         extra={
@@ -74,8 +61,7 @@ def start_scheduler() -> BackgroundScheduler | None:
             "tz": str(scheduler.timezone),
             "top_k": settings.reco_scheduler_top_k,
             "search_k": settings.reco_scheduler_search_k,
-            "next_run": next_run_job.next_run_time if next_run_job else None,
-            "bootstrap_run": bootstrap_time,
+            "next_run": scheduler.get_job("weekly_recommendations").next_run_time,
         },
     )
     return scheduler
