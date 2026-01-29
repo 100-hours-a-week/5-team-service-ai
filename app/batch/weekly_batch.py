@@ -23,6 +23,17 @@ from app.services.recommender import (
 
 logger = logging.getLogger(__name__)
 
+# Lazily initialize and reuse a single Embedder instance per process to avoid
+# repeated model downloads/loads on every batch invocation.
+_embedder: Embedder | None = None
+
+
+def get_embedder() -> Embedder:
+    global _embedder
+    if _embedder is None:
+        _embedder = Embedder()
+    return _embedder
+
 
 def week_start_iso(today: Optional[date] = None) -> str:
     """Return ISO string for Monday of the given week (or this week)."""
@@ -38,10 +49,11 @@ def generate_rows(
     search_k: int,
     meetings: List[Mapping],
     users: List[Mapping],
+    embedder: Embedder | None = None,
 ) -> tuple[List[dict], dict]:
     """Generate recommendation rows using FAISS + genre-aware reranking."""
 
-    embedder = Embedder()
+    embedder = embedder or get_embedder()
 
     meeting_texts = [build_meeting_text(m) for m in meetings]
     t0 = time.perf_counter()
