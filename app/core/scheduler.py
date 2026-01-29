@@ -39,17 +39,34 @@ def start_scheduler() -> BackgroundScheduler | None:
 
     scheduler = BackgroundScheduler(timezone=pytz.timezone(settings.reco_scheduler_timezone))
     trigger = CronTrigger.from_crontab(settings.reco_scheduler_cron, timezone=scheduler.timezone)
+
+    job_kwargs = {
+        "top_k": settings.reco_scheduler_top_k,
+        "search_k": settings.reco_scheduler_search_k,
+    }
+
+    # Run once on startup (in the scheduler thread) to avoid waiting until the next cron tick.
+    bootstrap_time = datetime.now(tz=scheduler.timezone)
+    scheduler.add_job(
+        _job,
+        "date",
+        run_date=bootstrap_time,
+        kwargs=job_kwargs,
+        id="weekly_recommendations_bootstrap",
+        replace_existing=True,
+    )
+
+    # Keep the existing weekly cron schedule.
     scheduler.add_job(
         _job,
         trigger,
-        kwargs={
-            "top_k": settings.reco_scheduler_top_k,
-            "search_k": settings.reco_scheduler_search_k,
-        },
+        kwargs=job_kwargs,
         id="weekly_recommendations",
         replace_existing=True,
     )
+
     scheduler.start()
+    next_run_job = scheduler.get_job("weekly_recommendations")
     logger.info(
         "reco scheduler started",
         extra={
@@ -57,7 +74,8 @@ def start_scheduler() -> BackgroundScheduler | None:
             "tz": str(scheduler.timezone),
             "top_k": settings.reco_scheduler_top_k,
             "search_k": settings.reco_scheduler_search_k,
-            "next_run": scheduler.get_job("weekly_recommendations").next_run_time,
+            "next_run": next_run_job.next_run_time if next_run_job else None,
+            "bootstrap_run": bootstrap_time,
         },
     )
     return scheduler
@@ -66,4 +84,3 @@ def start_scheduler() -> BackgroundScheduler | None:
 def shutdown_scheduler(scheduler: BackgroundScheduler | None) -> None:
     if scheduler and scheduler.running:
         scheduler.shutdown(wait=False)
-
