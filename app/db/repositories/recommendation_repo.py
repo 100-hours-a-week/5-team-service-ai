@@ -70,7 +70,7 @@ class RecommendationRepo:
 
         sql = text(
             """
-            INSERT INTO user_meeting_recommendation (user_id, meeting_id, week_start_date, `rank`)
+            INSERT INTO user_meeting_recommendations (user_id, meeting_id, week_start_date, `rank`)
             VALUES (:user_id, :meeting_id, :week_start_date, :rank)
             ON DUPLICATE KEY UPDATE
                 `rank` = VALUES(`rank`);
