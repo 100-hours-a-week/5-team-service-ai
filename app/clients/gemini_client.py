@@ -33,7 +33,7 @@ class GeminiClient:
         timeout_seconds: int,
         max_output_tokens: int,
         max_parse_attempts: int = 2,
-        log_models_on_start: bool = True,
+        log_models_on_start: bool = False,
     ) -> None:
         self.logger = logging.getLogger(__name__)
         self.client = genai.Client(api_key=api_key)
@@ -59,6 +59,11 @@ class GeminiClient:
 
     async def _resolve_model(self) -> str:
         if self._resolved_model:
+            return self._resolved_model
+
+        # Fast path: explicit model is provided — skip remote model listing.
+        if self.model_name:
+            self._resolved_model = self._ensure_model_path(self.model_name)
             return self._resolved_model
 
         try:
