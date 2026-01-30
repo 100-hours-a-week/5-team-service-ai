@@ -6,8 +6,10 @@ from fastapi import FastAPI
 from app.routers.book_report_validation_router import router as book_report_validation_router
 from app.api.routes.recommendation import router as recommendation_router
 from app.core.scheduler import shutdown_scheduler, start_scheduler
+from app.core.ssm import load_ssm_parameters
 
 load_dotenv()
+load_ssm_parameters()
 
 logging.basicConfig(
     level=logging.INFO,
