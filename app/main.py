@@ -4,7 +4,7 @@ import logging
 from app.core.ssm import load_ssm_parameters
 load_ssm_parameters()
 
-# ✅ 2. dotenv (필요하면)
+# ✅ 2. dotenv
 from dotenv import load_dotenv
 load_dotenv()
 
