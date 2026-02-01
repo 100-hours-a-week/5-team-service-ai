@@ -156,7 +156,7 @@ jobs:
         with:
           host: ${{ steps.env.outputs.ssh_host }}
           username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: ${{ steps.env.outputs.env_name == 'prod' && secrets.EC2_SSH_KEY || secrets.DEV_EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/app/ai-repo
 
