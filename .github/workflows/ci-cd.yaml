@@ -114,7 +114,31 @@ jobs:
           else
             echo "host=DEV_EC2_HOST" >> $GITHUB_OUTPUT
             echo "env_name=develop" >> $GITHUB_OUTPUT
+            echo "sg_id=${{ secrets.AWS_SG_ID_DEV }}" >> $GITHUB_OUTPUT
+
           fi
+
+      # [추가 1] GitHub Actions 실행 서버의 IP 가져오기
+      - name: Get GitHub IP
+        id: ip
+        run: echo "ipv4=$(curl -s https://checkip.amazonaws.com)" >> $GITHUB_OUTPUT
+
+      # [추가 2] AWS 인증 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # [추가 3] 보안 그룹 22번 포트 한시적 허용
+      - name: Add GitHub IP to Security Group
+        run: |
+          aws ec2 authorize-security-group-ingress \
+            --group-id ${{ steps.env.outputs.sg_id }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32
 
       - name: Deploy via Git Pull
         uses: appleboy/ssh-action@v1.0.3
@@ -129,6 +153,16 @@ jobs:
             git reset --hard origin/${{ github.ref_name }}
             
             bash /home/ubuntu/app/deploy.sh ai ${{ steps.env.outputs.env_name }} ${{ github.sha }}
+      
+      # [추가 4] 보안 그룹에서 IP 제거 (성공/실패 상관없이 무조건 실행)
+      - name: Remove GitHub IP from Security Group
+        if: always()
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id ${{ steps.env.outputs.sg_id }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32
 
       - name: Notify Discord
         if: always()
