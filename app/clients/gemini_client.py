@@ -11,7 +11,7 @@ except ImportError as exc:  # pragma: no cover - import guard
     raise ImportError(
         "google-genai가 설치되어야 합니다. 'pip install -r requirements.txt'로 최신 의존성을 설치하세요."
     ) from exc
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_fixed
+from tenacity import AsyncRetrying, retry_if_exception, stop_after_attempt, wait_fixed
 
 
 class GeminiClientError(Exception):
@@ -33,10 +33,11 @@ class GeminiClient:
         timeout_seconds: int,
         max_output_tokens: int,
         max_parse_attempts: int = 2,
-        log_models_on_start: bool = True,
+        log_models_on_start: bool = False,
     ) -> None:
         self.logger = logging.getLogger(__name__)
         self.client = genai.Client(api_key=api_key)
+        self.async_client = self.client.aio
         self.model_name = model_name
         self.model_preferences = model_preferences
         self.timeout_seconds = timeout_seconds
@@ -56,12 +57,19 @@ class GeminiClient:
         except Exception as exc:  # noqa: BLE001
             self.logger.warning("Failed to list Gemini models: %s", exc)
 
-    def _resolve_model(self) -> str:
+    async def _resolve_model(self) -> str:
         if self._resolved_model:
             return self._resolved_model
 
+        # Fast path: explicit model is provided — skip remote model listing.
+        if self.model_name:
+            self._resolved_model = self._ensure_model_path(self.model_name)
+            return self._resolved_model
+
         try:
-            models = list(self.client.models.list())
+            # async list; falls back to sync client on failure
+            models_iter = self.async_client.models.list()
+            models = [m async for m in models_iter]
         except Exception as exc:  # noqa: BLE001
             self.logger.warning(
                 "Gemini 모델 목록 조회에 실패했습니다. 설정된 모델/선호도에 따라 계속 시도합니다: %s",
@@ -134,12 +142,13 @@ class GeminiClient:
             "너는 독후감 검증 모델이다. 아래 독후감이 실제로 책을 읽고 작성된 내용인지, "
             "그리고 의미 없는 반복/도배/스팸이 아닌지를 판정한다.\n"
             "출력은 JSON 하나만 반환하고, status는 SUBMITTED 또는 REJECTED 중 하나다.\n"
-            "SUBMITTED일 때 rejection_reason은 null, REJECTED일 때는 한국어로 반려 사유를 한 문장으로 쓴다.\n"
-            "반려 사유(rejection_reason)는 반드시 한국어 한 문장, 20자 이내로 핵심만 아주 짧게 작성할 것.\n"
+            "SUBMITTED일 때 rejection_reason은 null, REJECTED일 때는 반드시 한국어 한 문장으로 쓴다.\n"
+            "rejection_reason 규칙: 1문장만 허용(마침표 1개 이하), 25자 이내로 핵심만 요약, "
+            "모호하거나 장문의 이유는 잘못된 응답이다.\n"
             '{"status": "SUBMITTED" | "REJECTED", "rejection_reason": string | null}\n'
             f"책 제목: {title_part}\n"
             f"독후감 내용:\n{content}\n"
-            "- 책 제목과 내용이 일치하는지(책을 읽은 흔적, 줄거리/주제 언급, 인상 등) 확인한다.\n"
+            "- 책 제목과 내용이 일치하는지(책을 읽은 흔적, 인물, 줄거리/주제/사건/개념 언급, 인상 등) 확인한다.\n"
             "- 의미 없는 반복/무작위 문자열/광고 링크 등이 있으면 REJECTED로 한다.\n"
             "- 독후감으로 볼 수 있는 최소한의 길이와 서술이 있으면 SUBMITTED로 한다.\n"
             "JSON 포맷 외에 어떠한 서술도 추가하지 말 것. 응답은 JSON 한 덩어리만 제공할 것."
@@ -169,32 +178,33 @@ class GeminiClient:
 
         return GeminiResult(status=status, rejection_reason=rejection_reason)
 
-    @retry(
-        reraise=True,
-        stop=stop_after_attempt(2),
-        wait=wait_fixed(1),
-        retry=retry_if_exception(lambda exc: not isinstance(exc, TypeError)),
-    )
-    def _generate(self, prompt: str, model_name: str):
-        return self.client.models.generate_content(
-            model=model_name,
-            contents=prompt,
-            config=genai_types.GenerateContentConfig(
-                max_output_tokens=self.max_output_tokens,
-                temperature=0.1,
-                response_mime_type="application/json",
-            ),
-        )
+    async def _generate(self, prompt: str, model_name: str):
+        async for attempt in AsyncRetrying(
+            reraise=True,
+            stop=stop_after_attempt(2),
+            wait=wait_fixed(1),
+            retry=retry_if_exception(lambda exc: not isinstance(exc, TypeError)),
+        ):
+            with attempt:
+                return await self.async_client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=genai_types.GenerateContentConfig(
+                        max_output_tokens=self.max_output_tokens,
+                        temperature=0.1,
+                        response_mime_type="application/json",
+                    ),
+                )
 
-    def evaluate_book_report(self, book_title: str | None, content: str) -> GeminiResult:
-        model_name = self._resolve_model()
+    async def evaluate_book_report(self, book_title: str | None, content: str) -> GeminiResult:
+        model_name = await self._resolve_model()
         prompt = self._build_prompt(book_title, content, force_json_only=False)
         last_error: Exception | None = None
         last_response_text: str | None = None
 
         for attempt in range(1, self.max_parse_attempts + 1):
             try:
-                response = self._generate(prompt, model_name)
+                response = await self._generate(prompt, model_name)
                 response_text = self._extract_text(response)
                 last_response_text = response_text
                 return self._parse_response_text(response_text)

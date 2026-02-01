@@ -1,13 +1,14 @@
-fastapi == 0.128.0
+# ... 기존 패키지들 ...
+fastapi==0.128.0
 uvicorn[standard]==0.30.6
-pydantic==2.8.2
+pydantic==2.9.2
 pydantic-settings==2.4.0
 python-dotenv==1.0.1
 
 numpy==1.26.4
 pandas==2.2.2
 
-sentence-transformers==3.0.1
+sentence-transformers==3.3.1
 faiss-cpu==1.8.0.post1
 
 SQLAlchemy==2.0.32
@@ -15,3 +16,11 @@ PyMySQL==1.1.1
 
 google-genai==0.3.0
 tenacity==8.5.0
+
+
+google-api-core
+boto3>=1.34.0
+requests==2.32.3
+cryptography==42.0.8
+apscheduler==3.10.4
+pytz==2024.1

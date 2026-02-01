@@ -1,0 +1,20 @@
+name: "Security-focused CodeQL Config"
+
+# CodeQL 설정: Python AI 서버 보안 취약점 분석
+# 코드 품질 검사는 Qodana에서 담당
+
+# security-extended: 기본 보안 쿼리 + 추가 보안 쿼리
+queries:
+  - uses: security-extended
+
+# 분석 제외 경로
+paths-ignore:
+  - venv
+  - .venv
+  - __pycache__
+  - '*.egg-info'
+  - .pytest_cache
+  - .mypy_cache
+  - .ruff_cache
+  - '**/test/**'
+  - '**/tests/**'
