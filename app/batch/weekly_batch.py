@@ -43,6 +43,39 @@ def week_start_iso(today: Optional[date] = None) -> str:
     return monday.isoformat()
 
 
+def embed_meetings(meetings: List[Mapping], embedder: Embedder) -> list:
+    """
+    Embed meeting texts into vectors.
+    """
+    meeting_texts = [build_meeting_text(m) for m in meetings]
+    return embedder.encode(meeting_texts)
+
+
+def build_index(meeting_vecs, meetings: List[Mapping]) -> FaissStore:
+    """
+    Build FAISS index from meeting vectors and metadata.
+    """
+    store = FaissStore()
+    store.build(meeting_vecs, [{"meeting_id": m["id"], "status": m["status"]} for m in meetings])
+    return store
+
+
+def embed_users(users: List[Mapping], embedder: Embedder) -> list:
+    """
+    Embed user preference queries into vectors.
+    """
+    user_queries = [build_user_query(u) for u in users]
+    return embedder.encode(user_queries)
+
+
+def search_candidates(store: FaissStore, user_vec, search_k: int) -> dict[int, float]:
+    """
+    Search FAISS store and return meeting_id -> score mapping.
+    """
+    hits = store.search(user_vec, top_k=search_k)
+    return {h["meeting_id"]: h["score"] for h in hits}
+
+
 def generate_rows(
     *,
     top_k: int,
@@ -55,24 +88,20 @@ def generate_rows(
 
     embedder = embedder or get_embedder()
 
-    meeting_texts = [build_meeting_text(m) for m in meetings]
     t0 = time.perf_counter()
-    meeting_vecs = embedder.encode(meeting_texts)
+    meeting_vecs = embed_meetings(meetings, embedder)
     t1 = time.perf_counter()
 
-    store = FaissStore()
-    store.build(meeting_vecs, [{"meeting_id": m["id"], "status": m["status"]} for m in meetings])
+    store = build_index(meeting_vecs, meetings)
 
-    user_queries = [build_user_query(u) for u in users]
     t2 = time.perf_counter()
-    user_vecs = embedder.encode(user_queries)
+    user_vecs = embed_users(users, embedder)
     t3 = time.perf_counter()
 
     rows: List[dict] = []
     week_start_date = week_start_iso()
     for user, vec in zip(users, user_vecs):
-        hits = store.search(vec, top_k=search_k)
-        scores = {h["meeting_id"]: h["score"] for h in hits}
+        scores = search_candidates(store, vec, search_k)
         meeting_ids = rerank_recruiting_with_genre_bonus(
             scores,
             meetings,
