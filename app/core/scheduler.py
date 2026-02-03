@@ -8,6 +8,8 @@ import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
+import time
+
 from app.batch.weekly_batch import generate_from_db
 from app.core.config import get_settings
 
@@ -16,7 +18,10 @@ logger = logging.getLogger(__name__)
 
 def _job(top_k: int, search_k: int) -> None:
     try:
+        start_ts = time.perf_counter()
+        logger.info("reco batch start", extra={"top_k": top_k, "search_k": search_k})
         result = generate_from_db(top_k=top_k, search_k=search_k, persist=True)
+        elapsed_ms = int((time.perf_counter() - start_ts) * 1000)
         logger.info(
             "reco batch completed",
             extra={
@@ -24,6 +29,7 @@ def _job(top_k: int, search_k: int) -> None:
                 "users": result.get("users"),
                 "inserted": result.get("inserted"),
                 "timings": result.get("timings"),
+                "elapsed_ms": elapsed_ms,
             },
         )
     except Exception as exc:  # noqa: BLE001
