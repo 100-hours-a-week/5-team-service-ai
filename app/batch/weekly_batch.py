@@ -98,10 +98,31 @@ def generate_rows(
     user_vecs = embed_users(users, embedder)
     t3 = time.perf_counter()
 
+    owner_by_meeting = {m["id"]: m.get("leader_user_id") for m in meetings}
+
+    logger.info(
+        "reco batch data loaded",
+        extra={"meetings": len(meetings), "users": len(users)},
+    )
+    logger.info(
+        "reco batch embeddings ready",
+        extra={
+            "embed_meeting_ms": int((t1 - t0) * 1000),
+            "embed_user_ms": int((t3 - t2) * 1000),
+        },
+    )
+
     rows: List[dict] = []
     week_start_date = week_start_iso()
+    processed = 0
     for user, vec in zip(users, user_vecs):
         scores = search_candidates(store, vec, search_k)
+        # 필터: 사용자가 만든 모임은 제외
+        scores = {
+            mid: score
+            for mid, score in scores.items()
+            if owner_by_meeting.get(mid) is None or owner_by_meeting.get(mid) != user["user_id"]
+        }
         meeting_ids = rerank_recruiting_with_genre_bonus(
             scores,
             meetings,
@@ -118,6 +139,9 @@ def generate_rows(
                     "rank": rank,
                 }
             )
+        processed += 1
+        if processed % 20 == 0:
+            logger.info("reco batch progress: %s users processed", processed)
 
     timings = {
         "embed_meeting_ms": int((t1 - t0) * 1000),

@@ -133,6 +133,7 @@ def normalize_meeting_row(row: Mapping) -> dict:
         "capacity": row.get("capacity"),
         "current_count": row.get("current_count"),
         "leader_intro": row.get("leader_intro") or "",
+        "leader_user_id": row.get("leader_user_id"),
     }
 
 
