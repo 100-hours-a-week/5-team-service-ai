@@ -96,6 +96,18 @@ def build_user_query(user: Mapping) -> str:
     ).strip()
 
 
+def _personal_noise(user_id: int | None, item_id: int, epsilon: float = 1e-4) -> float:
+    """
+    Deterministic tiny noise for tie-breaking based on (user_id, item_id).
+    Keeps ranking stable while making identical profiles less likely to get the exact same ordering.
+    """
+    if user_id is None:
+        return 0.0
+    seed = hash((user_id, item_id)) & 0xFFFFFFFF
+    rng = random.Random(seed)
+    return (rng.random() - 0.5) * 2 * epsilon  # [-epsilon, +epsilon]
+
+
 def normalize_user_row(row: Mapping) -> dict:
     """
     Normalize a DB user row to expected fields with codes.
@@ -207,6 +219,8 @@ def rerank_recruiting_with_genre_bonus(
     meetings: Iterable[Mapping],
     user_genres: Iterable[str],
     *,
+    user_id: int | None = None,
+    personal_noise_eps: float = 1e-4,
     top_k: int = 4,
     candidate_pool: int = 20,
     genre_bonus: float = 0.05,
@@ -218,6 +232,7 @@ def rerank_recruiting_with_genre_bonus(
     - Start from top similarity candidates (candidate_pool).
     - Bonus if meeting genre is in user's preferred genres.
     - Penalty grows per already-selected meeting of the same genre to diversify.
+    - Adds tiny user-specific noise to break ties deterministically across users.
     """
     user_genre_set = {str(g) for g in user_genres if g is not None}
     meta_map = {int(m.get("id")): m for m in meetings}
@@ -252,6 +267,7 @@ def rerank_recruiting_with_genre_bonus(
                 base += genre_bonus
             penalty = genre_counts.get(str(genre), 0) * duplicate_penalty
             final = base - penalty
+            final += _personal_noise(user_id, mid, epsilon=personal_noise_eps)
             if final > best_score:
                 best_score = final
                 best_idx = idx
