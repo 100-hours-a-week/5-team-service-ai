@@ -127,6 +127,7 @@ def generate_rows(
             scores,
             meetings,
             user_genres=user.get("genre_codes") or user.get("genre_ids") or [],
+            user_id=user.get("user_id"),
             top_k=top_k,
             candidate_pool=search_k,
         )
