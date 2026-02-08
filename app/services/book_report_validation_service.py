@@ -43,7 +43,7 @@ class BookReportValidationService:
         rule_rejected, rule_reason = self._rule_based_filter(content)
         if rule_rejected:
             result_status = "REJECTED"
-            rejection_reason = rule_reason
+            rejection_reason = self._truncate_reason(rule_reason)
         else:
             gemini_called = True
             try:
@@ -91,7 +91,7 @@ class BookReportValidationService:
             counts = Counter(words)
             most_common_word, max_count = counts.most_common(1)[0]
             if (max_count / len(words)) > self.settings.max_repeat_word_ratio:
-                return True, f"동일 단어('{most_common_word}')가 과도하게 반복됩니다."
+                return True, "동일 단어가 과도하게 반복됩니다."
 
         sentences = [s.strip() for s in re.split(r"[.!?\n]+", content) if s.strip()]
         if sentences:

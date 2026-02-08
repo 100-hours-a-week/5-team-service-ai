@@ -43,6 +43,39 @@ def week_start_iso(today: Optional[date] = None) -> str:
     return monday.isoformat()
 
 
+def embed_meetings(meetings: List[Mapping], embedder: Embedder) -> list:
+    """
+    Embed meeting texts into vectors.
+    """
+    meeting_texts = [build_meeting_text(m) for m in meetings]
+    return embedder.encode(meeting_texts)
+
+
+def build_index(meeting_vecs, meetings: List[Mapping]) -> FaissStore:
+    """
+    Build FAISS index from meeting vectors and metadata.
+    """
+    store = FaissStore()
+    store.build(meeting_vecs, [{"meeting_id": m["id"], "status": m["status"]} for m in meetings])
+    return store
+
+
+def embed_users(users: List[Mapping], embedder: Embedder) -> list:
+    """
+    Embed user preference queries into vectors.
+    """
+    user_queries = [build_user_query(u) for u in users]
+    return embedder.encode(user_queries)
+
+
+def search_candidates(store: FaissStore, user_vec, search_k: int) -> dict[int, float]:
+    """
+    Search FAISS store and return meeting_id -> score mapping.
+    """
+    hits = store.search(user_vec, top_k=search_k)
+    return {h["meeting_id"]: h["score"] for h in hits}
+
+
 def generate_rows(
     *,
     top_k: int,
@@ -55,28 +88,46 @@ def generate_rows(
 
     embedder = embedder or get_embedder()
 
-    meeting_texts = [build_meeting_text(m) for m in meetings]
     t0 = time.perf_counter()
-    meeting_vecs = embedder.encode(meeting_texts)
+    meeting_vecs = embed_meetings(meetings, embedder)
     t1 = time.perf_counter()
 
-    store = FaissStore()
-    store.build(meeting_vecs, [{"meeting_id": m["id"], "status": m["status"]} for m in meetings])
+    store = build_index(meeting_vecs, meetings)
 
-    user_queries = [build_user_query(u) for u in users]
     t2 = time.perf_counter()
-    user_vecs = embedder.encode(user_queries)
+    user_vecs = embed_users(users, embedder)
     t3 = time.perf_counter()
+
+    owner_by_meeting = {m["id"]: m.get("leader_user_id") for m in meetings}
+
+    logger.info(
+        "reco batch data loaded",
+        extra={"meetings": len(meetings), "users": len(users)},
+    )
+    logger.info(
+        "reco batch embeddings ready",
+        extra={
+            "embed_meeting_ms": int((t1 - t0) * 1000),
+            "embed_user_ms": int((t3 - t2) * 1000),
+        },
+    )
 
     rows: List[dict] = []
     week_start_date = week_start_iso()
+    processed = 0
     for user, vec in zip(users, user_vecs):
-        hits = store.search(vec, top_k=search_k)
-        scores = {h["meeting_id"]: h["score"] for h in hits}
+        scores = search_candidates(store, vec, search_k)
+        # 필터: 사용자가 만든 모임은 제외
+        scores = {
+            mid: score
+            for mid, score in scores.items()
+            if owner_by_meeting.get(mid) is None or owner_by_meeting.get(mid) != user["user_id"]
+        }
         meeting_ids = rerank_recruiting_with_genre_bonus(
             scores,
             meetings,
             user_genres=user.get("genre_codes") or user.get("genre_ids") or [],
+            user_id=user.get("user_id"),
             top_k=top_k,
             candidate_pool=search_k,
         )
@@ -89,6 +140,9 @@ def generate_rows(
                     "rank": rank,
                 }
             )
+        processed += 1
+        if processed % 20 == 0:
+            logger.info("reco batch progress: %s users processed", processed)
 
     timings = {
         "embed_meeting_ms": int((t1 - t0) * 1000),
