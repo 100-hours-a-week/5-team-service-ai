@@ -1,9 +1,8 @@
 # syntax=docker/dockerfile:1.6
 
-ARG PYTHON_VERSION=3.11
+ARG PYTHON_VERSION=3.10.19
 
 FROM python:${PYTHON_VERSION}-slim AS builder
-ARG INSTALL_TORCH=false
 ENV VENV_PATH=/opt/venv
 ENV PATH="${VENV_PATH}/bin:${PATH}"
 WORKDIR /app
@@ -13,10 +12,8 @@ COPY requirements.txt requirements-torch.txt ./
 RUN --mount=type=cache,target=/root/.cache/pip \
     python -m venv "${VENV_PATH}" && \
     pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
-    if [ "${INSTALL_TORCH}" = "true" ]; then \
-      pip install --no-cache-dir -r requirements-torch.txt; \
-    fi
+    pip install -r requirements-torch.txt --index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
+    pip install --no-cache-dir -r requirements.txt
 
 FROM python:${PYTHON_VERSION}-slim AS runtime
 ENV VENV_PATH=/opt/venv
