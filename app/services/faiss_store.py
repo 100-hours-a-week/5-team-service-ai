@@ -22,6 +22,17 @@ class FaissStore:
         self.metadatas: List[Mapping] = []
         self._id_to_meta: dict[int, Mapping] = {}
 
+    def load(self, index_path: str, meta_path: str) -> None:
+        """
+        Load index and metadata from disk.
+        """
+        self.index = faiss.read_index(index_path)
+        import json
+
+        with open(meta_path, encoding="utf-8") as f:
+            self.metadatas = json.load(f)
+        self._id_to_meta = {int(m["meeting_id"]): m for m in self.metadatas}
+
     def build(self, vectors: np.ndarray, metadatas: List[Mapping]) -> None:
         """
         Build an index from embedding matrix and metadata.
@@ -77,8 +88,60 @@ class FaissStore:
             results.append({"meeting_id": int(meta["meeting_id"]), "score": float(score)})
         return results
 
+    def search_with_meta(self, query_vec: np.ndarray, top_k: int) -> List[dict]:
+        """
+        Search Top-K results and return metadata.
+
+        Each dict: {\"meeting_id\": int, \"score\": float, \"meta\": Mapping}
+        """
+        if self.index is None:
+            raise RuntimeError("FAISS index is not built")
+
+        q = np.asarray(query_vec, dtype=np.float32)
+        if q.ndim == 1:
+            q = q[None, :]
+        if q.ndim != 2 or q.shape[0] != 1:
+            raise ValueError(f"query_vec must be shape (d,) or (1, d); got {q.shape}")
+
+        faiss.normalize_L2(q)
+        scores, idxs = self.index.search(q, top_k)
+        results: List[dict] = []
+        for idx, score in zip(idxs[0], scores[0]):
+            if idx < 0 or idx >= len(self.metadatas):
+                continue
+            meta = self.metadatas[idx]
+            results.append(
+                {"meeting_id": int(meta["meeting_id"]), "score": float(score), "meta": meta}
+            )
+        return results
+
     def get_metadata(self, meeting_id: int) -> Optional[Mapping]:
         """
         Return metadata for a given meeting_id if present.
         """
         return self._id_to_meta.get(int(meeting_id))
+
+    def search_with_meta(self, query_vec: np.ndarray, top_k: int) -> List[dict]:
+        """
+        Search Top-K results and return metadata alongside scores.
+
+        Each dict: {"meeting_id": int, "score": float, "meta": Mapping}
+        """
+        if self.index is None:
+            raise RuntimeError("FAISS index is not built")
+
+        q = np.asarray(query_vec, dtype=np.float32)
+        if q.ndim == 1:
+            q = q[None, :]
+        if q.ndim != 2 or q.shape[0] != 1:
+            raise ValueError(f"query_vec must be shape (d,) or (1, d); got {q.shape}")
+
+        faiss.normalize_L2(q)
+        scores, idxs = self.index.search(q, top_k)
+        results: List[dict] = []
+        for idx, score in zip(idxs[0], scores[0]):
+            if idx < 0 or idx >= len(self.metadatas):
+                continue
+            meta = self.metadatas[idx]
+            results.append({"meeting_id": int(meta["meeting_id"]), "score": float(score), "meta": meta})
+        return results
