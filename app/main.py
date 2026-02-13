@@ -5,6 +5,7 @@ from fastapi import FastAPI
 
 from app.routers.book_report_validation_router import router as book_report_validation_router
 from app.api.routes.recommendation import router as recommendation_router
+from app.api.routes.quiz import router as quiz_router
 from app.core.scheduler import shutdown_scheduler, start_scheduler
 
 load_dotenv()
@@ -27,6 +28,7 @@ def health_check():
 
 app.include_router(book_report_validation_router)
 app.include_router(recommendation_router)
+app.include_router(quiz_router)
 
 
 @app.on_event("startup")

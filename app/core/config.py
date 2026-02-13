@@ -21,6 +21,24 @@ class Settings(BaseSettings):
     gemini_timeout_seconds: int = Field(20, alias="GEMINI_TIMEOUT_SECONDS")
     gemini_max_output_tokens: int = Field(1024, alias="GEMINI_MAX_OUTPUT_TOKENS")
 
+    # Quiz generation LLM (Kanana)
+    kanana_base_url: str | None = Field(
+        None,
+        alias="KANANA_BASE_URL",
+        description="OpenAI-chat 호환 엔드포인트",
+    )
+    kanana_api_key: str | None = Field(None, alias="KANANA_API_KEY")
+    kanana_model: str = Field("kanana-1.5-8b-instruct-2505", alias="KANANA_MODEL")
+    kanana_timeout_seconds: int = Field(30, alias="KANANA_TIMEOUT_SECONDS")
+
+    # Quiz retrieval / FAISS
+    books_faiss_index_path: str = Field("data/faiss/books.index", alias="BOOKS_FAISS_INDEX_PATH")
+    books_faiss_meta_path: str = Field("data/faiss/books.meta.json", alias="BOOKS_FAISS_META_PATH")
+    books_search_top_k: int = Field(20, alias="BOOKS_SEARCH_TOP_K")
+    books_context_k: int = Field(4, alias="BOOKS_CONTEXT_K")
+    books_title_bonus: float = Field(0.05, alias="BOOKS_TITLE_BONUS")
+    books_author_bonus: float = Field(0.05, alias="BOOKS_AUTHOR_BONUS")
+
     # Recommendation batch scheduler
     enable_reco_scheduler: bool = Field(False, alias="ENABLE_RECO_SCHEDULER")
     # Default: every Monday 09:00 Seoul time (crontab format)

@@ -69,7 +69,7 @@ def test_post_recommendations_payload_shape():
         thread.join()
 
     assert resp["status_code"] == 202
-    assert received.get("path") == "/api/recommendations"
+    assert received.get("path") == "/ai/recommendations"
 
     body = received.get("body", {})
     assert "rows" in body
