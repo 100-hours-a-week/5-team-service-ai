@@ -96,103 +96,117 @@ jobs:
   #               }" \
   #               ${{ secrets.DISCORD_WEBHOOK_URL }} || true
 
-  deploy:
+  build-and-push:
     #    needs: ci
-    #    if: |
-    #      always() &&
-    #      needs.ci.result == 'success' &&
-    #      github.event_name == 'push'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      image-tag: ${{ steps.meta.outputs.image-tag }}
     steps:
-      - name: Set environment
-        id: env
-        run: |
-          set -euo pipefail
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "env_name=prod" >> $GITHUB_OUTPUT
-            echo "deploy_target=lightsail" >> $GITHUB_OUTPUT
-            echo "ssh_host=${{ secrets.PROD_LIGHTSAIL_HOST }}" >> $GITHUB_OUTPUT
-            echo "lightsail_instance_name=${{ secrets.PROD_LIGHTSAIL_INSTANCE_NAME }}" >> $GITHUB_OUTPUT
-          else
-            echo "env_name=develop" >> $GITHUB_OUTPUT
-            echo "deploy_target=ec2" >> $GITHUB_OUTPUT
-            echo "ssh_host=${{ secrets.DEV_EC2_HOST }}" >> $GITHUB_OUTPUT
-            echo "sg_id=${{ secrets.AWS_SG_ID_DEV }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Get GitHub IP
-        id: ip
-        run: |
-          set -euo pipefail
-          IPV4="$(curl -s https://checkip.amazonaws.com | tr -d '\n')"
-          echo "ipv4=$IPV4" >> $GITHUB_OUTPUT
-
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ap-northeast-2
 
-      - name: Add GitHub IP to EC2 Security Group (SSH)
-        if: ${{ steps.env.outputs.deploy_target == 'ec2' }}
-        run: |
-          aws ec2 authorize-security-group-ingress \
-            --group-id ${{ steps.env.outputs.sg_id }} \
-            --protocol tcp \
-            --port 22 \
-            --cidr ${{ steps.ip.outputs.ipv4 }}/32 || true
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Allow GitHub IP on Lightsail (SSH)
-        if: ${{ steps.env.outputs.deploy_target == 'lightsail' }}
+      - name: Set image metadata
+        id: meta
         run: |
-          aws lightsail open-instance-public-ports \
-            --instance-name ${{ steps.env.outputs.lightsail_instance_name }} \
-            --port-info fromPort=22,toPort=22,protocol=tcp,cidrs=${{ steps.ip.outputs.ipv4 }}/32 || true
+          REGISTRY="${{ secrets.ECR_REGISTRY }}"
+          if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+            TAG="develop"
+            echo "tags=${REGISTRY}/doktori/ai:develop" >> $GITHUB_OUTPUT
+          else
+            SHORT_SHA="${GITHUB_SHA:0:7}"
+            TAG="sha-${SHORT_SHA}"
+            {
+              echo "tags<<EOF"
+              echo "${REGISTRY}/doktori/ai:sha-${SHORT_SHA}"
+              echo "${REGISTRY}/doktori/ai:latest"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+          fi
+          echo "image-tag=${TAG}" >> $GITHUB_OUTPUT
 
-      - name: Deploy via Git Pull
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push AI image
+        uses: docker/build-push-action@v6
         with:
-          host: ${{ steps.env.outputs.ssh_host }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ steps.env.outputs.env_name == 'prod' && secrets.EC2_SSH_KEY || secrets.DEV_EC2_SSH_KEY }}
-          script: |
-            cd /home/ubuntu/app/ai-repo
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha,scope=ai
+          cache-to: type=gha,mode=max,scope=ai
 
-            git fetch --all
-            git reset --hard origin/${{ github.ref_name }}
+  deploy-dev:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-northeast-2
 
-            bash /home/ubuntu/app/deploy.sh ai ${{ steps.env.outputs.env_name }} ${{ github.sha }}
-
-      - name: Remove GitHub IP from EC2 Security Group (SSH)
-        if: always() && steps.env.outputs.deploy_target == 'ec2'
+      - name: Deploy to Dev via SSM
         run: |
-          aws ec2 revoke-security-group-ingress \
-            --group-id ${{ steps.env.outputs.sg_id }} \
-            --protocol tcp \
-            --port 22 \
-            --cidr ${{ steps.ip.outputs.ipv4 }}/32 || true
+          COMMANDS=$(jq -n --arg registry "${{ secrets.ECR_REGISTRY }}" '[
+            "set -e",
+            ("aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin " + $registry),
+            ("docker pull " + $registry + "/doktori/ai:develop"),
+            "docker stop ai 2>/dev/null || true",
+            "docker rm ai 2>/dev/null || true",
+            ("docker run -d --name ai --restart unless-stopped --env-file /home/ubuntu/app/ai/.env -p 8000:8000 " + $registry + "/doktori/ai:develop"),
+            "docker image prune -f"
+          ]')
 
-      - name: Close GitHub IP on Lightsail (SSH)
-        if: always() && steps.env.outputs.deploy_target == 'lightsail'
-        run: |
-          aws lightsail close-instance-public-ports \
-            --instance-name ${{ steps.env.outputs.lightsail_instance_name }} \
-            --port-info fromPort=22,toPort=22,protocol=tcp,cidrs=${{ steps.ip.outputs.ipv4 }}/32 || true
+          CMD_ID=$(aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --targets "Key=tag:Environment,Values=dev" "Key=tag:Service,Values=ai" \
+            --parameters "{\"commands\": $COMMANDS}" \
+            --timeout-seconds 300 \
+            --comment "deploy dev ai ${{ github.sha }}" \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "SSM Command: $CMD_ID"
+
+          for i in $(seq 1 60); do
+            sleep 5
+            STATUS=$(aws ssm list-command-invocations \
+              --command-id "$CMD_ID" \
+              --query "CommandInvocations[0].Status" \
+              --output text 2>/dev/null || echo "Pending")
+            echo "[$i/60] $STATUS"
+            case "$STATUS" in
+              Success) exit 0 ;;
+              Failed|Cancelled|TimedOut|DeliveryTimedOut)
+                aws ssm list-command-invocations --command-id "$CMD_ID" --details \
+                  --query "CommandInvocations[0].CommandPlugins[0].Output" --output text || true
+                exit 1 ;;
+            esac
+          done
+          echo "::error::SSM command timed out"
+          exit 1
 
       - name: Notify Discord
         if: always()
         run: |
-          ENV_NAME="${{ steps.env.outputs.env_name }}"
-          if [ "$ENV_NAME" == "prod" ]; then
-            ENV_EMOJI="🚀"
-            ENV_LABEL="Production"
-          else
-            ENV_EMOJI="🔧"
-            ENV_LABEL="Development"
-          fi
-
           COMMIT_SHA="${{ github.sha }}"
           SHORT_SHA="${COMMIT_SHA:0:7}"
           COMMIT_MSG=$(echo '${{ github.event.head_commit.message }}' | head -1)
@@ -201,21 +215,111 @@ jobs:
           ACTIONS_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           if [ "${{ job.status }}" == "success" ]; then
-            COLOR=3066993
-            STATUS_EMOJI="✅"
-            STATUS_TEXT="배포 성공"
+            COLOR=3066993; STATUS_EMOJI="✅"; STATUS_TEXT="배포 성공"
           else
-            COLOR=15158528
-            STATUS_EMOJI="❌"
-            STATUS_TEXT="배포 실패"
+            COLOR=15158528; STATUS_EMOJI="❌"; STATUS_TEXT="배포 실패"
           fi
 
           curl -H "Content-Type: application/json" \
                -X POST \
                -d "{
-                 \"content\": \"$STATUS_EMOJI **AI Server $ENV_LABEL 배포 알림**\",
+                 \"content\": \"$STATUS_EMOJI **AI Server Development 배포 알림**\",
                  \"embeds\": [{
-                   \"title\": \"$ENV_EMOJI [$ENV_LABEL] $STATUS_TEXT\",
+                   \"title\": \"🔧 [Development] $STATUS_TEXT\",
+                   \"color\": $COLOR,
+                   \"fields\": [
+                     {\"name\": \"📦 저장소\", \"value\": \"\`${{ github.repository }}\`\", \"inline\": true},
+                     {\"name\": \"🌿 브랜치\", \"value\": \"\`${{ github.ref_name }}\`\", \"inline\": true},
+                     {\"name\": \"🔖 커밋\", \"value\": \"[\`$SHORT_SHA\`]($COMMIT_URL)\", \"inline\": true},
+                     {\"name\": \"💬 커밋 메시지\", \"value\": \"$COMMIT_MSG\", \"inline\": false},
+                     {\"name\": \"👤 작성자\", \"value\": \"$COMMIT_AUTHOR\", \"inline\": true},
+                     {\"name\": \"📋 상세 로그\", \"value\": \"[Actions에서 확인]($ACTIONS_URL)\", \"inline\": true}
+                   ],
+                   \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+                 }]
+               }" \
+               ${{ secrets.DISCORD_WEBHOOK_URL }} || true
+
+  deploy-prod:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-northeast-2
+
+      - name: Deploy to Prod via SSM
+        run: |
+          REGISTRY="${{ secrets.ECR_REGISTRY }}"
+          TAG="${{ needs.build-and-push.outputs.image-tag }}"
+
+          COMMANDS=$(jq -n --arg registry "$REGISTRY" --arg tag "$TAG" '[
+            "set -e",
+            ("aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin " + $registry),
+            ("docker pull " + $registry + "/doktori/ai:" + $tag),
+            "docker stop ai 2>/dev/null || true",
+            "docker rm ai 2>/dev/null || true",
+            ("docker run -d --name ai --restart unless-stopped --env-file /home/ubuntu/app/ai/.env -p 8000:8000 " + $registry + "/doktori/ai:" + $tag),
+            "docker image prune -f"
+          ]')
+
+          CMD_ID=$(aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --targets "Key=tag:Environment,Values=prod" "Key=tag:Service,Values=ai" \
+            --parameters "{\"commands\": $COMMANDS}" \
+            --timeout-seconds 300 \
+            --comment "deploy prod ai ${{ github.sha }}" \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "SSM Command: $CMD_ID"
+
+          for i in $(seq 1 60); do
+            sleep 5
+            STATUS=$(aws ssm list-command-invocations \
+              --command-id "$CMD_ID" \
+              --query "CommandInvocations[0].Status" \
+              --output text 2>/dev/null || echo "Pending")
+            echo "[$i/60] $STATUS"
+            case "$STATUS" in
+              Success) exit 0 ;;
+              Failed|Cancelled|TimedOut|DeliveryTimedOut)
+                aws ssm list-command-invocations --command-id "$CMD_ID" --details \
+                  --query "CommandInvocations[0].CommandPlugins[0].Output" --output text || true
+                exit 1 ;;
+            esac
+          done
+          echo "::error::SSM command timed out"
+          exit 1
+
+      - name: Notify Discord
+        if: always()
+        run: |
+          COMMIT_SHA="${{ github.sha }}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          COMMIT_MSG=$(echo '${{ github.event.head_commit.message }}' | head -1)
+          COMMIT_AUTHOR="${{ github.event.head_commit.author.name }}"
+          COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          ACTIONS_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          if [ "${{ job.status }}" == "success" ]; then
+            COLOR=3066993; STATUS_EMOJI="✅"; STATUS_TEXT="배포 성공"
+          else
+            COLOR=15158528; STATUS_EMOJI="❌"; STATUS_TEXT="배포 실패"
+          fi
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{
+                 \"content\": \"$STATUS_EMOJI **AI Server Production 배포 알림**\",
+                 \"embeds\": [{
+                   \"title\": \"🚀 [Production] $STATUS_TEXT\",
                    \"color\": $COLOR,
                    \"fields\": [
                      {\"name\": \"📦 저장소\", \"value\": \"\`${{ github.repository }}\`\", \"inline\": true},
