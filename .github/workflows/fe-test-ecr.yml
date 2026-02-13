@@ -1,8 +1,7 @@
 name: AI TEST ECR Deploy
 
 on:
-  push:
-    branches: [feature/dockerfile]
+  # push:
   workflow_dispatch:
 
 concurrency:
