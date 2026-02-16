@@ -5,6 +5,10 @@ on:
     branches:
       - develop
       - main
+    paths-ignore:
+      - '.github/**'
+      - '*.md'
+      - 'docs/**'
   pull_request:
     branches:
       - develop
@@ -98,7 +102,7 @@ jobs:
 
   build-and-push:
     #    needs: ci
-    if: always() && github.event_name == 'push'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -172,10 +176,9 @@ jobs:
           COMMANDS=$(jq -n --arg registry "${{ secrets.ECR_REGISTRY }}" '[
             "set -e",
             ("aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin " + $registry),
-            ("docker pull " + $registry + "/doktori/ai:develop"),
-            "docker stop ai 2>/dev/null || true",
-            "docker rm ai 2>/dev/null || true",
-            ("docker run -d --name ai --restart unless-stopped --env-file /home/ubuntu/app/ai/.env -p 8000:8000 " + $registry + "/doktori/ai:develop"),
+            ("export ECR_REGISTRY=" + $registry),
+            "docker compose -f /home/ubuntu/app/docker-compose.yml pull ai",
+            "docker compose -f /home/ubuntu/app/docker-compose.yml up -d ai",
             "docker image prune -f"
           ]')
 
