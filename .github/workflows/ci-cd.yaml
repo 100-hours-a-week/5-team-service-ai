@@ -176,7 +176,6 @@ jobs:
         run: |
           COMMANDS=$(jq -n --arg registry "${{ secrets.ECR_REGISTRY }}" '[
             "set -e",
-            ("aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin " + $registry),
             ("export ECR_REGISTRY=" + $registry),
             "docker compose -f /home/ubuntu/app/docker-compose.yml pull ai",
             "docker compose -f /home/ubuntu/app/docker-compose.yml up -d ai",
