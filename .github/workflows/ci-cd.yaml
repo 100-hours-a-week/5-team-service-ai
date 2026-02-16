@@ -5,6 +5,10 @@ on:
     branches:
       - develop
       - main
+    paths-ignore:
+      - '.github/**'
+      - '*.md'
+      - 'docs/**'
   pull_request:
     branches:
       - develop
@@ -98,7 +102,7 @@ jobs:
 
   build-and-push:
     #    needs: ci
-    if: always() && github.event_name == 'push'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
