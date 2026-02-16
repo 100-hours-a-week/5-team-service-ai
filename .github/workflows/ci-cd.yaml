@@ -1,6 +1,7 @@
 name: AI Server CI/CD
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - develop
