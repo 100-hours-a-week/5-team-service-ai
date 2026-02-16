@@ -137,6 +137,9 @@ jobs:
           fi
           echo "image-tag=${TAG}" >> $GITHUB_OUTPUT
 
+      - name: Set up QEMU (for ARM64 cross-build)
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -144,6 +147,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          platforms: linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha,scope=ai
@@ -177,7 +181,7 @@ jobs:
 
           CMD_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=tag:Environment,Values=dev" "Key=tag:Service,Values=ai" \
+            --targets "Key=tag:Environment,Values=dev" \
             --parameters "{\"commands\": $COMMANDS}" \
             --timeout-seconds 300 \
             --comment "deploy dev ai ${{ github.sha }}" \
