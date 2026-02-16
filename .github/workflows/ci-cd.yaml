@@ -178,7 +178,7 @@ jobs:
             "set -e",
             ("export ECR_REGISTRY=" + $registry),
             "docker compose -f /home/ubuntu/app/docker-compose.yml pull ai",
-            "docker compose -f /home/ubuntu/app/docker-compose.yml up -d ai",
+            "docker compose -f /home/ubuntu/app/docker-compose.yml up -d --no-deps ai",
             "docker image prune -f"
           ]')
 
