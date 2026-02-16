@@ -98,7 +98,7 @@ jobs:
 
   build-and-push:
     #    needs: ci
-    if: github.event_name == 'push'
+    if: always() && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
