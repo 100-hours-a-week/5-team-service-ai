@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 import logging
+from functools import lru_cache
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 from app.clients.runpod_client import RunpodClient
 from app.core.config import get_settings
 from app.core.security import require_api_key
-
-logger = logging.getLogger(__name__)
+from app.db.session import get_db
+from app.schemas.quiz_schema import QuizGenerateResponse
+from app.services.embedder import Embedder
+from app.services.quiz_service import QuizService
 
 router = APIRouter(
     prefix="/ai/quiz",
@@ -21,66 +25,44 @@ router = APIRouter(
 class QuizGenerateRequest(BaseModel):
     author: str = Field(..., description="저자명")
     title: str = Field(..., description="책 제목")
-    prompt: str | None = Field(None, description="직접 프롬프트를 넣고 싶을 때 (옵션)")
-    max_new_tokens: int = Field(256, ge=16, le=2048)
-    temperature: float = Field(0.7, ge=0.0, le=2.0)
-    top_p: float = Field(0.9, ge=0.0, le=1.0)
+    room_id: int = Field(..., description="퀴즈가 속한 room_id (외부에서 부여)")
 
 
-class QuizGenerateResponse(BaseModel):
-    job_id: str
-    text: str
-
-
-def _client() -> RunpodClient:
+@lru_cache
+def _quiz_service() -> QuizService:
     settings = get_settings()
     if not settings.runpod_endpoint_id or not settings.runpod_api_key:
         raise HTTPException(status_code=503, detail="RUNPOD endpoint or API key not configured")
-    return RunpodClient(
+
+    client = RunpodClient(
         endpoint_id=settings.runpod_endpoint_id,
         api_key=settings.runpod_api_key,
         poll_interval=settings.runpod_poll_interval_seconds,
         poll_timeout=settings.runpod_poll_timeout_seconds,
     )
+    embedder = Embedder()
+    return QuizService(runpod_client=client, embedder=embedder)
+
+
+def get_quiz_service() -> QuizService:
+    """
+    Dependency provider so tests can override.
+    """
+    return _quiz_service()
 
 
 @router.post(
     "/generate",
     response_model=QuizGenerateResponse,
-    summary="RunPod serverless를 호출해 퀴즈 생성",
+    summary="책 정보를 바탕으로 객관식 퀴즈 1문항 생성",
 )
-def generate_quiz(body: QuizGenerateRequest) -> QuizGenerateResponse:
-    client = _client()
-
-    prompt_text = body.prompt
-    if not prompt_text:
-        prompt_text = (
-            f"저자 {body.author}의 책 '{body.title}' 내용을 바탕으로, "
-            "한국어 객관식 퀴즈 5문항을 만들어줘. "
-            "각 문항은 보기 4개와 정답 번호, 간단한 해설을 포함해 JSON 배열로 반환해."
-        )
-
-    payload = {
-        "prompt": prompt_text,
-        "max_new_tokens": body.max_new_tokens,
-        "temperature": body.temperature,
-        "top_p": body.top_p,
-    }
-
+def generate_quiz(
+    body: QuizGenerateRequest,
+    db: Session = Depends(get_db),
+    quiz_service: QuizService = Depends(get_quiz_service),
+) -> QuizGenerateResponse:
     try:
-        job_id, output = client.generate(payload)
-    except HTTPException:
-        raise
+        return quiz_service.generate(title=body.title, author=body.author, room_id=body.room_id, db=db)
     except Exception as exc:  # noqa: BLE001
-        logger.exception("RunPod quiz generation failed: %s", exc)
+        logging.getLogger(__name__).exception("quiz generation failed: %s", exc)
         raise HTTPException(status_code=503, detail="quiz generation failed") from exc
-
-    text = ""
-    if isinstance(output, dict):
-        text = output.get("text") or ""
-        if not text:
-            text = output.get("output") or ""
-    if not text:
-        text = str(output)
-
-    return QuizGenerateResponse(job_id=job_id, text=text)
