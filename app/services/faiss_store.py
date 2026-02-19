@@ -4,7 +4,7 @@ In-memory FAISS index wrapper for semantic retrieval in tests.
 
 from __future__ import annotations
 
-from typing import Iterable, List, Mapping, Optional
+from typing import List, Mapping, Optional
 
 import faiss
 import numpy as np

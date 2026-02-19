@@ -15,7 +15,7 @@ FROM runpod/worker-v1-vllm:${WORKER_VLLM_TAG}
 # 네트워크 볼륨 마운트 경로. 모델이 없으면 HF_MODEL_ID 기준으로 여기 경로에 다운로드함.
 ENV MODEL_NAME=/runpod-volume/llm-models/kakaocorp/kanana-1.5-8b-instruct-2505
 ENV HF_MODEL_ID=kakaocorp/kanana-1.5-8b-instruct-2505
-ENV MAX_MODEL_LEN=4096
+ENV MAX_MODEL_LEN=6144
 ENV TENSOR_PARALLEL_SIZE=1
 ENV GPU_MEMORY_UTILIZATION=0.95
 
@@ -24,4 +24,5 @@ COPY scripts/runpod_serverless_entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["python3", "/src/handler.py"]
+# 기본 vLLM 워커 실행 (OpenAI 호환 서버)
+CMD ["python3", "-m", "worker"]

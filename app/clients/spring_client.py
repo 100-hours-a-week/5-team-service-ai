@@ -54,8 +54,9 @@ def post_recommendations(
     """
     client = _http_client()
     url = base_url.rstrip("/")
-    if not url.endswith("/ai/recommendations"):
-        url = f"{url}/ai/recommendations"
+    # Expected endpoint for the Spring consumer
+    if not url.endswith("/api/recommendations"):
+        url = f"{url}/api/recommendations"
 
     payload = {"rows": list(rows)}
     headers = {"x-api-key": api_key or get_settings().api_key}
