@@ -23,7 +23,9 @@ def _http_client():
 
             return httpx
         except ImportError as exc:  # pragma: no cover - import guard
-            raise ImportError("requests 또는 httpx가 필요합니다. 패키지를 설치하세요.") from exc
+            raise ImportError(
+                "requests 또는 httpx가 필요합니다. 패키지를 설치하세요."
+            ) from exc
 
 
 def post_recommendations(
@@ -71,4 +73,8 @@ def post_recommendations(
     except Exception:  # pragma: no cover - best effort
         text = ""
 
-    return {"status_code": getattr(resp, "status_code", None), "text": text, "ok": getattr(resp, "ok", False)}
+    return {
+        "status_code": getattr(resp, "status_code", None),
+        "text": text,
+        "ok": getattr(resp, "ok", False),
+    }

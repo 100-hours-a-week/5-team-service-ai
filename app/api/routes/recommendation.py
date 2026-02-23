@@ -12,7 +12,9 @@ from app.db.session import get_db
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/ai", tags=["recommendations"], dependencies=[Depends(require_api_key)])
+router = APIRouter(
+    prefix="/ai", tags=["recommendations"], dependencies=[Depends(require_api_key)]
+)
 
 
 class RecommendationRequest(BaseModel):
@@ -29,12 +31,16 @@ def generate_recommendations_post(
     db: Session = Depends(get_db),
 ) -> dict:
     try:
-        result = generate_from_db(top_k=body.top_k, search_k=body.search_k, db=db, persist=True)
+        result = generate_from_db(
+            top_k=body.top_k, search_k=body.search_k, db=db, persist=True
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         logger.exception("Failed to generate recommendations: %s", exc)
-        raise HTTPException(status_code=503, detail="recommendation generation failed") from exc
+        raise HTTPException(
+            status_code=503, detail="recommendation generation failed"
+        ) from exc
 
     rows = result.get("rows") or []
     return {

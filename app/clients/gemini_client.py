@@ -75,7 +75,9 @@ class GeminiClient:
                 "Gemini 모델 목록 조회에 실패했습니다. 설정된 모델/선호도에 따라 계속 시도합니다: %s",
                 exc,
             )
-            self._resolved_model = self._ensure_model_path(self.model_name or self.model_preferences[0])
+            self._resolved_model = self._ensure_model_path(
+                self.model_name or self.model_preferences[0]
+            )
             return self._resolved_model
 
         supported = []
@@ -93,7 +95,9 @@ class GeminiClient:
             self.logger.warning(
                 "generateContent 지원 여부를 확인할 수 없습니다. 설정된 모델/선호도로 계속 시도합니다."
             )
-            self._resolved_model = self._ensure_model_path(self.model_name or self.model_preferences[0])
+            self._resolved_model = self._ensure_model_path(
+                self.model_name or self.model_preferences[0]
+            )
             return self._resolved_model
 
         # Preference order: explicit model name, then preference list, then first supported.
@@ -131,7 +135,9 @@ class GeminiClient:
     def _ensure_model_path(self, name: str) -> str:
         return name if name.startswith("models/") else f"models/{name}"
 
-    def _build_prompt(self, book_title: str | None, content: str, force_json_only: bool) -> str:
+    def _build_prompt(
+        self, book_title: str | None, content: str, force_json_only: bool
+    ) -> str:
         title_part = book_title or "제목 미상"
         strict_suffix = (
             "\n반드시 JSON만 출력하세요. JSON 이외의 텍스트, 설명, 주석, 코드펜스를 절대 포함하지 마세요."
@@ -162,9 +168,15 @@ class GeminiClient:
         except json.JSONDecodeError as exc:
             status_value, rejection_value = self._extract_fields_with_regex(cleaned)
             if status_value:
-                rejection_reason = None if status_value == "SUBMITTED" else rejection_value
-                return GeminiResult(status=status_value, rejection_reason=rejection_reason)
-            raise GeminiClientError(f"Gemini 응답 파싱 실패(JSON 아님): {cleaned[:200]}") from exc
+                rejection_reason = (
+                    None if status_value == "SUBMITTED" else rejection_value
+                )
+                return GeminiResult(
+                    status=status_value, rejection_reason=rejection_reason
+                )
+            raise GeminiClientError(
+                f"Gemini 응답 파싱 실패(JSON 아님): {cleaned[:200]}"
+            ) from exc
 
         status = payload.get("status")
         if status not in {"SUBMITTED", "REJECTED"}:
@@ -196,7 +208,9 @@ class GeminiClient:
                     ),
                 )
 
-    async def evaluate_book_report(self, book_title: str | None, content: str) -> GeminiResult:
+    async def evaluate_book_report(
+        self, book_title: str | None, content: str
+    ) -> GeminiResult:
         model_name = await self._resolve_model()
         prompt = self._build_prompt(book_title, content, force_json_only=False)
         last_error: Exception | None = None
@@ -224,8 +238,14 @@ class GeminiClient:
                 )
                 prompt = self._build_prompt(book_title, content, force_json_only=True)
 
-        suffix = f" | last_response={last_response_text[:200]!r}" if last_response_text else ""
-        raise GeminiClientError(f"Gemini 응답 처리에 실패했습니다.{suffix}") from last_error
+        suffix = (
+            f" | last_response={last_response_text[:200]!r}"
+            if last_response_text
+            else ""
+        )
+        raise GeminiClientError(
+            f"Gemini 응답 처리에 실패했습니다.{suffix}"
+        ) from last_error
 
     def _extract_text(self, response) -> str:
         if getattr(response, "text", None):
@@ -252,7 +272,9 @@ class GeminiClient:
         return cleaned
 
     def _extract_fields_with_regex(self, text: str) -> tuple[str | None, str | None]:
-        status_match = re.search(r'"status"\s*:\s*"(?P<status>SUBMITTED|REJECTED)"', text)
+        status_match = re.search(
+            r'"status"\s*:\s*"(?P<status>SUBMITTED|REJECTED)"', text
+        )
         rejection_match = re.search(
             r'"rejection_reason"\s*:\s*(null|"(?P<reason>[^"]*)")',
             text,

@@ -56,7 +56,9 @@ def build_index(meeting_vecs, meetings: List[Mapping]) -> FaissStore:
     Build FAISS index from meeting vectors and metadata.
     """
     store = FaissStore()
-    store.build(meeting_vecs, [{"meeting_id": m["id"], "status": m["status"]} for m in meetings])
+    store.build(
+        meeting_vecs, [{"meeting_id": m["id"], "status": m["status"]} for m in meetings]
+    )
     return store
 
 
@@ -121,7 +123,8 @@ def generate_rows(
         scores = {
             mid: score
             for mid, score in scores.items()
-            if owner_by_meeting.get(mid) is None or owner_by_meeting.get(mid) != user["user_id"]
+            if owner_by_meeting.get(mid) is None
+            or owner_by_meeting.get(mid) != user["user_id"]
         }
         meeting_ids = rerank_recruiting_with_genre_bonus(
             scores,
@@ -201,23 +204,44 @@ def _push(base_url: str, rows: Iterable[dict]) -> dict:
     """POST rows to Spring service and return response metadata."""
 
     resp = post_recommendations(base_url, rows)
-    logger.info("push response", extra={"status": resp.get("status_code"), "ok": resp.get("ok")})
+    logger.info(
+        "push response", extra={"status": resp.get("status_code"), "ok": resp.get("ok")}
+    )
     return resp
 
 
 def main(argv: Iterable[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run weekly recommendation batch (tracked)")
-    parser.add_argument("--base-url", type=str, default=None, help="Spring service base URL for push")
-    parser.add_argument("--push", action="store_true", help="POST rows to Spring service")
-    parser.add_argument("--dry-run", action="store_true", help="Skip DB upsert and just print sample")
-    parser.add_argument("--top-k", type=int, default=4, help="Final recommendations per user")
-    parser.add_argument("--search-k", type=int, default=20, help="Initial search candidates before rerank")
+    parser = argparse.ArgumentParser(
+        description="Run weekly recommendation batch (tracked)"
+    )
+    parser.add_argument(
+        "--base-url", type=str, default=None, help="Spring service base URL for push"
+    )
+    parser.add_argument(
+        "--push", action="store_true", help="POST rows to Spring service"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Skip DB upsert and just print sample"
+    )
+    parser.add_argument(
+        "--top-k", type=int, default=4, help="Final recommendations per user"
+    )
+    parser.add_argument(
+        "--search-k",
+        type=int,
+        default=20,
+        help="Initial search candidates before rerank",
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s [%(name)s] %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s [%(name)s] %(message)s"
+    )
 
     try:
-        result = generate_from_db(top_k=args.top_k, search_k=args.search_k, persist=not args.dry_run)
+        result = generate_from_db(
+            top_k=args.top_k, search_k=args.search_k, persist=not args.dry_run
+        )
     except Exception as exc:  # noqa: BLE001
         logger.error("DB batch failed: %s", exc)
         return 1
@@ -232,7 +256,9 @@ def main(argv: Iterable[str] | None = None) -> int:
         if not args.base_url:
             parser.error("--base-url is required when --push is set")
         resp = _push(args.base_url, rows)
-        print(f"push status={resp.get('status_code')} ok={resp.get('ok')} text={resp.get('text')}")
+        print(
+            f"push status={resp.get('status_code')} ok={resp.get('ok')} text={resp.get('text')}"
+        )
     else:
         print(f"dry-run: sample rows -> {rows[:3]}")
 

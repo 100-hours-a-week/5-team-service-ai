@@ -26,7 +26,9 @@ class Embedder:
         Device identifier; keep as \"cpu\" for deterministic tests.
     """
 
-    def __init__(self, model_name: str = "nlpai-lab/KURE-v1", device: str = "cpu") -> None:
+    def __init__(
+        self, model_name: str = "nlpai-lab/KURE-v1", device: str = "cpu"
+    ) -> None:
         self.model = SentenceTransformer(model_name, device=device)
 
     def encode(self, texts: Iterable[str]) -> np.ndarray:

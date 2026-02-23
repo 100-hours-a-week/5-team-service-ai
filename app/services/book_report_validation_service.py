@@ -47,7 +47,9 @@ class BookReportValidationService:
         else:
             gemini_called = True
             try:
-                gemini_result = await self.gemini_client.evaluate_book_report(title, content)
+                gemini_result = await self.gemini_client.evaluate_book_report(
+                    title, content
+                )
                 result_status = gemini_result.status
                 rejection_reason = self._truncate_reason(gemini_result.rejection_reason)
             except GeminiClientError as exc:
@@ -55,7 +57,9 @@ class BookReportValidationService:
                 code = status.HTTP_503_SERVICE_UNAVAILABLE
                 if "파싱" in str(exc) or "응답" in str(exc):
                     code = status.HTTP_502_BAD_GATEWAY
-                raise HTTPException(status_code=code, detail=f"Gemini validation failed: {exc}") from exc
+                raise HTTPException(
+                    status_code=code, detail=f"Gemini validation failed: {exc}"
+                ) from exc
             except Exception as exc:  # noqa: BLE001
                 self.logger.exception("Unexpected Gemini error: %s", exc)
                 raise HTTPException(
@@ -103,7 +107,10 @@ class BookReportValidationService:
                 return True, "동일 문장이 반복되어 독후감으로 보기 어렵습니다."
 
         noise_chars = re.findall(r"[^가-힣a-zA-Z0-9\s.,!?'\"-]", content)
-        if content and (len(noise_chars) / len(content)) > self.settings.max_noise_char_ratio:
+        if (
+            content
+            and (len(noise_chars) / len(content)) > self.settings.max_noise_char_ratio
+        ):
             return True, "무의미한 문자/기호가 과도하게 포함되어 있습니다."
 
         link_or_tag_matches = re.findall(r"(https?://|www\.|#\w+)", content)

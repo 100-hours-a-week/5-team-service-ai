@@ -59,8 +59,7 @@ def build_meeting_text(meeting: Mapping) -> str:
     desc = meeting.get("description") or ""
     leader_intro = meeting.get("leader_intro") or ""
     return (
-        f"장르 {genre} 책모임. 제목: {title}. "
-        f"소개: {desc} 리더: {leader_intro}"
+        f"장르 {genre} 책모임. 제목: {title}. 소개: {desc} 리더: {leader_intro}"
     ).strip()
 
 
@@ -194,7 +193,9 @@ def select_recruiting_top_k(
             unscored = [
                 mid
                 for mid, status in status_map.items()
-                if status == "RECRUITING" and mid not in recruiting_ids and mid not in remaining
+                if status == "RECRUITING"
+                and mid not in recruiting_ids
+                and mid not in remaining
             ]
             random.shuffle(unscored)
             remaining.extend(unscored[:missing])
@@ -277,7 +278,11 @@ def rerank_recruiting_with_genre_bonus(
 
         mid, _ = candidates.pop(best_idx)
         meta = meta_map.get(mid, {})
-        genre = meta.get("reading_genre_code") or meta.get("reading_genre_id") or meta.get("genre_code")
+        genre = (
+            meta.get("reading_genre_code")
+            or meta.get("reading_genre_id")
+            or meta.get("genre_code")
+        )
         genre_counts[str(genre)] = genre_counts.get(str(genre), 0) + 1
         selected.append(mid)
 

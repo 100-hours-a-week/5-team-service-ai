@@ -1,0 +1,190 @@
+from __future__ import annotations
+
+import json
+import logging
+import re
+import random
+from typing import Iterable
+
+from app.clients.runpod_client import RunpodClient
+from app.schemas.discussion_topic_schema import (
+    DiscussionReport,
+    DiscussionTopicGenerateResponse,
+    DiscussionTopicSingle,
+)
+
+logger = logging.getLogger(__name__)
+
+# Non-greedy JSON object finder
+JSON_OBJ_RE = re.compile(r"\{.*?\}", re.DOTALL)
+CODE_FENCE_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
+
+
+class DiscussionTopicService:
+    """Generate a single discussion topic from given reports via RunPod LLM."""
+
+    def __init__(
+        self,
+        runpod_client: RunpodClient,
+        *,
+        max_tokens: int = 512,
+        temperature: float = 0.8,
+        top_p: float = 0.9,
+    ) -> None:
+        self.runpod_client = runpod_client
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        self.top_p = top_p
+
+    # Public ---------------------------------------------------------------
+    def generate_topics(
+        self,
+        *,
+        meeting_round_id: int,
+        topic_no: int,
+        reports: Iterable[DiscussionReport],
+    ) -> DiscussionTopicGenerateResponse:
+        reports_list = list(reports or [])
+        if not reports_list:
+            raise ValueError("no book reports provided in request")
+
+        contents = self._collect_contents(reports_list)
+        prompt = self._build_prompt(meeting_round_id, topic_no, contents)
+        logger.info("RunPod discussion prompt (truncate 400): %s", prompt[:400])
+
+        payload = {
+            "prompt": prompt,
+            "sampling_params": {
+                "max_tokens": self.max_tokens,
+                "temperature": 0.8,
+                "top_p": 0.9,
+                "stop": ["```", "\n```", "\n\n\n", "#", "뉴스", "정답"],
+            },
+        }
+
+        job_id, output = self.runpod_client.generate(payload)
+        logger.info("RunPod discussion job completed: %s", job_id)
+        raw_text = self._extract_text(output)
+        logger.error("RAW OUTPUT >>> %s", raw_text)
+
+        topic = self._parse_topic(raw_text)
+        if not topic:
+            topic = self._fallback_topic(contents)
+
+        return DiscussionTopicGenerateResponse(
+            status="success",
+            data=DiscussionTopicSingle(topicNo=topic_no, topic=topic),
+        )
+
+    # Helpers --------------------------------------------------------------
+    def _collect_contents(self, reports) -> list[str]:
+        contents = [r.content for r in reports if getattr(r, "content", None)]
+        return [c[:800] for c in contents if c]
+
+    def _build_prompt(self, meeting_round_id: int, topic_no: int, contents: list[str]) -> str:
+        context = "\n".join(f"- {c}" for c in contents)
+        variation_token = random.randint(1, 1_000_000)
+        return (
+            "너는 한국어 토론 주제를 만드는 전문가다.\n"
+            "아래 독후감 내용을 보고 서점 북클럽에서 사용할 질문형 토론 주제 1개를 만들어라.\n"
+            "규칙: 질문형 문장, 중복/모호 표현 금지, 한국어로 작성. 이전과 다른 각도/주제를 사용해라.\n"
+            "반드시 JSON만 출력하고, 형식은 아래와 같다:\n"
+            "{\n"
+            f'  "topicNo": {topic_no},\n'
+            '  "topic": "질문 내용"\n'
+            "}\n"
+            f"meeting_round_id: {meeting_round_id}\n"
+            f"독후감 개수: {len(contents)}\n"
+            f"독후감 요약:\n{context}\n"
+            f"variation_token: {variation_token}\n"
+            "JSON 외 텍스트나 설명을 절대 넣지 말 것. 뉴스나 정답 같은 다른 내용을 쓰지 말 것."
+        )
+
+    def _extract_text(self, output) -> str:
+        # Prefer tokens array if present
+        if isinstance(output, dict):
+            choices = output.get("choices")
+            if isinstance(choices, list) and choices:
+                first = choices[0]
+                if isinstance(first, dict):
+                    tokens = first.get("tokens")
+                    if isinstance(tokens, list) and tokens:
+                        text = "".join(tokens)
+                        cut = text.find("}`")
+                        if cut != -1:
+                            text = text[: cut + 1]
+                        # also cut at first ``` if present
+                        fence = text.find("```")
+                        if fence != -1:
+                            text = text[:fence]
+                        return text
+            for key in ("text", "output"):
+                val = output.get(key)
+                if isinstance(val, str):
+                    return val
+                if isinstance(val, dict):
+                    inner = val.get("text") or val.get("output")
+                    if isinstance(inner, str):
+                        return inner
+            if isinstance(choices, list) and choices:
+                first = choices[0]
+                if isinstance(first, dict):
+                    message = first.get("message") or {}
+                    content = message.get("content") if isinstance(message, dict) else None
+                    if isinstance(content, str):
+                        return content
+                    for key in ("text", "content", "generated_text"):
+                        val = first.get(key)
+                        if isinstance(val, str):
+                            return val
+        if isinstance(output, list) and output:
+            return self._extract_text(output[0])
+        return str(output)
+
+    def _parse_topic(self, raw_text: str) -> str | None:
+        text = raw_text.strip()
+        if text.startswith("```"):
+            text = text.strip("`").strip()
+
+        block = None
+        m = CODE_FENCE_RE.search(text)
+        if m:
+            block = m.group(1)
+        if not block:
+            m = JSON_OBJ_RE.search(text)
+            block = m.group(0) if m else None
+        if not block:
+            return None
+
+        try:
+            data = json.loads(block)
+        except Exception:
+            return None
+
+        if isinstance(data, dict):
+            if data.get("topic"):
+                return str(data["topic"]).strip()
+            if data.get("topics") and isinstance(data["topics"], list):
+                candidates = []
+                for item in data["topics"]:
+                    if isinstance(item, dict) and item.get("topic"):
+                        candidates.append(str(item["topic"]).strip())
+                    elif isinstance(item, str):
+                        candidates.append(item.strip())
+                if candidates:
+                    return random.choice(candidates)
+        elif isinstance(data, list):
+            candidates = []
+            for item in data:
+                if isinstance(item, dict) and item.get("topic"):
+                    candidates.append(str(item["topic"]).strip())
+                elif isinstance(item, str):
+                    candidates.append(item.strip())
+            if candidates:
+                return random.choice(candidates)
+        return None
+
+    def _fallback_topic(self, contents: list[str]) -> str:
+        if contents:
+            return "독후감에서 가장 인상적인 장면이 던지는 질문은 무엇인가요?"
+        return "이 작품이 오늘날 우리에게 던지는 핵심 질문은 무엇인가요?"

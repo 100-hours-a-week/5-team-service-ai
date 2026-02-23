@@ -87,6 +87,7 @@ class RecommendationRepo:
         """
         Parse JSON/text fields into Python lists if needed.
         """
+
         def _parse(value):
             if value is None:
                 return []

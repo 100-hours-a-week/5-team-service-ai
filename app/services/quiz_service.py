@@ -51,16 +51,22 @@ class QuizService:
     embedder: Embedder
     top_k_sentences: int = 5
     max_tokens: int = 512  # vLLM sampling_params.max_tokens에 전달
-    temperature: float = 0.5 # 0.2   # 노이즈 줄이기 위해 낮춤
-    top_p: float = 1.0 #0.9
+    temperature: float = 0.5  # 0.2   # 노이즈 줄이기 위해 낮춤
+    top_p: float = 1.0  # 0.9
 
-    def generate(self, *, title: str, author: str, room_id: int, db: Session) -> QuizGenerateResponse:
+    def generate(
+        self, *, title: str, author: str, room_id: int, db: Session
+    ) -> QuizGenerateResponse:
         book = BookRepository.search_one(db, title=title, author=author)
         if not book:
             raise ValueError("book not found")
 
-        sentences = self._select_sentences(summary=book.summary or "", title=title, author=author)
-        prompt = self._build_prompt(title=title, author=author, room_id=room_id, sentences=sentences)
+        sentences = self._select_sentences(
+            summary=book.summary or "", title=title, author=author
+        )
+        prompt = self._build_prompt(
+            title=title, author=author, room_id=room_id, sentences=sentences
+        )
         logger.info("RunPod prompt (truncated 400 chars): %s", prompt[:400])
 
         payload = {
@@ -69,14 +75,17 @@ class QuizService:
                 "max_tokens": self.max_tokens,
                 "temperature": self.temperature,
                 "top_p": self.top_p,
-                "seed": randint(1, 1_000_000), # 문제 바꾸기 위해 추가
+                "seed": randint(1, 1_000_000),  # 문제 바꾸기 위해 추가
             },
         }
 
         job_id, output = self.runpod_client.generate(payload)
         logger.info("RunPod job completed: %s", job_id)
         try:
-            logger.info("RunPod output (json, truncated 800 chars): %s", json.dumps(output)[:800])
+            logger.info(
+                "RunPod output (json, truncated 800 chars): %s",
+                json.dumps(output)[:800],
+            )
         except Exception:  # pragma: no cover - best effort
             pass
 
@@ -86,7 +95,9 @@ class QuizService:
             quiz_response = self._parse_quiz_response(raw_text, room_id)
             return quiz_response
         except Exception as exc:  # noqa: BLE001
-            logger.warning("LLM parse failed (%s); falling back to deterministic quiz", exc)
+            logger.warning(
+                "LLM parse failed (%s); falling back to deterministic quiz", exc
+            )
             return self._fallback_quiz(title=title, author=author, room_id=room_id)
 
     # ---------------- internal helpers ---------------- #
@@ -101,7 +112,9 @@ class QuizService:
 
         try:
             sent_embeddings = self.embedder.encode(sentences)
-            query_vec = self.embedder.encode([f"{title} {author} 주요 내용 퀴즈 포인트"])[0]
+            query_vec = self.embedder.encode(
+                [f"{title} {author} 주요 내용 퀴즈 포인트"]
+            )[0]
             scores = np.dot(sent_embeddings, query_vec)
             top_idx = np.argsort(scores)[::-1][: self.top_k_sentences]
             selected = [sentences[i] for i in top_idx if i < len(sentences)]
@@ -110,22 +123,24 @@ class QuizService:
             logger.warning("Fallback to raw summary because embedding failed: %s", exc)
             return sentences[: self.top_k_sentences]
 
-    def _build_prompt(self, *, title: str, author: str, room_id: int, sentences: Sequence[str]) -> str:
+    def _build_prompt(
+        self, *, title: str, author: str, room_id: int, sentences: Sequence[str]
+    ) -> str:
         context = "\n".join(f"- {s}" for s in sentences)
         return (
             "너는 한국어 객관식 퀴즈를 한 문제만 생성하는 출제자다.\n"
             "아래 책 정보와 컨텍스트 문장만 사용해 문제를 만들고, 반드시 JSON만 출력해라.\n"
             "질문은 세 문장, 각 보기는 한문장으로 간결하게 써라.\n"
             "출력 형식 예시:\n"
-            '{\n'
+            "{\n"
             f'  "quiz": {{"room_id": {room_id}, "question": "질문", "correct_choice_number": 2}},\n'
             '  "quiz_choices": [\n'
             f'    {{"room_id": {room_id}, "choice_number": 1, "choice_text": "보기1"}},\n'
             f'    {{"room_id": {room_id}, "choice_number": 2, "choice_text": "보기2"}},\n'
             f'    {{"room_id": {room_id}, "choice_number": 3, "choice_text": "보기3"}},\n'
             f'    {{"room_id": {room_id}, "choice_number": 4, "choice_text": "보기4"}}\n'
-            '  ]\n'
-            '}\n'
+            "  ]\n"
+            "}\n"
             "규칙: JSON 외 설명 금지, room_id는 외부에서 받은 값을 그대로 사용, 보기 4개, 보기 번호는 1~4, "
             "correct_choice_number는 정답 보기 번호.\n"
             f"책 제목: {title}\n"
@@ -258,12 +273,16 @@ class QuizService:
             )
 
         # correct_choice_number 보정
-        if "correct_choice_number" not in quiz or not (1 <= int(quiz["correct_choice_number"]) <= 4):
+        if "correct_choice_number" not in quiz or not (
+            1 <= int(quiz["correct_choice_number"]) <= 4
+        ):
             quiz["correct_choice_number"] = 1
 
         return {"quiz": quiz, "quiz_choices": normalized_choices[:4]}
 
-    def _fallback_quiz(self, *, title: str, author: str, room_id: int) -> QuizGenerateResponse:
+    def _fallback_quiz(
+        self, *, title: str, author: str, room_id: int
+    ) -> QuizGenerateResponse:
         """
         Deterministic backup when LLM output is unusable.
         """
@@ -288,9 +307,13 @@ class QuizService:
         dist_iter = iter(distractors)
         for idx in range(1, 5):
             text = author if idx == correct_slot else next(dist_iter)
-            choices.append(QuizChoice(room_id=room_id, choice_number=idx, choice_text=text))
+            choices.append(
+                QuizChoice(room_id=room_id, choice_number=idx, choice_text=text)
+            )
 
-        quiz = Quiz(room_id=room_id, question=question, correct_choice_number=correct_slot)
+        quiz = Quiz(
+            room_id=room_id, question=question, correct_choice_number=correct_slot
+        )
         return QuizGenerateResponse(quiz=quiz, quiz_choices=choices)
 
     # placeholder 감지는 완화: 질문이 비어 있고 보기도 전부 '보기 '로만 시작할 때만 fallback.
