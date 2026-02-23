@@ -42,8 +42,12 @@ def start_scheduler() -> BackgroundScheduler | None:
         logger.info("reco scheduler disabled via ENABLE_RECO_SCHEDULER")
         return None
 
-    scheduler = BackgroundScheduler(timezone=pytz.timezone(settings.reco_scheduler_timezone))
-    trigger = CronTrigger.from_crontab(settings.reco_scheduler_cron, timezone=scheduler.timezone)
+    scheduler = BackgroundScheduler(
+        timezone=pytz.timezone(settings.reco_scheduler_timezone)
+    )
+    trigger = CronTrigger.from_crontab(
+        settings.reco_scheduler_cron, timezone=scheduler.timezone
+    )
 
     job_kwargs = {
         "top_k": settings.reco_scheduler_top_k,

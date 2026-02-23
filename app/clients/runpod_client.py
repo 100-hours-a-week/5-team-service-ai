@@ -55,7 +55,9 @@ class RunpodClient:
         url = f"{self.base_url}/status/{job_id}"
         while True:
             if time.time() > deadline:
-                raise TimeoutError(f"RunPod job timeout after {self.poll_timeout}s (job_id={job_id})")
+                raise TimeoutError(
+                    f"RunPod job timeout after {self.poll_timeout}s (job_id={job_id})"
+                )
 
             resp = requests.get(url, headers=self._headers(), timeout=15)
             resp.raise_for_status()

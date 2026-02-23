@@ -32,7 +32,9 @@ class QuizGenerateRequest(BaseModel):
 def _quiz_service() -> QuizService:
     settings = get_settings()
     if not settings.runpod_endpoint_id or not settings.runpod_api_key:
-        raise HTTPException(status_code=503, detail="RUNPOD endpoint or API key not configured")
+        raise HTTPException(
+            status_code=503, detail="RUNPOD endpoint or API key not configured"
+        )
 
     client = RunpodClient(
         endpoint_id=settings.runpod_endpoint_id,
@@ -62,7 +64,9 @@ def generate_quiz(
     quiz_service: QuizService = Depends(get_quiz_service),
 ) -> QuizGenerateResponse:
     try:
-        return quiz_service.generate(title=body.title, author=body.author, room_id=body.room_id, db=db)
+        return quiz_service.generate(
+            title=body.title, author=body.author, room_id=body.room_id, db=db
+        )
     except Exception as exc:  # noqa: BLE001
         logging.getLogger(__name__).exception("quiz generation failed: %s", exc)
         raise HTTPException(status_code=503, detail="quiz generation failed") from exc
