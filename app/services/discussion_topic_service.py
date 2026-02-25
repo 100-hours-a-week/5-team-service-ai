@@ -4,7 +4,11 @@ import json
 import logging
 import re
 import random
-from typing import Iterable
+from pathlib import Path
+from typing import Iterable, Sequence
+
+import faiss
+import numpy as np
 
 from app.clients.runpod_client import RunpodClient
 from app.schemas.discussion_topic_schema import (
@@ -12,6 +16,7 @@ from app.schemas.discussion_topic_schema import (
     DiscussionTopicGenerateResponse,
     DiscussionTopicSingle,
 )
+from app.services.embedder import Embedder
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +35,23 @@ class DiscussionTopicService:
         max_tokens: int = 512,
         temperature: float = 0.8,
         top_p: float = 0.9,
+        top_k: int = 5,
+        max_context_chars: int = 1200,
+        index_path: str = "data/discussion_topics.faiss",
+        meta_path: str = "data/discussion_topics_meta.json",
     ) -> None:
         self.runpod_client = runpod_client
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.top_p = top_p
+        self.top_k = top_k
+        self.max_context_chars = max_context_chars
+        self.embedder = Embedder()
+        self.index_path = Path(index_path)
+        self.meta_path = Path(meta_path)
+        self.index: faiss.Index | None = None
+        self.metadatas: list[dict] = []
+        self._load_index()
 
     # Public ---------------------------------------------------------------
     def generate_topics(
@@ -56,8 +73,8 @@ class DiscussionTopicService:
             "prompt": prompt,
             "sampling_params": {
                 "max_tokens": self.max_tokens,
-                "temperature": 0.8,
-                "top_p": 0.9,
+                "temperature": self.temperature,
+                "top_p": self.top_p,
                 "stop": ["```", "\n```", "\n\n\n", "#", "뉴스", "정답"],
             },
         }
@@ -71,6 +88,12 @@ class DiscussionTopicService:
         if not topic:
             topic = self._fallback_topic(contents)
 
+        # persist embeddings for future RAG
+        try:
+            self._add_to_index(contents, meeting_round_id)
+        except Exception as exc:  # pragma: no cover
+            logger.warning("faiss add failed: %s", exc)
+
         return DiscussionTopicGenerateResponse(
             status="success",
             data=DiscussionTopicSingle(topicNo=topic_no, topic=topic),
@@ -82,7 +105,8 @@ class DiscussionTopicService:
         return [c[:800] for c in contents if c]
 
     def _build_prompt(self, meeting_round_id: int, topic_no: int, contents: list[str]) -> str:
-        context = "\n".join(f"- {c}" for c in contents)
+        context_lines = self._build_context(contents)
+        context = "\n".join(f"- {c}" for c in context_lines)
         variation_token = random.randint(1, 1_000_000)
         return (
             "너는 한국어 토론 주제를 만드는 전문가다.\n"
@@ -188,3 +212,67 @@ class DiscussionTopicService:
         if contents:
             return "독후감에서 가장 인상적인 장면이 던지는 질문은 무엇인가요?"
         return "이 작품이 오늘날 우리에게 던지는 핵심 질문은 무엇인가요?"
+
+    # ------------- RAG helpers ---------------- #
+    def _normalize_text(self, text: str) -> str:
+        return " ".join(text.strip().split())
+
+    def _build_context(self, contents: list[str]) -> list[str]:
+        if not contents:
+            return []
+        normalized = [self._normalize_text(c) for c in contents]
+        vecs = self.embedder.encode(normalized)
+        vecs = vecs / (np.linalg.norm(vecs, axis=1, keepdims=True) + 1e-8)
+        query_vec = np.mean(vecs, axis=0)
+        query_vec = query_vec / (np.linalg.norm(query_vec) + 1e-8)
+
+        sims = vecs @ query_vec
+        top_idx = np.argsort(sims)[::-1][: self.top_k]
+        hits = [contents[i][:300] for i in top_idx]
+
+        context_lines = []
+        seen = set()
+        for h in hits:
+            if h in seen:
+                continue
+            seen.add(h)
+            context_lines.append(h)
+            if len("\n".join(context_lines)) > self.max_context_chars:
+                break
+        return context_lines
+
+    def _load_index(self):
+        if self.index_path.exists():
+            self.index = faiss.read_index(str(self.index_path))
+        else:
+            self.index = None
+        if self.meta_path.exists():
+            try:
+                self.metadatas = json.loads(self.meta_path.read_text())
+            except Exception:
+                self.metadatas = []
+        else:
+            self.metadatas = []
+
+    def _save_index(self):
+        if self.index is not None:
+            self.index_path.parent.mkdir(parents=True, exist_ok=True)
+            faiss.write_index(self.index, str(self.index_path))
+        self.meta_path.parent.mkdir(parents=True, exist_ok=True)
+        self.meta_path.write_text(json.dumps(self.metadatas, ensure_ascii=False))
+
+    def _add_to_index(self, contents: list[str], meeting_round_id: int):
+        if not contents:
+            return
+        normalized = [self._normalize_text(c) for c in contents]
+        vecs = self.embedder.encode(normalized)
+        faiss.normalize_L2(vecs)
+        if self.index is None:
+            dim = vecs.shape[1]
+            self.index = faiss.IndexFlatIP(dim)
+        self.index.add(vecs)
+        for c in contents:
+            self.metadatas.append(
+                {"meeting_round_id": meeting_round_id, "content": c[:300]}
+            )
+        self._save_index()
