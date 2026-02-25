@@ -18,6 +18,7 @@ from app.routers.book_report_validation_router import (
     router as book_report_validation_router,
 )
 from app.api.routes.discussion_topics import router as discussion_topic_router
+from app.api.routes.discussion_summary import router as discussion_summary_router
 from app.api.routes.recommendation import router as recommendation_router
 from app.api.routes.quiz import router as quiz_router
 from app.core.scheduler import shutdown_scheduler, start_scheduler
@@ -39,6 +40,7 @@ def health_check():
 
 app.include_router(book_report_validation_router)
 app.include_router(discussion_topic_router)
+app.include_router(discussion_summary_router)
 app.include_router(recommendation_router)
 app.include_router(quiz_router)
 
