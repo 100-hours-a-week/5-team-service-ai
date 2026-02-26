@@ -28,7 +28,8 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
 )
 
-app = FastAPI(title="Book Report Validation API")
+# Nginx serves the app under /ai, so set root_path to keep docs/OpenAPI paths correct
+app = FastAPI(title="Book Report Validation API", root_path="/ai")
 
 _scheduler = None
 
