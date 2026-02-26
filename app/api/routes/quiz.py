@@ -16,7 +16,7 @@ from app.services.embedder import Embedder
 from app.services.quiz_service import QuizService
 
 router = APIRouter(
-    prefix="/ai/quiz",
+    prefix="/quiz",
     tags=["quiz"],
     dependencies=[Depends(require_api_key)],
 )
