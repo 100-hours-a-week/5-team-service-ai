@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import asyncio
+import hashlib
 import json
 import logging
-import re
 import random
+import re
+from collections import deque
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Iterable
 
 import faiss
 import numpy as np
@@ -26,7 +29,7 @@ CODE_FENCE_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
 
 
 class DiscussionTopicService:
-    """Generate a single discussion topic from given reports via RunPod LLM."""
+    """Generate discussion topics from given reports via RunPod LLM with caching."""
 
     def __init__(
         self,
@@ -52,9 +55,12 @@ class DiscussionTopicService:
         self.index: faiss.Index | None = None
         self.metadatas: list[dict] = []
         self._load_index()
+        self.topic_pool_size = 5
+        self._topic_pools: dict[str, deque[str]] = {}
+        self._locks: dict[str, asyncio.Lock] = {}
 
     # Public ---------------------------------------------------------------
-    def generate_topics(
+    async def generate_topics(
         self,
         *,
         meeting_round_id: int,
@@ -66,33 +72,20 @@ class DiscussionTopicService:
             raise ValueError("no book reports provided in request")
 
         contents = self._collect_contents(reports_list)
-        prompt = self._build_prompt(meeting_round_id, topic_no, contents)
-        logger.info("RunPod discussion prompt (truncate 400): %s", prompt[:400])
+        cache_key = self._build_cache_key(meeting_round_id, reports_list)
+        lock = self._locks.setdefault(cache_key, asyncio.Lock())
 
-        payload = {
-            "prompt": prompt,
-            "sampling_params": {
-                "max_tokens": self.max_tokens,
-                "temperature": self.temperature,
-                "top_p": self.top_p,
-                "stop": ["```", "\n```", "\n\n\n", "#", "뉴스", "정답"],
-            },
-        }
+        async with lock:
+            pool = self._topic_pools.get(cache_key)
 
-        job_id, output = self.runpod_client.generate(payload)
-        logger.info("RunPod discussion job completed: %s", job_id)
-        raw_text = self._extract_text(output)
-        logger.error("RAW OUTPUT >>> %s", raw_text)
+            if not pool:
+                pool = await self._generate_topic_pool(
+                    meeting_round_id=meeting_round_id,
+                    contents=contents,
+                )
+                self._topic_pools[cache_key] = pool
 
-        topic = self._parse_topic(raw_text)
-        if not topic:
-            topic = self._fallback_topic(contents)
-
-        # persist embeddings for future RAG
-        try:
-            self._add_to_index(contents, meeting_round_id)
-        except Exception as exc:  # pragma: no cover
-            logger.warning("faiss add failed: %s", exc)
+            topic = pool.popleft() if pool else self._fallback_topic(contents)
 
         return DiscussionTopicGenerateResponse(
             status="success",
@@ -104,19 +97,23 @@ class DiscussionTopicService:
         contents = [r.content for r in reports if getattr(r, "content", None)]
         return [c[:800] for c in contents if c]
 
-    def _build_prompt(self, meeting_round_id: int, topic_no: int, contents: list[str]) -> str:
+    def _build_prompt(
+        self, meeting_round_id: int, *, topic_count: int, contents: list[str]
+    ) -> str:
         context_lines = self._build_context(contents)
         context = "\n".join(f"- {c}" for c in context_lines)
         variation_token = random.randint(1, 1_000_000)
         return (
             "너는 한국어 토론 주제를 만드는 전문가다.\n"
-            "아래 독후감 내용을 보고 서점 북클럽에서 사용할 질문형 토론 주제 1개를 만들어라.\n"
+            f"아래 독후감 내용을 보고 질문형 토론 주제 {topic_count}개를 JSON 배열로 만들어라.\n"
             "규칙: 질문형 문장, 중복/모호 표현 금지, 한국어로 작성. 이전과 다른 각도/주제를 사용해라.\n"
+            f"반드시 배열 길이가 {topic_count}가 되도록 채워라(부족하면 추가 생성).\n"
             "반드시 JSON만 출력하고, 형식은 아래와 같다:\n"
-            "{\n"
-            f'  "topicNo": {topic_no},\n'
-            '  "topic": "질문 내용"\n'
-            "}\n"
+            "[\n"
+            '  { "topic": "질문 내용1" },\n'
+            '  { "topic": "질문 내용2" },\n'
+            "  ...\n"
+            "]\n"
             f"meeting_round_id: {meeting_round_id}\n"
             f"독후감 개수: {len(contents)}\n"
             f"독후감 요약:\n{context}\n"
@@ -165,48 +162,76 @@ class DiscussionTopicService:
             return self._extract_text(output[0])
         return str(output)
 
-    def _parse_topic(self, raw_text: str) -> str | None:
+    def _parse_topics(self, raw_text: str, expected: int) -> list[str]:
         text = raw_text.strip()
         if text.startswith("```"):
             text = text.strip("`").strip()
 
+        # 1) 코드펜스/배열 블록 우선 추출
         block = None
         m = CODE_FENCE_RE.search(text)
         if m:
             block = m.group(1)
+        if not block and text.startswith("[") and text.endswith("]"):
+            block = text
         if not block:
             m = JSON_OBJ_RE.search(text)
             block = m.group(0) if m else None
-        if not block:
-            return None
 
-        try:
-            data = json.loads(block)
-        except Exception:
-            return None
+        topics: list[str] = []
 
-        if isinstance(data, dict):
-            if data.get("topic"):
-                return str(data["topic"]).strip()
-            if data.get("topics") and isinstance(data["topics"], list):
-                candidates = []
-                for item in data["topics"]:
-                    if isinstance(item, dict) and item.get("topic"):
-                        candidates.append(str(item["topic"]).strip())
-                    elif isinstance(item, str):
-                        candidates.append(item.strip())
-                if candidates:
-                    return random.choice(candidates)
-        elif isinstance(data, list):
-            candidates = []
-            for item in data:
-                if isinstance(item, dict) and item.get("topic"):
-                    candidates.append(str(item["topic"]).strip())
-                elif isinstance(item, str):
-                    candidates.append(item.strip())
-            if candidates:
-                return random.choice(candidates)
-        return None
+        def _coerce_from_obj(obj) -> list[str]:
+            if isinstance(obj, dict):
+                if obj.get("topic"):
+                    return [str(obj["topic"]).strip()]
+                if obj.get("topics") and isinstance(obj["topics"], list):
+                    return [
+                        (str(it["topic"]).strip() if isinstance(it, dict) else str(it).strip())
+                        for it in obj["topics"]
+                        if (isinstance(it, dict) and it.get("topic")) or isinstance(it, str)
+                    ]
+            if isinstance(obj, list):
+                out = []
+                for it in obj:
+                    if isinstance(it, dict) and it.get("topic"):
+                        out.append(str(it["topic"]).strip())
+                    elif isinstance(it, str):
+                        out.append(it.strip())
+                return out
+            return []
+
+        # 2) block이 있으면 먼저 시도
+        if block:
+            try:
+                data = json.loads(block)
+                topics.extend(_coerce_from_obj(data))
+            except Exception:
+                pass
+
+        # 3) 여전히 부족하면 텍스트 내 모든 JSON 객체를 순회해 추출
+        if len(topics) < expected:
+            for m in JSON_OBJ_RE.finditer(text):
+                try:
+                    obj = json.loads(m.group(0))
+                    topics.extend(_coerce_from_obj(obj))
+                except Exception:
+                    continue
+                if len(topics) >= expected:
+                    break
+
+        # 4) 정리
+        deduped = []
+        seen = set()
+        for t in topics:
+            if not t:
+                continue
+            if t in seen:
+                continue
+            seen.add(t)
+            deduped.append(t)
+            if len(deduped) >= expected:
+                break
+        return deduped
 
     def _fallback_topic(self, contents: list[str]) -> str:
         if contents:
@@ -218,21 +243,49 @@ class DiscussionTopicService:
         return " ".join(text.strip().split())
 
     def _build_context(self, contents: list[str]) -> list[str]:
+        """
+        Build prompt 컨텍스트.
+
+        1) 요청에 들어온 리포트들에서 유사도 상위 문단 추출.
+        2) FAISS 인덱스에 기존 데이터가 있으면 함께 검색해 RAG 컨텍스트로 섞음.
+        3) 인덱스가 비어 있으면 기존 동작 그대로 (write-only) 진행.
+        """
+
         if not contents:
             return []
+
         normalized = [self._normalize_text(c) for c in contents]
         vecs = self.embedder.encode(normalized)
         vecs = vecs / (np.linalg.norm(vecs, axis=1, keepdims=True) + 1e-8)
         query_vec = np.mean(vecs, axis=0)
         query_vec = query_vec / (np.linalg.norm(query_vec) + 1e-8)
 
+        # 1) 현재 요청 내에서 상위 문단
         sims = vecs @ query_vec
         top_idx = np.argsort(sims)[::-1][: self.top_k]
-        hits = [contents[i][:300] for i in top_idx]
+        current_hits = [contents[i][:300] for i in top_idx]
 
-        context_lines = []
+        # 2) 기존 FAISS 인덱스 RAG (있을 때만)
+        retrieved_hits: list[str] = []
+        if self.index is not None and getattr(self.index, "ntotal", 0) > 0:
+            try:
+                query = query_vec.astype(np.float32, copy=False)[None, :]
+                k = min(self.top_k, self.index.ntotal)
+                scores, idxs = self.index.search(query, k)
+                for idx in idxs[0]:
+                    if idx == -1:
+                        continue
+                    if idx < len(self.metadatas):
+                        content = self.metadatas[idx].get("content")
+                        if content:
+                            retrieved_hits.append(content)
+            except Exception as exc:  # pragma: no cover
+                logger.warning("faiss search failed: %s", exc)
+
+        # 3) 중복 제거 후 길이 제한 내에서 컨텍스트 구성
+        context_lines: list[str] = []
         seen = set()
-        for h in hits:
+        for h in current_hits + retrieved_hits:
             if h in seen:
                 continue
             seen.add(h)
@@ -276,3 +329,73 @@ class DiscussionTopicService:
                 {"meeting_round_id": meeting_round_id, "content": c[:300]}
             )
         self._save_index()
+
+    # ------------- Topic pool helpers ---------------- #
+    def _build_cache_key(self, meeting_round_id: int, reports: list[DiscussionReport]) -> str:
+        normalized = [
+            {
+                "id": getattr(r, "id", None),
+                "content": (getattr(r, "content", "") or "")[:800],
+            }
+            for r in sorted(reports, key=lambda r: getattr(r, "id", 0))
+        ]
+        blob = json.dumps(normalized, ensure_ascii=False, separators=(",", ":"))
+        sig = hashlib.sha256(blob.encode("utf-8")).hexdigest()
+        return f"{meeting_round_id}:{sig}"
+
+    async def _generate_topic_pool(
+        self, *, meeting_round_id: int, contents: list[str]
+    ) -> deque[str]:
+        topics: list[str] = []
+        attempts = 0
+        while attempts < 2 and len(topics) < self.topic_pool_size:
+            attempts += 1
+            prompt = self._build_prompt(
+                meeting_round_id, topic_count=self.topic_pool_size, contents=contents
+            )
+            logger.info(
+                "RunPod discussion prompt (attempt %s, truncate 400): %s",
+                attempts,
+                prompt[:400],
+            )
+
+            payload = {
+                "prompt": prompt,
+                "sampling_params": {
+                    "max_tokens": self.max_tokens,
+                    "temperature": self.temperature,
+                    "top_p": self.top_p,
+                    "stop": ["```", "\n```", "\n\n\n", "#", "뉴스", "정답"],
+                },
+            }
+
+            try:
+                job_id, output = await asyncio.to_thread(
+                    self.runpod_client.generate, payload
+                )
+                logger.info("RunPod discussion job completed: %s", job_id)
+                raw_text = self._extract_text(output)
+                logger.error("RAW OUTPUT >>> %s", raw_text)
+                topics = self._parse_topics(raw_text, expected=self.topic_pool_size)
+            except Exception as exc:  # noqa: BLE001
+                logger.exception("discussion topic pool generation failed: %s", exc)
+                topics = []
+
+        if len(topics) < self.topic_pool_size:
+            # 부족하면 기존 결과를 순환 복제하거나 전부 없으면 fallback으로 채움
+            if topics:
+                idx = 0
+                while len(topics) < self.topic_pool_size:
+                    topics.append(topics[idx % len(topics)])
+                    idx += 1
+            else:
+                while len(topics) < self.topic_pool_size:
+                    topics.append(self._fallback_topic(contents))
+
+        # 풀 생성 시에만 인덱스 저장 1회
+        try:
+            self._add_to_index(contents, meeting_round_id)
+        except Exception as exc:  # pragma: no cover
+            logger.warning("faiss add failed: %s", exc)
+
+        return deque(topics)

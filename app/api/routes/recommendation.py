@@ -13,7 +13,7 @@ from app.db.session import get_db
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/ai", tags=["recommendations"], dependencies=[Depends(require_api_key)]
+    prefix="", tags=["recommendations"], dependencies=[Depends(require_api_key)]
 )
 
 

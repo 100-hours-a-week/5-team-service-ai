@@ -17,7 +17,7 @@ from app.services.discussion_topic_service import DiscussionTopicService
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/ai/meeting-rounds",
+    prefix="/meeting-rounds",
     tags=["discussion-topics"],
     dependencies=[Depends(require_api_key)],
 )
@@ -56,7 +56,7 @@ async def generate_discussion_topics(
     service: DiscussionTopicService = Depends(get_discussion_topic_service),
 ) -> DiscussionTopicGenerateResponse:
     try:
-        return service.generate_topics(
+        return await service.generate_topics(
             meeting_round_id=meetingRoundId,
             topic_no=payload.topic_no,
             reports=payload.reports,

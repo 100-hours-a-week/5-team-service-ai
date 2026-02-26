@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 router = APIRouter(
-    prefix="/ai/chat-rooms",
+    prefix="/chat-rooms",
     tags=["discussion-summary"],
     dependencies=[Depends(require_api_key)],
 )
