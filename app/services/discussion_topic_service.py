@@ -64,7 +64,6 @@ class DiscussionTopicService:
         self,
         *,
         meeting_round_id: int,
-        topic_no: int,
         reports: Iterable[DiscussionReport],
     ) -> DiscussionTopicGenerateResponse:
         reports_list = list(reports or [])
@@ -89,7 +88,7 @@ class DiscussionTopicService:
 
         return DiscussionTopicGenerateResponse(
             status="success",
-            data=DiscussionTopicSingle(topicNo=topic_no, topic=topic),
+            data=DiscussionTopicSingle(topic=topic),
         )
 
     # Helpers --------------------------------------------------------------
