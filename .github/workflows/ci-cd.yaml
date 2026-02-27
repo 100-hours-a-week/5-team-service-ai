@@ -184,7 +184,7 @@ jobs:
 
           CMD_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=tag:Environment,Values=dev" \
+            --targets "Key=tag:Environment,Values=dev" "Key=tag:Service,Values=ai" \
             --parameters "{\"commands\": $COMMANDS}" \
             --timeout-seconds 300 \
             --comment "deploy dev ai ${{ github.sha }}" \

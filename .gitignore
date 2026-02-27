@@ -45,3 +45,4 @@ data/faiss/
 # Local-only test fixtures and scripts
 tests/
 scripts/
+docs/
