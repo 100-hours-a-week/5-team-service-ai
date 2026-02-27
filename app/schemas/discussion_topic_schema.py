@@ -15,7 +15,6 @@ class DiscussionReport(BaseModel):
 
 class DiscussionTopicGenerateRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    topic_no: int = Field(..., alias="topicNo", description="생성할 주제 번호 (1부터)")
     reports: list[DiscussionReport] = Field(..., description="토론 주제 생성에 사용할 리포트 목록")
 
 
@@ -36,7 +35,6 @@ class DiscussionTopicData(BaseModel):
 
 class DiscussionTopicSingle(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
-    topic_no: int = Field(..., alias="topicNo")
     topic: str
 
 

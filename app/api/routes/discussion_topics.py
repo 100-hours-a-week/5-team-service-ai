@@ -58,7 +58,6 @@ async def generate_discussion_topics(
     try:
         return await service.generate_topics(
             meeting_round_id=meetingRoundId,
-            topic_no=payload.topic_no,
             reports=payload.reports,
         )
     except Exception as exc:  # noqa: BLE001
