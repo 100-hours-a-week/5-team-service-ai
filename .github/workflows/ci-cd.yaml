@@ -154,7 +154,6 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          no-cache: true
           cache-from: type=gha,scope=ai
           cache-to: type=gha,mode=max,scope=ai
 
