@@ -327,27 +327,36 @@ class DiscussionSummaryService:
             )
             return None
 
+        data = None
         try:
             data = json.loads(candidate)
         except json.JSONDecodeError as exc:
-            try:
-                # 후보가 단일따옴표 기반 파이썬 dict 표현일 수 있으므로 보정 시도
-                import ast
+            # LLM이 여러 JSON 블록을 붙여 보낼 때 `Extra data`가 발생할 수 있으므로 첫 객체만 파싱 시도
+            if exc.msg == "Extra data":
+                try:
+                    decoder = json.JSONDecoder()
+                    data, _ = decoder.raw_decode(candidate)
+                except Exception:
+                    data = None
+            if data is None:
+                try:
+                    # 후보가 단일따옴표 기반 파이썬 dict 표현일 수 있으므로 보정 시도
+                    import ast
 
-                data = ast.literal_eval(candidate)
-            except Exception:
-                logger.warning(
-                    "summary json decode error room=%s round=%s job=%s pos=%s msg=%s candidate_head=%s candidate_tail=%s",
-                    room_id,
-                    round_no,
-                    job_id,
-                    exc.pos,
-                    exc.msg,
-                    self._truncate(candidate, 200, 80),
-                    self._truncate(candidate, 80, 200),
-                    exc_info=True,
-                )
-                return None
+                    data = ast.literal_eval(candidate)
+                except Exception:
+                    logger.warning(
+                        "summary json decode error room=%s round=%s job=%s pos=%s msg=%s candidate_head=%s candidate_tail=%s",
+                        room_id,
+                        round_no,
+                        job_id,
+                        exc.pos,
+                        exc.msg,
+                        self._truncate(candidate, 200, 80),
+                        self._truncate(candidate, 80, 200),
+                        exc_info=True,
+                    )
+                    return None
         except Exception:  # pragma: no cover
             logger.exception(
                 "summary json decode unknown error room=%s round=%s job=%s candidate_head=%s",
