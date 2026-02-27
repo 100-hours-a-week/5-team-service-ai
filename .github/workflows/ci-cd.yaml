@@ -7,7 +7,6 @@ on:
       - develop
       - main
     paths-ignore:
-      - '.github/**'
       - '*.md'
       - 'docs/**'
   pull_request:
