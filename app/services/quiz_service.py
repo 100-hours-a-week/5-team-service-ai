@@ -55,7 +55,7 @@ class QuizService:
     top_p: float = 1.0  # 0.9
 
     def generate(
-        self, *, title: str, author: str, room_id: int, db: Session
+        self, *, title: str, author: str, db: Session
     ) -> QuizGenerateResponse:
         book = BookRepository.search_one(db, title=title, author=author)
         if not book:
@@ -64,9 +64,7 @@ class QuizService:
         sentences = self._select_sentences(
             summary=book.summary or "", title=title, author=author
         )
-        prompt = self._build_prompt(
-            title=title, author=author, room_id=room_id, sentences=sentences
-        )
+        prompt = self._build_prompt(title=title, author=author, sentences=sentences)
         logger.info("RunPod prompt (truncated 400 chars): %s", prompt[:400])
 
         payload = {
@@ -92,13 +90,13 @@ class QuizService:
         raw_text = self._extract_text(output)
         logger.debug("LLM raw output (truncated 400 chars): %s", raw_text[:400])
         try:
-            quiz_response = self._parse_quiz_response(raw_text, room_id)
+            quiz_response = self._parse_quiz_response(raw_text)
             return quiz_response
         except Exception as exc:  # noqa: BLE001
             logger.warning(
                 "LLM parse failed (%s); falling back to deterministic quiz", exc
             )
-            return self._fallback_quiz(title=title, author=author, room_id=room_id)
+            return self._fallback_quiz(title=title, author=author)
 
     # ---------------- internal helpers ---------------- #
 
@@ -124,7 +122,7 @@ class QuizService:
             return sentences[: self.top_k_sentences]
 
     def _build_prompt(
-        self, *, title: str, author: str, room_id: int, sentences: Sequence[str]
+        self, *, title: str, author: str, sentences: Sequence[str]
     ) -> str:
         context = "\n".join(f"- {s}" for s in sentences)
         return (
@@ -133,15 +131,15 @@ class QuizService:
             "질문은 세 문장, 각 보기는 한문장으로 간결하게 써라.\n"
             "출력 형식 예시:\n"
             "{\n"
-            f'  "quiz": {{"room_id": {room_id}, "question": "질문", "correct_choice_number": 2}},\n'
+            '  "quiz": {"question": "질문", "correct_choice_number": 2},\n'
             '  "quiz_choices": [\n'
-            f'    {{"room_id": {room_id}, "choice_number": 1, "choice_text": "보기1"}},\n'
-            f'    {{"room_id": {room_id}, "choice_number": 2, "choice_text": "보기2"}},\n'
-            f'    {{"room_id": {room_id}, "choice_number": 3, "choice_text": "보기3"}},\n'
-            f'    {{"room_id": {room_id}, "choice_number": 4, "choice_text": "보기4"}}\n'
+            '    {"choice_number": 1, "choice_text": "보기1"},\n'
+            '    {"choice_number": 2, "choice_text": "보기2"},\n'
+            '    {"choice_number": 3, "choice_text": "보기3"},\n'
+            '    {"choice_number": 4, "choice_text": "보기4"}\n'
             "  ]\n"
             "}\n"
-            "규칙: JSON 외 설명 금지, room_id는 외부에서 받은 값을 그대로 사용, 보기 4개, 보기 번호는 1~4, "
+            "규칙: JSON 외 설명 금지, 보기 4개, 보기 번호는 1~4, "
             "correct_choice_number는 정답 보기 번호.\n"
             f"책 제목: {title}\n"
             f"저자: {author}\n"
@@ -229,7 +227,7 @@ class QuizService:
         match = JSON_BLOCK_RE.search(text)
         return match.group(0) if match else None
 
-    def _parse_quiz_response(self, raw_text: str, room_id: int) -> QuizGenerateResponse:
+    def _parse_quiz_response(self, raw_text: str) -> QuizGenerateResponse:
         json_block = self._extract_json_block(raw_text)
         if not json_block:
             raise ValueError("LLM output did not contain JSON")
@@ -243,16 +241,14 @@ class QuizService:
             except Exception as exc:  # noqa: BLE001
                 raise ValueError(f"Failed to parse LLM JSON: {exc}") from exc
 
-        normalized = self._normalize_payload(payload, room_id)
+        normalized = self._normalize_payload(payload)
         response = QuizGenerateResponse(**normalized)
         return response
 
-    def _normalize_payload(self, payload: dict, room_id: int) -> dict:
+    def _normalize_payload(self, payload: dict) -> dict:
         quiz = payload.get("quiz") or {}
         choices = payload.get("quiz_choices") or []
 
-        # 외부 요청에서 받은 room_id를 그대로 사용해 응답과 DB 일관성 유지
-        quiz["room_id"] = room_id
         # question이 없으면 기본 질문 생성
         if not quiz.get("question"):
             quiz["question"] = "다음 중 정답을 고르세요."
@@ -260,7 +256,6 @@ class QuizService:
         normalized_choices: list[dict] = []
         for idx, choice in enumerate(choices, start=1):
             choice = dict(choice)
-            choice["room_id"] = room_id
             choice.setdefault("choice_number", idx)
             if not choice.get("choice_text"):
                 choice["choice_text"] = f"보기 {idx}"
@@ -269,7 +264,7 @@ class QuizService:
         # 보기가 4개 미만이면 자리 채우기
         for idx in range(len(normalized_choices) + 1, 5):
             normalized_choices.append(
-                {"room_id": room_id, "choice_number": idx, "choice_text": f"보기 {idx}"}
+                {"choice_number": idx, "choice_text": f"보기 {idx}"}
             )
 
         # correct_choice_number 보정
@@ -281,7 +276,7 @@ class QuizService:
         return {"quiz": quiz, "quiz_choices": normalized_choices[:4]}
 
     def _fallback_quiz(
-        self, *, title: str, author: str, room_id: int
+        self, *, title: str, author: str
     ) -> QuizGenerateResponse:
         """
         Deterministic backup when LLM output is unusable.
@@ -308,11 +303,11 @@ class QuizService:
         for idx in range(1, 5):
             text = author if idx == correct_slot else next(dist_iter)
             choices.append(
-                QuizChoice(room_id=room_id, choice_number=idx, choice_text=text)
+                QuizChoice(choice_number=idx, choice_text=text)
             )
 
         quiz = Quiz(
-            room_id=room_id, question=question, correct_choice_number=correct_slot
+            question=question, correct_choice_number=correct_slot
         )
         return QuizGenerateResponse(quiz=quiz, quiz_choices=choices)
 
