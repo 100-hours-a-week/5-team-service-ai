@@ -89,6 +89,8 @@ AI_COST_INDEX_PER_SUCCESS_REQUEST = Gauge(
     labelnames=("provider",),
 )
 
+_IGNORE_ENDPOINTS = {"/metrics", "/health"}
+
 
 def _endpoint_template(request: Request) -> str:
     route: Any = request.scope.get("route")
@@ -114,7 +116,7 @@ async def instrument_http_requests(request: Request, call_next) -> Response:
         return response
     finally:
         endpoint = _endpoint_template(request)
-        if endpoint != "/metrics":
+        if endpoint not in _IGNORE_ENDPOINTS:
             _observe_first_request_after_boot(endpoint, time.perf_counter() - started_at)
             AI_REQUEST_TOTAL.labels(
                 endpoint=endpoint, status_class=_status_class(status_code)
