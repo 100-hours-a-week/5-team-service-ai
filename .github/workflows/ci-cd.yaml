@@ -273,7 +273,7 @@ jobs:
             ("docker pull " + $registry + "/doktori/ai:" + $tag),
             "docker stop ai 2>/dev/null || true",
             "docker rm ai 2>/dev/null || true",
-            ("docker run -d --name ai --restart unless-stopped --env-file /home/ubuntu/app/ai/.env -p 8000:8000 " + $registry + "/doktori/ai:" + $tag),
+            ("docker run -d --name ai --restart unless-stopped -e USE_PARAMETER_STORE=true -e SPRING_PROFILES_ACTIVE=prod -e AWS_REGION=ap-northeast-2 -e AWS_DEFAULT_REGION=ap-northeast-2 -p 8000:8000 " + $registry + "/doktori/ai:" + $tag),
             "docker image prune -f"
           ]')
 
