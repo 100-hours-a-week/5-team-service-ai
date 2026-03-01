@@ -6,10 +6,13 @@ Uses KURE-v1 via sentence-transformers and runs on CPU by default.
 
 from __future__ import annotations
 
+import time
 from typing import Iterable, List
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
+
+from app.core.metrics import observe_model_load, observe_model_load_fail
 
 __all__ = ["Embedder"]
 
@@ -29,7 +32,15 @@ class Embedder:
     def __init__(
         self, model_name: str = "nlpai-lab/KURE-v1", device: str = "cpu"
     ) -> None:
-        self.model = SentenceTransformer(model_name, device=device)
+        started_at = time.perf_counter()
+        try:
+            self.model = SentenceTransformer(model_name, device=device)
+            observe_model_load(
+                stage="init", elapsed_seconds=time.perf_counter() - started_at
+            )
+        except Exception:
+            observe_model_load_fail(stage="init")
+            raise
 
     def encode(self, texts: Iterable[str]) -> np.ndarray:
         """
