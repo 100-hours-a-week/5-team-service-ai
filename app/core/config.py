@@ -5,7 +5,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
     db_url: str = Field(..., alias="DB_URL")
     gemini_api_key: str = Field(..., alias="GEMINI_API_KEY")
@@ -39,6 +41,12 @@ class Settings(BaseSettings):
 
     # Simple API key for internal calls
     api_key: str = Field("ai", alias="API_KEY")
+
+    # RunPod serverless (quiz generation)
+    runpod_endpoint_id: str = Field("", alias="RUNPOD_ENDPOINT_ID")
+    runpod_api_key: str = Field("", alias="RUNPOD_API_KEY")
+    runpod_poll_interval_seconds: int = Field(2, alias="RUNPOD_POLL_INTERVAL_SECONDS")
+    runpod_poll_timeout_seconds: int = Field(120, alias="RUNPOD_POLL_TIMEOUT_SECONDS")
 
     @field_validator("gemini_model_preferences", mode="before")
     @classmethod

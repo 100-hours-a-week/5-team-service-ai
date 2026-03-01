@@ -4,7 +4,7 @@ In-memory FAISS index wrapper for semantic retrieval in tests.
 
 from __future__ import annotations
 
-from typing import Iterable, List, Mapping, Optional
+from typing import List, Mapping, Optional
 
 import faiss
 import numpy as np
@@ -74,7 +74,9 @@ class FaissStore:
             if idx < 0 or idx >= len(self.metadatas):
                 continue
             meta = self.metadatas[idx]
-            results.append({"meeting_id": int(meta["meeting_id"]), "score": float(score)})
+            results.append(
+                {"meeting_id": int(meta["meeting_id"]), "score": float(score)}
+            )
         return results
 
     def get_metadata(self, meeting_id: int) -> Optional[Mapping]:

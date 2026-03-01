@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+import time
 from dataclasses import dataclass
 
 try:
@@ -12,6 +13,11 @@ except ImportError as exc:  # pragma: no cover - import guard
         "google-genai가 설치되어야 합니다. 'pip install -r requirements.txt'로 최신 의존성을 설치하세요."
     ) from exc
 from tenacity import AsyncRetrying, retry_if_exception, stop_after_attempt, wait_fixed
+from app.core.metrics import (
+    observe_estimated_cost_index,
+    observe_external_call,
+    observe_external_retry,
+)
 
 
 class GeminiClientError(Exception):
@@ -75,7 +81,9 @@ class GeminiClient:
                 "Gemini 모델 목록 조회에 실패했습니다. 설정된 모델/선호도에 따라 계속 시도합니다: %s",
                 exc,
             )
-            self._resolved_model = self._ensure_model_path(self.model_name or self.model_preferences[0])
+            self._resolved_model = self._ensure_model_path(
+                self.model_name or self.model_preferences[0]
+            )
             return self._resolved_model
 
         supported = []
@@ -93,7 +101,9 @@ class GeminiClient:
             self.logger.warning(
                 "generateContent 지원 여부를 확인할 수 없습니다. 설정된 모델/선호도로 계속 시도합니다."
             )
-            self._resolved_model = self._ensure_model_path(self.model_name or self.model_preferences[0])
+            self._resolved_model = self._ensure_model_path(
+                self.model_name or self.model_preferences[0]
+            )
             return self._resolved_model
 
         # Preference order: explicit model name, then preference list, then first supported.
@@ -131,7 +141,9 @@ class GeminiClient:
     def _ensure_model_path(self, name: str) -> str:
         return name if name.startswith("models/") else f"models/{name}"
 
-    def _build_prompt(self, book_title: str | None, content: str, force_json_only: bool) -> str:
+    def _build_prompt(
+        self, book_title: str | None, content: str, force_json_only: bool
+    ) -> str:
         title_part = book_title or "제목 미상"
         strict_suffix = (
             "\n반드시 JSON만 출력하세요. JSON 이외의 텍스트, 설명, 주석, 코드펜스를 절대 포함하지 마세요."
@@ -162,9 +174,15 @@ class GeminiClient:
         except json.JSONDecodeError as exc:
             status_value, rejection_value = self._extract_fields_with_regex(cleaned)
             if status_value:
-                rejection_reason = None if status_value == "SUBMITTED" else rejection_value
-                return GeminiResult(status=status_value, rejection_reason=rejection_reason)
-            raise GeminiClientError(f"Gemini 응답 파싱 실패(JSON 아님): {cleaned[:200]}") from exc
+                rejection_reason = (
+                    None if status_value == "SUBMITTED" else rejection_value
+                )
+                return GeminiResult(
+                    status=status_value, rejection_reason=rejection_reason
+                )
+            raise GeminiClientError(
+                f"Gemini 응답 파싱 실패(JSON 아님): {cleaned[:200]}"
+            ) from exc
 
         status = payload.get("status")
         if status not in {"SUBMITTED", "REJECTED"}:
@@ -185,18 +203,54 @@ class GeminiClient:
             wait=wait_fixed(1),
             retry=retry_if_exception(lambda exc: not isinstance(exc, TypeError)),
         ):
-            with attempt:
-                return await self.async_client.models.generate_content(
-                    model=model_name,
-                    contents=prompt,
-                    config=genai_types.GenerateContentConfig(
-                        max_output_tokens=self.max_output_tokens,
-                        temperature=0.1,
-                        response_mime_type="application/json",
-                    ),
+            started_at = time.perf_counter()
+            attempt_no = attempt.retry_state.attempt_number
+            try:
+                with attempt:
+                    response = await self.async_client.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                        config=genai_types.GenerateContentConfig(
+                            max_output_tokens=self.max_output_tokens,
+                            temperature=0.1,
+                            response_mime_type="application/json",
+                        ),
+                    )
+                observe_external_call(
+                    provider="gemini",
+                    model=self._normalize_model_name(model_name),
+                    result="success",
+                    elapsed_seconds=time.perf_counter() - started_at,
                 )
+                output_token_k = self._extract_output_token_k(response)
+                observe_estimated_cost_index(
+                    provider="gemini",
+                    delta_index=1.0 + (output_token_k * 0.2),
+                    success_request=True,
+                )
+                return response
+            except Exception as exc:  # noqa: BLE001
+                observe_external_call(
+                    provider="gemini",
+                    model=self._normalize_model_name(model_name),
+                    result=self._result_from_exception(exc),
+                    elapsed_seconds=time.perf_counter() - started_at,
+                )
+                observe_estimated_cost_index(
+                    provider="gemini",
+                    delta_index=1.0,
+                    success_request=False,
+                )
+                if attempt_no < 2 and not isinstance(exc, TypeError):
+                    observe_external_retry(
+                        provider="gemini",
+                        reason=self._retry_reason_from_exception(exc),
+                    )
+                raise
 
-    async def evaluate_book_report(self, book_title: str | None, content: str) -> GeminiResult:
+    async def evaluate_book_report(
+        self, book_title: str | None, content: str
+    ) -> GeminiResult:
         model_name = await self._resolve_model()
         prompt = self._build_prompt(book_title, content, force_json_only=False)
         last_error: Exception | None = None
@@ -215,6 +269,8 @@ class GeminiClient:
                 break
             except Exception as exc:  # noqa: BLE001
                 last_error = exc
+                if isinstance(exc, GeminiClientError) and attempt < self.max_parse_attempts:
+                    observe_external_retry(provider="gemini", reason="parse_error")
                 self.logger.warning(
                     "Gemini parse/generation failed on attempt %s/%s with model=%s: %s",
                     attempt,
@@ -224,8 +280,14 @@ class GeminiClient:
                 )
                 prompt = self._build_prompt(book_title, content, force_json_only=True)
 
-        suffix = f" | last_response={last_response_text[:200]!r}" if last_response_text else ""
-        raise GeminiClientError(f"Gemini 응답 처리에 실패했습니다.{suffix}") from last_error
+        suffix = (
+            f" | last_response={last_response_text[:200]!r}"
+            if last_response_text
+            else ""
+        )
+        raise GeminiClientError(
+            f"Gemini 응답 처리에 실패했습니다.{suffix}"
+        ) from last_error
 
     def _extract_text(self, response) -> str:
         if getattr(response, "text", None):
@@ -252,7 +314,9 @@ class GeminiClient:
         return cleaned
 
     def _extract_fields_with_regex(self, text: str) -> tuple[str | None, str | None]:
-        status_match = re.search(r'"status"\s*:\s*"(?P<status>SUBMITTED|REJECTED)"', text)
+        status_match = re.search(
+            r'"status"\s*:\s*"(?P<status>SUBMITTED|REJECTED)"', text
+        )
         rejection_match = re.search(
             r'"rejection_reason"\s*:\s*(null|"(?P<reason>[^"]*)")',
             text,
@@ -265,3 +329,52 @@ class GeminiClient:
             else:
                 rejection_value = rejection_match.group("reason")
         return status_value, rejection_value
+
+    def _result_from_exception(self, exc: Exception) -> str:
+        lowered = str(exc).lower()
+        if "timeout" in lowered or "deadline" in lowered:
+            return "timeout"
+        return "error"
+
+    def _retry_reason_from_exception(self, exc: Exception) -> str:
+        lowered = str(exc).lower()
+        status_code = getattr(exc, "code", None)
+        if callable(status_code):
+            try:
+                status_code = status_code()
+            except Exception:  # noqa: BLE001
+                status_code = None
+
+        if status_code == 429 or "rate limit" in lowered:
+            return "rate_limited"
+        if status_code in {500, 502, 503, 504}:
+            return "upstream_5xx"
+        if "timeout" in lowered or "deadline" in lowered:
+            return "timeout"
+        if isinstance(exc, (ConnectionError, OSError)):
+            return "network_error"
+        return "unknown"
+
+    def _extract_output_token_k(self, response) -> float:
+        usage = getattr(response, "usage_metadata", None)
+        if usage is None and isinstance(response, dict):
+            usage = response.get("usage_metadata") or response.get("usage")
+
+        output_tokens = None
+        if isinstance(usage, dict):
+            output_tokens = (
+                usage.get("candidates_token_count")
+                or usage.get("output_tokens")
+                or usage.get("completion_tokens")
+            )
+        elif usage is not None:
+            output_tokens = (
+                getattr(usage, "candidates_token_count", None)
+                or getattr(usage, "output_tokens", None)
+                or getattr(usage, "completion_tokens", None)
+            )
+
+        try:
+            return max(float(output_tokens) / 1000.0, 0.0)
+        except (TypeError, ValueError):
+            return 0.0

@@ -23,6 +23,8 @@ def require_api_key(
             len(x_api_key) if x_api_key is not None else 0,
             len(settings.api_key),
         )
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid api key")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid api key"
+        )
 
     return True

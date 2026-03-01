@@ -23,7 +23,7 @@ gemini_client = GeminiClient(
 validation_service = BookReportValidationService(gemini_client, settings)
 
 router = APIRouter(
-    prefix="/ai/book-reports",
+    prefix="/book-reports",
     tags=["book-reports"],
     dependencies=[Depends(require_api_key)],
 )

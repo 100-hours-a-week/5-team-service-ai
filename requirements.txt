@@ -9,7 +9,8 @@ numpy==1.26.4
 pandas==2.2.2
 
 sentence-transformers==3.3.1
-faiss-cpu==1.8.0.post1
+# faiss는 conda-forge 빌드를 권장합니다. pip로 설치해야 한다면 1.7.x를 사용하세요.
+faiss-cpu==1.7.4
 
 SQLAlchemy==2.0.32
 PyMySQL==1.1.1
@@ -24,3 +25,4 @@ requests==2.32.3
 cryptography==42.0.8
 apscheduler==3.10.4
 pytz==2024.1
+prometheus-client==0.22.1
