@@ -163,11 +163,16 @@ jobs:
 
       - name: Deploy to Dev via SSM
         run: |
-          COMMANDS=$(jq -n --arg registry "${{ secrets.ECR_REGISTRY }}" '[
+          REGISTRY="${{ secrets.ECR_REGISTRY }}"
+          TAG="${{ needs.build-and-push.outputs.image-tag }}"
+
+          COMMANDS=$(jq -n --arg registry "$REGISTRY" --arg tag "$TAG" '[
             "set -e",
-            ("export ECR_REGISTRY=" + $registry),
-            "docker compose -f /home/ubuntu/app/docker-compose.yml pull ai",
-            "docker compose -f /home/ubuntu/app/docker-compose.yml up -d --no-deps ai",
+            ("aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin " + $registry),
+            ("docker pull " + $registry + "/doktori/ai:" + $tag),
+            "docker stop ai 2>/dev/null || true",
+            "docker rm ai 2>/dev/null || true",
+            ("docker run -d --name ai --restart unless-stopped --env-file /home/ubuntu/app/ai/.env -e USE_PARAMETER_STORE=true -e SPRING_PROFILES_ACTIVE=dev -e AWS_REGION=ap-northeast-2 -e AWS_DEFAULT_REGION=ap-northeast-2 -p 8000:8000 " + $registry + "/doktori/ai:" + $tag),
             "docker image prune -f"
           ]')
 
