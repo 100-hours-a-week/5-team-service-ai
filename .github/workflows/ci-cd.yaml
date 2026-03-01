@@ -1,15 +1,9 @@
 name: AI Server CI/CD
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - develop
-      - main
-    paths-ignore:
-      - '*.md'
-      - 'docs/**'
   pull_request:
+    types:
+      - closed
     branches:
       - develop
       - main
@@ -102,7 +96,14 @@ jobs:
 
   build-and-push:
     #    needs: ci
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      (
+        github.event.pull_request.base.ref == 'develop' ||
+        github.event.pull_request.base.ref == 'main'
+      )
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -112,6 +113,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -126,7 +129,7 @@ jobs:
         id: meta
         run: |
           REGISTRY="${{ secrets.ECR_REGISTRY }}"
-          if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+          if [ "${{ github.ref }}" == "refs/heads/develop" ] || [ "${{ github.base_ref }}" == "develop" ]; then
             TAG="develop"
             echo "tags=${REGISTRY}/doktori/ai:develop" >> $GITHUB_OUTPUT
           else
@@ -159,7 +162,11 @@ jobs:
 
   deploy-dev:
     needs: build-and-push
-    if: github.ref == 'refs/heads/develop'
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -248,7 +255,11 @@ jobs:
 
   deploy-prod:
     needs: build-and-push
-    if: github.ref == 'refs/heads/main'
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -264,6 +275,12 @@ jobs:
         run: |
           REGISTRY="${{ secrets.ECR_REGISTRY }}"
           TAG="${{ needs.build-and-push.outputs.image-tag }}"
+          INSTANCE_ID="${{ vars.PROD_AI_INSTANCE_ID || 'i-0bc2413c68025b682' }}"
+
+          if [ -z "${INSTANCE_ID}" ] || [ "${INSTANCE_ID}" = "None" ]; then
+            echo "::error::PROD_AI_INSTANCE_ID is not set"
+            exit 1
+          fi
 
           COMMANDS=$(jq -n --arg registry "$REGISTRY" --arg tag "$TAG" '[
             "set -e",
@@ -277,7 +294,7 @@ jobs:
 
           CMD_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=tag:Environment,Values=prod" "Key=tag:Service,Values=ai" \
+            --instance-ids "${INSTANCE_ID}" \
             --parameters "{\"commands\": $COMMANDS}" \
             --timeout-seconds 300 \
             --comment "deploy prod ai ${{ github.sha }}" \
