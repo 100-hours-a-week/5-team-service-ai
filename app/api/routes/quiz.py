@@ -25,7 +25,6 @@ router = APIRouter(
 class QuizGenerateRequest(BaseModel):
     author: str = Field(..., description="저자명")
     title: str = Field(..., description="책 제목")
-    room_id: int = Field(..., description="퀴즈가 속한 room_id (외부에서 부여)")
 
 
 @lru_cache
@@ -65,7 +64,7 @@ def generate_quiz(
 ) -> QuizGenerateResponse:
     try:
         return quiz_service.generate(
-            title=body.title, author=body.author, room_id=body.room_id, db=db
+            title=body.title, author=body.author, db=db
         )
     except Exception as exc:  # noqa: BLE001
         logging.getLogger(__name__).exception("quiz generation failed: %s", exc)
