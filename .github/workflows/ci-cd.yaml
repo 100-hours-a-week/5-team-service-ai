@@ -126,19 +126,9 @@ jobs:
         id: meta
         run: |
           REGISTRY="${{ secrets.ECR_REGISTRY }}"
-          if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
-            TAG="develop"
-            echo "tags=${REGISTRY}/doktori/ai:develop" >> $GITHUB_OUTPUT
-          else
-            SHORT_SHA="${GITHUB_SHA:0:7}"
-            TAG="sha-${SHORT_SHA}"
-            {
-              echo "tags<<EOF"
-              echo "${REGISTRY}/doktori/ai:sha-${SHORT_SHA}"
-              echo "${REGISTRY}/doktori/ai:latest"
-              echo "EOF"
-            } >> $GITHUB_OUTPUT
-          fi
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          TAG="sha-${SHORT_SHA}"
+          echo "tags=${REGISTRY}/doktori/ai:sha-${SHORT_SHA}" >> $GITHUB_OUTPUT
           echo "image-tag=${TAG}" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU (for ARM64 cross-build)
