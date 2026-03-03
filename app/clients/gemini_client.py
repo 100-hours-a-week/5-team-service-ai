@@ -210,17 +210,13 @@ class GeminiClient:
             config_kwargs["tools"] = [
                 genai_types.Tool(google_search=genai_types.GoogleSearch())
             ]
+
         async for attempt in AsyncRetrying(
             reraise=True,
             stop=stop_after_attempt(2),
             wait=wait_fixed(1),
             retry=retry_if_exception(lambda exc: not isinstance(exc, TypeError)),
         ):
-            with attempt:
-                return await self.async_client.models.generate_content(
-                    model=model_name,
-                    contents=prompt,
-                    config=genai_types.GenerateContentConfig(**config_kwargs),
             started_at = time.perf_counter()
             attempt_no = attempt.retry_state.attempt_number
             try:
@@ -228,11 +224,7 @@ class GeminiClient:
                     response = await self.async_client.models.generate_content(
                         model=model_name,
                         contents=prompt,
-                        config=genai_types.GenerateContentConfig(
-                            max_output_tokens=self.max_output_tokens,
-                            temperature=0.1,
-                            response_mime_type="application/json",
-                        ),
+                        config=genai_types.GenerateContentConfig(**config_kwargs),
                     )
                 observe_external_call(
                     provider="gemini",
