@@ -34,6 +34,7 @@ class GeminiClient:
         max_output_tokens: int,
         max_parse_attempts: int = 2,
         log_models_on_start: bool = False,
+        enable_google_search: bool = False,
     ) -> None:
         self.logger = logging.getLogger(__name__)
         self.client = genai.Client(api_key=api_key)
@@ -43,6 +44,7 @@ class GeminiClient:
         self.timeout_seconds = timeout_seconds
         self.max_output_tokens = max_output_tokens
         self.max_parse_attempts = max_parse_attempts
+        self.enable_google_search = enable_google_search
         self._resolved_model: str | None = None
 
         if log_models_on_start:
@@ -155,6 +157,8 @@ class GeminiClient:
             f"책 제목: {title_part}\n"
             f"독후감 내용:\n{content}\n"
             "- 책 제목과 내용이 일치하는지(책을 읽은 흔적, 인물, 줄거리/주제/사건/개념 언급, 인상 등) 확인한다.\n"
+            "- 필요하면 Google Search 결과로 책의 줄거리/주제/인물 정보를 찾아 비교한다. 검색 결과의 책 정보와 내용이 다르면 반드시 REJECTED로 한다.\n"
+            "- 책 제목이 내용에 거의 언급되지 않거나, 검색 결과와 무관한 이야기면 REJECTED로 한다.\n"
             "- 의미 없는 반복/무작위 문자열/광고 링크 등이 있으면 REJECTED로 한다.\n"
             "- 독후감으로 볼 수 있는 최소한의 길이와 서술이 있으면 SUBMITTED로 한다.\n"
             "JSON 포맷 외에 어떠한 서술도 추가하지 말 것. 응답은 JSON 한 덩어리만 제공할 것."
@@ -191,6 +195,15 @@ class GeminiClient:
         return GeminiResult(status=status, rejection_reason=rejection_reason)
 
     async def _generate(self, prompt: str, model_name: str):
+        config_kwargs = dict(
+            max_output_tokens=self.max_output_tokens,
+            temperature=0.1,
+            response_mime_type="application/json",
+        )
+        if self.enable_google_search:
+            config_kwargs["tools"] = [
+                genai_types.Tool(google_search=genai_types.GoogleSearch())
+            ]
         async for attempt in AsyncRetrying(
             reraise=True,
             stop=stop_after_attempt(2),
@@ -201,11 +214,7 @@ class GeminiClient:
                 return await self.async_client.models.generate_content(
                     model=model_name,
                     contents=prompt,
-                    config=genai_types.GenerateContentConfig(
-                        max_output_tokens=self.max_output_tokens,
-                        temperature=0.1,
-                        response_mime_type="application/json",
-                    ),
+                    config=genai_types.GenerateContentConfig(**config_kwargs),
                 )
 
     async def evaluate_book_report(

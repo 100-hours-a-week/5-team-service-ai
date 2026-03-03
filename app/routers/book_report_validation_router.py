@@ -19,6 +19,7 @@ gemini_client = GeminiClient(
     timeout_seconds=settings.gemini_timeout_seconds,
     max_output_tokens=settings.gemini_max_output_tokens,
     log_models_on_start=settings.gemini_log_models_on_start,
+    enable_google_search=settings.gemini_enable_google_search,
 )
 validation_service = BookReportValidationService(gemini_client, settings)
 
