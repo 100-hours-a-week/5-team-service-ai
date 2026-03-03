@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ✅ 3. FastAPI
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 
 # ✅ 4. 이제 router import (Settings가 이미 준비됨)
 from app.routers.book_report_validation_router import (
@@ -21,6 +21,7 @@ from app.api.routes.discussion_topics import router as discussion_topic_router
 from app.api.routes.discussion_summary import router as discussion_summary_router
 from app.api.routes.recommendation import router as recommendation_router
 from app.api.routes.quiz import router as quiz_router
+from app.core.metrics import instrument_http_requests, metrics_response
 from app.core.scheduler import shutdown_scheduler, start_scheduler
 
 logging.basicConfig(
@@ -30,6 +31,7 @@ logging.basicConfig(
 
 # Nginx serves the app under /ai, so set root_path to keep docs/OpenAPI paths correct
 app = FastAPI(title="Book Report Validation API", root_path="/ai")
+app.middleware("http")(instrument_http_requests)
 
 _scheduler = None
 
@@ -37,6 +39,11 @@ _scheduler = None
 @app.get("/health", tags=["health"])
 def health_check():
     return {"status": "ok"}
+
+
+@app.get("/metrics", tags=["observability"])
+def metrics() -> Response:
+    return metrics_response()
 
 
 app.include_router(book_report_validation_router)

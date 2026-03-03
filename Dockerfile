@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1.6
 
-ARG PYTHON_VERSION=3.10.19
+ARG PYTHON_BASE_IMAGE=python:3.10-slim@sha256:6a5861123aa815f92e5d20ce8372a8ba6668540c1081e5c4c44933cc1ba4fd3a
 
-FROM python:${PYTHON_VERSION}-slim AS builder
+FROM ${PYTHON_BASE_IMAGE} AS builder
 ENV VENV_PATH=/opt/venv
 ENV PATH="${VENV_PATH}/bin:${PATH}"
 WORKDIR /app
@@ -12,10 +12,10 @@ COPY requirements.txt requirements-torch.txt ./
 RUN --mount=type=cache,target=/root/.cache/pip \
     python -m venv "${VENV_PATH}" && \
     pip install --upgrade pip && \
-    pip install -r requirements-torch.txt --index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install -r requirements-torch.txt --index-url https://download.pytorch.org/whl/cpu && \
+    pip install -r requirements.txt
 
-FROM python:${PYTHON_VERSION}-slim AS runtime
+FROM ${PYTHON_BASE_IMAGE} AS runtime
 ENV VENV_PATH=/opt/venv
 ENV PATH="${VENV_PATH}/bin:${PATH}"
 ENV PORT=8000

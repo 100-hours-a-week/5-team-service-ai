@@ -7,7 +7,6 @@ on:
       - develop
       - main
     paths-ignore:
-      - '.github/**'
       - '*.md'
       - 'docs/**'
   pull_request:
@@ -127,19 +126,9 @@ jobs:
         id: meta
         run: |
           REGISTRY="${{ secrets.ECR_REGISTRY }}"
-          if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
-            TAG="develop"
-            echo "tags=${REGISTRY}/doktori/ai:develop" >> $GITHUB_OUTPUT
-          else
-            SHORT_SHA="${GITHUB_SHA:0:7}"
-            TAG="sha-${SHORT_SHA}"
-            {
-              echo "tags<<EOF"
-              echo "${REGISTRY}/doktori/ai:sha-${SHORT_SHA}"
-              echo "${REGISTRY}/doktori/ai:latest"
-              echo "EOF"
-            } >> $GITHUB_OUTPUT
-          fi
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          TAG="sha-${SHORT_SHA}"
+          echo "tags=${REGISTRY}/doktori/ai:sha-${SHORT_SHA}" >> $GITHUB_OUTPUT
           echo "image-tag=${TAG}" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU (for ARM64 cross-build)
@@ -174,17 +163,25 @@ jobs:
 
       - name: Deploy to Dev via SSM
         run: |
-          COMMANDS=$(jq -n --arg registry "${{ secrets.ECR_REGISTRY }}" '[
+          REGISTRY="${{ secrets.ECR_REGISTRY }}"
+          TAG="${{ needs.build-and-push.outputs.image-tag }}"
+
+          COMMANDS=$(jq -n --arg registry "$REGISTRY" --arg tag "$TAG" '[
             "set -e",
-            ("export ECR_REGISTRY=" + $registry),
-            "docker compose -f /home/ubuntu/app/docker-compose.yml pull ai",
-            "docker compose -f /home/ubuntu/app/docker-compose.yml up -d ai",
+            "export DOCKER_CONFIG=/tmp/.docker",
+            "mkdir -p \"$DOCKER_CONFIG\"",
+            "echo '\''{\"auths\":{}}'\'' > \"$DOCKER_CONFIG/config.json\"",
+            ("aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin " + $registry),
+            ("docker pull " + $registry + "/doktori/ai:" + $tag),
+            "docker stop ai 2>/dev/null || true",
+            "docker rm ai 2>/dev/null || true",
+            ("docker run -d --name ai --restart unless-stopped --env-file /home/ubuntu/app/ai/.env -e USE_PARAMETER_STORE=true -e SPRING_PROFILES_ACTIVE=dev -e AWS_REGION=ap-northeast-2 -e AWS_DEFAULT_REGION=ap-northeast-2 -p 8000:8000 " + $registry + "/doktori/ai:" + $tag),
             "docker image prune -f"
           ]')
 
           CMD_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=tag:Environment,Values=dev" \
+            --targets "Key=tag:Environment,Values=dev" "Key=tag:Service,Values=ai" \
             --parameters "{\"commands\": $COMMANDS}" \
             --timeout-seconds 300 \
             --comment "deploy dev ai ${{ github.sha }}" \
@@ -265,20 +262,24 @@ jobs:
         run: |
           REGISTRY="${{ secrets.ECR_REGISTRY }}"
           TAG="${{ needs.build-and-push.outputs.image-tag }}"
+          INSTANCE_ID="i-0bc2413c68025b682"
 
           COMMANDS=$(jq -n --arg registry "$REGISTRY" --arg tag "$TAG" '[
             "set -e",
+            "export DOCKER_CONFIG=/tmp/.docker",
+            "mkdir -p \"$DOCKER_CONFIG\"",
+            "echo '\''{\"auths\":{}}'\'' > \"$DOCKER_CONFIG/config.json\"",
             ("aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin " + $registry),
             ("docker pull " + $registry + "/doktori/ai:" + $tag),
             "docker stop ai 2>/dev/null || true",
             "docker rm ai 2>/dev/null || true",
-            ("docker run -d --name ai --restart unless-stopped --env-file /home/ubuntu/app/ai/.env -p 8000:8000 " + $registry + "/doktori/ai:" + $tag),
+            ("docker run -d --name ai --restart unless-stopped -e USE_PARAMETER_STORE=true -e SPRING_PROFILES_ACTIVE=prod -e AWS_REGION=ap-northeast-2 -e AWS_DEFAULT_REGION=ap-northeast-2 -p 8000:8000 " + $registry + "/doktori/ai:" + $tag),
             "docker image prune -f"
           ]')
 
           CMD_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=tag:Environment,Values=prod" "Key=tag:Service,Values=ai" \
+            --instance-ids "${INSTANCE_ID}" \
             --parameters "{\"commands\": $COMMANDS}" \
             --timeout-seconds 300 \
             --comment "deploy prod ai ${{ github.sha }}" \
