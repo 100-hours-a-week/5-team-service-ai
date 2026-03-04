@@ -61,10 +61,25 @@ class QuizService:
         if not book:
             raise ValueError("book not found")
 
+        # 세션을 길게 붙잡지 않도록 필요한 데이터만 복사해 둔 뒤 세션 정리
+        summary = book.summary or ""
+        title_val = book.title
+        author_val = book.authors or author
+        try:
+            db.expunge(book)  # 세션에서 분리해도 메모리 데이터는 유지
+        except Exception:
+            pass
+        try:
+            db.close()  # RunPod 호출 전 커넥션 반환
+        except Exception:
+            pass
+
         sentences = self._select_sentences(
-            summary=book.summary or "", title=title, author=author
+            summary=summary, title=title_val, author=author_val
         )
-        prompt = self._build_prompt(title=title, author=author, sentences=sentences)
+        prompt = self._build_prompt(
+            title=title_val, author=author_val, sentences=sentences
+        )
         logger.info("RunPod prompt (truncated 400 chars): %s", prompt[:400])
 
         payload = {
