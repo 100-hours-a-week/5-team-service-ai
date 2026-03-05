@@ -48,6 +48,7 @@ class DiscussionTopicService:
         self.temperature = temperature
         self.top_p = top_p
         self.top_k = top_k
+        self.rag_score_threshold = 0.25
         self.max_context_chars = max_context_chars
         self.embedder = Embedder()
         self.index_path = Path(index_path)
@@ -99,7 +100,7 @@ class DiscussionTopicService:
     def _build_prompt(
         self, meeting_round_id: int, *, topic_count: int, contents: list[str]
     ) -> str:
-        context_lines = self._build_context(contents)
+        context_lines = self._build_context(meeting_round_id, contents)
         context = "\n".join(f"- {c}" for c in context_lines)
         variation_token = random.randint(1, 1_000_000)
         return (
@@ -241,7 +242,7 @@ class DiscussionTopicService:
     def _normalize_text(self, text: str) -> str:
         return " ".join(text.strip().split())
 
-    def _build_context(self, contents: list[str]) -> list[str]:
+    def _build_context(self, meeting_round_id: int, contents: list[str]) -> list[str]:
         """
         Build prompt 컨텍스트.
 
@@ -271,13 +272,18 @@ class DiscussionTopicService:
                 query = query_vec.astype(np.float32, copy=False)[None, :]
                 k = min(self.top_k, self.index.ntotal)
                 scores, idxs = self.index.search(query, k)
-                for idx in idxs[0]:
-                    if idx == -1:
+                for score, idx in zip(scores[0], idxs[0]):
+                    if idx == -1 or idx >= len(self.metadatas):
                         continue
-                    if idx < len(self.metadatas):
-                        content = self.metadatas[idx].get("content")
-                        if content:
-                            retrieved_hits.append(content)
+                    # 다른 토론방(meeting_round_id)이면 제외해 오염 방지
+                    meta = self.metadatas[idx]
+                    if meta.get("meeting_round_id") != meeting_round_id:
+                        continue
+                    if score < self.rag_score_threshold:
+                        continue
+                    content = meta.get("content")
+                    if content:
+                        retrieved_hits.append(content)
             except Exception as exc:  # pragma: no cover
                 logger.warning("faiss search failed: %s", exc)
 
