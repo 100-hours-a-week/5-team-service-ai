@@ -16,6 +16,8 @@ from app.schemas.quiz_schema import QuizGenerateResponse
 from app.services.embedder import Embedder
 from app.services.quiz_service import QuizService
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(
     prefix="/quiz",
     tags=["quiz"],
@@ -57,7 +59,15 @@ def get_quiz_service() -> QuizService:
     """
     Dependency provider so tests can override.
     """
-    return _quiz_service()
+    try:
+        return _quiz_service()
+    except HTTPException:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("quiz service initialization failed: %s", exc)
+        raise HTTPException(
+            status_code=503, detail="quiz service initialization failed"
+        ) from exc
 
 
 @router.post(
@@ -75,5 +85,5 @@ def generate_quiz(
             title=body.title, author=body.author, db=db
         )
     except Exception as exc:  # noqa: BLE001
-        logging.getLogger(__name__).exception("quiz generation failed: %s", exc)
+        logger.exception("quiz generation failed: %s", exc)
         raise HTTPException(status_code=503, detail="quiz generation failed") from exc
