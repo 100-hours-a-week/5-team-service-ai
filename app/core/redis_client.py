@@ -62,9 +62,9 @@ def _build_client(settings: Settings) -> RedisClient | None:
 
 
 @lru_cache
-def get_redis_client(settings: Settings | None = None) -> RedisClient | None:
+def get_redis_client() -> RedisClient | None:
     """
     Return a cached Redis client or None if not configured/reachable.
     """
-    settings = settings or get_settings()
+    settings = get_settings()
     return _build_client(settings)
