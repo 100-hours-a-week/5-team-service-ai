@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     runpod_poll_interval_seconds: int = Field(2, alias="RUNPOD_POLL_INTERVAL_SECONDS")
     runpod_poll_timeout_seconds: int = Field(120, alias="RUNPOD_POLL_TIMEOUT_SECONDS")
 
+    # Redis (quiz cache)
+    redis_url: str | None = Field(None, alias="REDIS_URL")
+    quiz_cache_ttl_seconds: int = Field(604_800, alias="QUIZ_CACHE_TTL_SECONDS")
+    quiz_cache_key_version: str = Field("v1", alias="QUIZ_CACHE_KEY_VERSION")
+
     @field_validator("gemini_model_preferences", mode="before")
     @classmethod
     def _split_preferences(cls, value):

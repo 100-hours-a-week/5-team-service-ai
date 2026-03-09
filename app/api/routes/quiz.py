@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.clients.runpod_client import RunpodClient
 from app.core.config import get_settings
+from app.core.redis_client import get_redis_client
 from app.core.security import require_api_key
 from app.db.session import get_db
 from app.schemas.quiz_schema import QuizGenerateResponse
@@ -42,7 +43,14 @@ def _quiz_service() -> QuizService:
         poll_timeout=settings.runpod_poll_timeout_seconds,
     )
     embedder = Embedder()
-    return QuizService(runpod_client=client, embedder=embedder)
+    redis_client = get_redis_client(settings)
+    return QuizService(
+        runpod_client=client,
+        embedder=embedder,
+        redis_client=redis_client,
+        cache_ttl_seconds=settings.quiz_cache_ttl_seconds,
+        cache_key_version=settings.quiz_cache_key_version,
+    )
 
 
 def get_quiz_service() -> QuizService:

@@ -65,6 +65,21 @@ AI_MODEL_LOAD_FAIL_TOTAL = Counter(
     labelnames=("stage",),
 )
 
+QUIZ_CACHE_HIT_TOTAL = Counter(
+    "quiz_cache_hit_total",
+    "Quiz cache hit count",
+)
+
+QUIZ_CACHE_MISS_TOTAL = Counter(
+    "quiz_cache_miss_total",
+    "Quiz cache miss count",
+)
+
+QUIZ_CACHE_ERROR_TOTAL = Counter(
+    "quiz_cache_error_total",
+    "Quiz cache error count",
+)
+
 AI_FIRST_REQUEST_AFTER_BOOT_DURATION_SECONDS = Histogram(
     "ai_first_request_after_boot_duration_seconds",
     "First request latency after boot",
@@ -217,6 +232,18 @@ def _observe_first_request_after_boot(endpoint: str, request_started_at: float) 
     AI_FIRST_REQUEST_AFTER_BOOT_DURATION_SECONDS.labels(endpoint=endpoint).observe(
         max(request_started_at - _boot_started_at, 0)
     )
+
+
+def observe_quiz_cache_hit() -> None:
+    QUIZ_CACHE_HIT_TOTAL.inc()
+
+
+def observe_quiz_cache_miss() -> None:
+    QUIZ_CACHE_MISS_TOTAL.inc()
+
+
+def observe_quiz_cache_error() -> None:
+    QUIZ_CACHE_ERROR_TOTAL.inc()
 
 
 def observe_estimated_cost_index(

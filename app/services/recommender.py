@@ -228,7 +228,7 @@ def rerank_recruiting_with_genre_bonus(
     duplicate_penalty: float = 0.07,
 ) -> list[int]:
     """
-    Re-rank recruiting meetings using similarity + genre bonus - duplicate penalty.
+    Re-rank meetings using similarity + genre bonus - duplicate penalty.
 
     - Start from top similarity candidates (candidate_pool).
     - Bonus if meeting genre is in user's preferred genres.
@@ -238,17 +238,19 @@ def rerank_recruiting_with_genre_bonus(
     user_genre_set = {str(g) for g in user_genres if g is not None}
     meta_map = {int(m.get("id")): m for m in meetings}
 
-    # initial recruiting candidates sorted by raw sim
+    # initial candidates sorted by raw similarity
     sorted_candidates = sorted(
         ((mid, score) for mid, score in scores.items()),
         key=lambda item: item[1],
         reverse=True,
     )[:candidate_pool]
-    candidates = [
-        (mid, score)
-        for mid, score in sorted_candidates
-        if meta_map.get(mid, {}).get("status") == "RECRUITING"
-    ]
+    # 모집중 상태만 쓰던 필터 (실험 위해 주석 처리)
+    # candidates = [
+    #     (mid, score)
+    #     for mid, score in sorted_candidates
+    #     if meta_map.get(mid, {}).get("status") == "RECRUITING"
+    # ]
+    candidates = sorted_candidates
 
     selected: list[int] = []
     genre_counts: dict[str, int] = {}

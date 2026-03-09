@@ -17,6 +17,7 @@ import json
 import logging
 import re
 from dataclasses import dataclass
+import hashlib
 from random import randint, sample
 from typing import Sequence
 import ast
@@ -25,6 +26,12 @@ import numpy as np
 from sqlalchemy.orm import Session
 
 from app.clients.runpod_client import RunpodClient
+from app.core.metrics import (
+    observe_quiz_cache_error,
+    observe_quiz_cache_hit,
+    observe_quiz_cache_miss,
+)
+from app.core.redis_client import RedisClient
 from app.db.repositories.book_repo import BookRepository
 from app.schemas.quiz_schema import Quiz, QuizChoice, QuizGenerateResponse
 from app.services.embedder import Embedder
@@ -49,6 +56,9 @@ def _split_sentences(text: str) -> list[str]:
 class QuizService:
     runpod_client: RunpodClient
     embedder: Embedder
+    redis_client: RedisClient | None = None
+    cache_ttl_seconds: int = 604_800
+    cache_key_version: str = "v1"
     top_k_sentences: int = 5
     max_tokens: int = 512  # vLLM sampling_params.max_tokens에 전달
     temperature: float = 0.5  # 0.2   # 노이즈 줄이기 위해 낮춤
@@ -63,8 +73,17 @@ class QuizService:
 
         # 세션을 길게 붙잡지 않도록 필요한 데이터만 복사해 둔 뒤 세션 정리
         summary = book.summary or ""
+        book_id = getattr(book, "id", None)
         title_val = book.title
         author_val = book.authors or author
+        cache_key = (
+            self._make_cache_key(book_id=book_id, summary=summary)
+            if book_id is not None
+            else None
+        )
+        cached_resp = self._cache_get(cache_key) if cache_key else None
+        if cached_resp:
+            return cached_resp
         try:
             db.expunge(book)  # 세션에서 분리해도 메모리 데이터는 유지
         except Exception:
@@ -104,16 +123,54 @@ class QuizService:
 
         raw_text = self._extract_text(output)
         logger.debug("LLM raw output (truncated 400 chars): %s", raw_text[:400])
+        llm_success = False
         try:
             quiz_response = self._parse_quiz_response(raw_text)
-            return quiz_response
+            llm_success = True
         except Exception as exc:  # noqa: BLE001
             logger.warning(
                 "LLM parse failed (%s); falling back to deterministic quiz", exc
             )
-            return self._fallback_quiz(title=title, author=author)
+            quiz_response = self._fallback_quiz(title=title, author=author)
+
+        if llm_success and cache_key and not self._is_placeholder(quiz_response):
+            self._cache_set(cache_key, quiz_response)
+        return quiz_response
 
     # ---------------- internal helpers ---------------- #
+
+    def _make_cache_key(self, *, book_id: int, summary: str) -> str:
+        summary_hash = hashlib.sha256((summary or "").strip().encode("utf-8")).hexdigest()
+        return f"quiz:{self.cache_key_version}:{book_id}:{summary_hash}"
+
+    def _cache_get(self, cache_key: str) -> QuizGenerateResponse | None:
+        if not self.redis_client:
+            return None
+        try:
+            cached = self.redis_client.get_json(cache_key)
+            if cached is None:
+                observe_quiz_cache_miss()
+                return None
+            observe_quiz_cache_hit()
+            return QuizGenerateResponse.model_validate(cached)
+        except Exception as exc:  # noqa: BLE001
+            observe_quiz_cache_error()
+            logger.warning("Quiz cache get failed for key %s: %s", cache_key, exc)
+            return None
+
+    def _cache_set(self, cache_key: str, response: QuizGenerateResponse) -> None:
+        if not self.redis_client:
+            return
+        try:
+            payload = response.model_dump()
+            self.redis_client.set_json(
+                cache_key,
+                payload,
+                ttl_seconds=self.cache_ttl_seconds,
+            )
+        except Exception as exc:  # noqa: BLE001
+            observe_quiz_cache_error()
+            logger.warning("Quiz cache set failed for key %s: %s", cache_key, exc)
 
     def _select_sentences(self, summary: str, title: str, author: str) -> Sequence[str]:
         """
