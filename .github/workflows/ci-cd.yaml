@@ -175,7 +175,10 @@ jobs:
             ("docker pull " + $registry + "/doktori/ai:" + $tag),
             "docker stop ai 2>/dev/null || true",
             "docker rm ai 2>/dev/null || true",
-            ("docker run -d --name ai --restart unless-stopped --env-file /home/ubuntu/app/ai/.env -e USE_PARAMETER_STORE=true -e SPRING_PROFILES_ACTIVE=dev -e AWS_REGION=ap-northeast-2 -e AWS_DEFAULT_REGION=ap-northeast-2 -p 8000:8000 " + $registry + "/doktori/ai:" + $tag),
+            "cd /home/ubuntu/app",
+            ("AI_IMAGE=" + $registry + "/doktori/ai:" + $tag + " docker compose -f /home/ubuntu/app/docker-compose.yml up -d --force-recreate ai"),
+            "docker compose -f /home/ubuntu/app/docker-compose.yml ps ai",
+            "docker compose -f /home/ubuntu/app/docker-compose.yml ps --services --status running | grep -x ai",
             "docker image prune -f"
           ]')
 
