@@ -21,7 +21,13 @@ from app.api.routes.discussion_topics import router as discussion_topic_router
 from app.api.routes.discussion_summary import router as discussion_summary_router
 from app.api.routes.recommendation import router as recommendation_router
 from app.api.routes.quiz import router as quiz_router
-from app.core.metrics import instrument_http_requests, metrics_response
+from app.core.config import get_settings
+from app.core.metrics import (
+    initialize_metrics,
+    instrument_http_requests,
+    metrics_response,
+    observe_cold_start_event,
+)
 from app.core.scheduler import shutdown_scheduler, start_scheduler
 
 logging.basicConfig(
@@ -52,10 +58,14 @@ app.include_router(discussion_summary_router)
 app.include_router(recommendation_router)
 app.include_router(quiz_router)
 
+settings = get_settings()
+initialize_metrics(app, settings.gemini_model)
+
 
 @app.on_event("startup")
 def _start_scheduler():
     global _scheduler
+    observe_cold_start_event("startup")
     _scheduler = start_scheduler()
 
 
