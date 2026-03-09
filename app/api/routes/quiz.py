@@ -45,7 +45,7 @@ def _quiz_service() -> QuizService:
         poll_timeout=settings.runpod_poll_timeout_seconds,
     )
     embedder = Embedder()
-    redis_client = get_redis_client(settings)
+    redis_client = get_redis_client()
     return QuizService(
         runpod_client=client,
         embedder=embedder,
