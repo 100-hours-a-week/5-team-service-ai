@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     gemini_log_models_on_start: bool = Field(True, alias="GEMINI_LOG_MODELS_ON_START")
     gemini_timeout_seconds: int = Field(20, alias="GEMINI_TIMEOUT_SECONDS")
     gemini_max_output_tokens: int = Field(1024, alias="GEMINI_MAX_OUTPUT_TOKENS")
+    gemini_enable_google_search: bool = Field(
+        False, alias="GEMINI_ENABLE_GOOGLE_SEARCH"
+    )
 
     # Recommendation batch scheduler
     enable_reco_scheduler: bool = Field(False, alias="ENABLE_RECO_SCHEDULER")

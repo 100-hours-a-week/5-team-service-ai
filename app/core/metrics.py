@@ -4,7 +4,8 @@ import time
 from threading import Lock
 from typing import Any
 
-from fastapi import Request, Response
+from fastapi import FastAPI, Request, Response
+from fastapi.routing import APIRoute
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
     Counter,
@@ -76,6 +77,7 @@ _first_request_lock = Lock()
 _provider_cost_total: dict[str, float] = {}
 _provider_success_count: dict[str, int] = {}
 _provider_cost_lock = Lock()
+_boot_started_at = time.perf_counter()
 
 AI_ESTIMATED_COST_INDEX_TOTAL = Counter(
     "ai_estimated_cost_index_total",
@@ -117,7 +119,7 @@ async def instrument_http_requests(request: Request, call_next) -> Response:
     finally:
         endpoint = _endpoint_template(request)
         if endpoint not in _IGNORE_ENDPOINTS:
-            _observe_first_request_after_boot(endpoint, time.perf_counter() - started_at)
+            _observe_first_request_after_boot(endpoint, started_at)
             AI_REQUEST_TOTAL.labels(
                 endpoint=endpoint, status_class=_status_class(status_code)
             ).inc()
@@ -157,13 +159,63 @@ def observe_model_load_fail(stage: str) -> None:
     AI_MODEL_LOAD_FAIL_TOTAL.labels(stage=stage).inc()
 
 
-def _observe_first_request_after_boot(endpoint: str, elapsed_seconds: float) -> None:
+def initialize_metrics(app: FastAPI, gemini_model: str) -> None:
+    global _boot_started_at
+    _boot_started_at = time.perf_counter()
+    with _first_request_lock:
+        _first_request_observed.clear()
+    with _provider_cost_lock:
+        _provider_cost_total.clear()
+        _provider_success_count.clear()
+
+    endpoints = sorted(_iter_observed_endpoints(app))
+    for endpoint in endpoints:
+        for status_class in ("2xx", "4xx", "5xx"):
+            AI_REQUEST_TOTAL.labels(endpoint=endpoint, status_class=status_class)
+        AI_REQUEST_DURATION_SECONDS.labels(endpoint=endpoint)
+        AI_FIRST_REQUEST_AFTER_BOOT_DURATION_SECONDS.labels(endpoint=endpoint)
+
+    for provider, model in (
+        ("gemini", _normalize_model_name(gemini_model)),
+        ("runpod", "serverless"),
+        ("spring", "api"),
+    ):
+        for result in ("success", "error", "timeout"):
+            AI_EXTERNAL_CALL_TOTAL.labels(
+                provider=provider, model=model, result=result
+            )
+        AI_EXTERNAL_CALL_DURATION_SECONDS.labels(provider=provider, model=model)
+
+    for reason in (
+        "parse_error",
+        "rate_limited",
+        "upstream_5xx",
+        "timeout",
+        "network_error",
+        "unknown",
+    ):
+        AI_EXTERNAL_RETRY_TOTAL.labels(provider="gemini", reason=reason)
+
+    for event_type in ("startup", "idle_resume"):
+        AI_COLD_START_EVENT_TOTAL.labels(type=event_type)
+
+    for stage in ("init",):
+        AI_MODEL_LOAD_DURATION_SECONDS.labels(stage=stage)
+        AI_MODEL_LOAD_FAIL_TOTAL.labels(stage=stage)
+
+    for provider in ("gemini", "runpod", "spring"):
+        AI_ESTIMATED_COST_INDEX_TOTAL.labels(provider=provider)
+        AI_COST_INDEX_PER_SUCCESS_REQUEST.labels(provider=provider).set(0)
+
+
+def _observe_first_request_after_boot(endpoint: str, request_started_at: float) -> None:
     with _first_request_lock:
         if endpoint in _first_request_observed:
             return
         _first_request_observed.add(endpoint)
+
     AI_FIRST_REQUEST_AFTER_BOOT_DURATION_SECONDS.labels(endpoint=endpoint).observe(
-        elapsed_seconds
+        max(request_started_at - _boot_started_at, 0)
     )
 
 
@@ -188,3 +240,19 @@ def observe_estimated_cost_index(
         if success_count > 0:
             ratio = _provider_cost_total[provider] / success_count
             AI_COST_INDEX_PER_SUCCESS_REQUEST.labels(provider=provider).set(ratio)
+
+
+def _iter_observed_endpoints(app: FastAPI) -> set[str]:
+    endpoints: set[str] = set()
+    for route in app.routes:
+        if not isinstance(route, APIRoute):
+            continue
+        endpoint = getattr(route, "path_format", None) or route.path
+        if endpoint in _IGNORE_ENDPOINTS:
+            continue
+        endpoints.add(endpoint)
+    return endpoints
+
+
+def _normalize_model_name(model_name: str) -> str:
+    return model_name.replace("models/", "").strip() or "unknown"
