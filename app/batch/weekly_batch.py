@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Lazily initialize and reuse a single Embedder instance per process to avoid
 # repeated model downloads/loads on every batch invocation.
+# CI 배치 경로 검증 시 이 모듈 변경이 배치 배포 트리거로 잡히도록 유지한다.
 _embedder: Embedder | None = None
 
 

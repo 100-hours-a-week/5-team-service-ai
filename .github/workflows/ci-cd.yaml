@@ -32,6 +32,40 @@ jobs:
           fi
           echo "✅ Source branch validation passed: ${{ github.head_ref }}"
 
+  detect-batch-changes:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      batch_changed: ${{ steps.filter.outputs.batch_changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect batch-related changes
+        id: filter
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "batch_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BEFORE_SHA="${{ github.event.before }}"
+          if [ -z "$BEFORE_SHA" ] || [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE_SHA="$(git rev-parse HEAD^)"
+          fi
+
+          CHANGED_FILES="$(git diff --name-only "$BEFORE_SHA" "${{ github.sha }}")"
+          echo "$CHANGED_FILES"
+
+          if echo "$CHANGED_FILES" | grep -E '^(app/batch/|app/clients/spring_client\.py|app/core/config\.py|app/core/ssm\.py|app/db/|app/services/embedder\.py|app/services/faiss_store\.py|app/services/recommender\.py|Dockerfile|requirements\.txt|requirements-torch\.txt|\.github/workflows/ci-cd\.yaml)$' >/dev/null; then
+            echo "batch_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "batch_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   #  ci:
   #    needs: [check-source-branch]
   #    if: always() && (needs.check-source-branch.result == 'success' || needs.check-source-branch.result == 'skipped')
@@ -146,6 +180,125 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha,scope=ai
           cache-to: type=gha,mode=max,scope=ai
+
+  deploy-dev-batch:
+    needs: [detect-batch-changes, build-and-push]
+    if: github.ref == 'refs/heads/develop' && needs.detect-batch-changes.outputs.batch_changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-northeast-2
+
+      - name: Prepare batch instance and sync image
+        run: |
+          set -euo pipefail
+
+          REGISTRY="${{ secrets.ECR_REGISTRY }}"
+          TAG="${{ needs.build-and-push.outputs.image-tag }}"
+          INSTANCE_ID="i-070424e1691429bc4"
+          STARTED_BY_WORKFLOW=false
+
+          STATE=$(aws ec2 describe-instances \
+            --region ap-northeast-2 \
+            --instance-ids "$INSTANCE_ID" \
+            --query "Reservations[0].Instances[0].State.Name" \
+            --output text)
+
+          echo "Current state: $STATE"
+
+          if [ "$STATE" = "stopped" ] || [ "$STATE" = "stopping" ]; then
+            aws ec2 start-instances \
+              --region ap-northeast-2 \
+              --instance-ids "$INSTANCE_ID" \
+              --output json >/dev/null
+            aws ec2 wait instance-running \
+              --region ap-northeast-2 \
+              --instance-ids "$INSTANCE_ID"
+            STARTED_BY_WORKFLOW=true
+          elif [ "$STATE" = "pending" ]; then
+            aws ec2 wait instance-running \
+              --region ap-northeast-2 \
+              --instance-ids "$INSTANCE_ID"
+          fi
+
+          for i in $(seq 1 60); do
+            PING=$(aws ssm describe-instance-information \
+              --region ap-northeast-2 \
+              --filters "Key=InstanceIds,Values=$INSTANCE_ID" \
+              --query "InstanceInformationList[0].PingStatus" \
+              --output text 2>/dev/null || echo "Offline")
+            echo "[$i/60] SSM PingStatus: $PING"
+            if [ "$PING" = "Online" ]; then
+              break
+            fi
+            if [ "$i" -eq 60 ]; then
+              echo "::error::SSM agent did not become ready in time"
+              exit 1
+            fi
+            sleep 5
+          done
+
+          COMMANDS=$(jq -n --arg registry "$REGISTRY" --arg tag "$TAG" '[
+            "set -e",
+            "export DOCKER_CONFIG=/tmp/.docker",
+            "mkdir -p \"$DOCKER_CONFIG\"",
+            "echo '\''{\"auths\":{}}'\'' > \"$DOCKER_CONFIG/config.json\"",
+            ("aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin " + $registry),
+            ("docker pull " + $registry + "/doktori/ai:" + $tag),
+            ("mkdir -p /home/ubuntu/app && printf '\''AI_BATCH_IMAGE=" + $registry + "/doktori/ai:" + $tag + "\\n'\'' > /home/ubuntu/app/.batch-image.env"),
+            "docker image prune -f"
+          ]')
+
+          CMD_ID=$(aws ssm send-command \
+            --region ap-northeast-2 \
+            --document-name "AWS-RunShellScript" \
+            --instance-ids "$INSTANCE_ID" \
+            --parameters "{\"commands\": $COMMANDS}" \
+            --timeout-seconds 300 \
+            --comment "sync dev ai batch image ${{ github.sha }}" \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "SSM Command: $CMD_ID"
+
+          for i in $(seq 1 60); do
+            sleep 5
+            STATUS=$(aws ssm list-command-invocations \
+              --region ap-northeast-2 \
+              --command-id "$CMD_ID" \
+              --query "CommandInvocations[0].Status" \
+              --output text 2>/dev/null || echo "Pending")
+            echo "[$i/60] $STATUS"
+            case "$STATUS" in
+              Success) break ;;
+              Failed|Cancelled|TimedOut|DeliveryTimedOut)
+                aws ssm list-command-invocations \
+                  --region ap-northeast-2 \
+                  --command-id "$CMD_ID" \
+                  --details \
+                  --query "CommandInvocations[0].CommandPlugins[0].Output" \
+                  --output text || true
+                exit 1
+                ;;
+            esac
+            if [ "$i" -eq 60 ]; then
+              echo "::error::SSM command timed out"
+              exit 1
+            fi
+          done
+
+          if [ "$STARTED_BY_WORKFLOW" = "true" ]; then
+            aws ec2 stop-instances \
+              --region ap-northeast-2 \
+              --instance-ids "$INSTANCE_ID" \
+              --output json >/dev/null
+          fi
 
   deploy-dev:
     needs: build-and-push
