@@ -8,6 +8,7 @@ import time
 from datetime import date, timedelta
 from typing import Iterable, List, Mapping, Optional
 
+from app.core.ssm import load_ssm_parameters
 from app.clients.spring_client import post_recommendations
 from app.db.repositories.recommendation_repo import RecommendationRepo
 from app.db.session import SessionLocal
@@ -20,6 +21,9 @@ from app.services.recommender import (
     normalize_user_row,
     rerank_recruiting_with_genre_bonus,
 )
+
+# Load SSM-backed settings for one-shot batch execution before creating DB clients.
+load_ssm_parameters()
 
 logger = logging.getLogger(__name__)
 
