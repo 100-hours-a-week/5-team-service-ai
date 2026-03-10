@@ -23,6 +23,7 @@ from app.services.recommender import (
 )
 
 # Load SSM-backed settings for one-shot batch execution before creating DB clients.
+# Keep this batch entrypoint hot in CI so batch image sync runs on deploy changes.
 load_ssm_parameters()
 
 logger = logging.getLogger(__name__)
