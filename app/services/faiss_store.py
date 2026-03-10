@@ -26,13 +26,19 @@ class FaissStore:
         """
         Build an index from embedding matrix and metadata.
 
-        Parameters
-        ----------
-        vectors : np.ndarray
-            Shape (n, d) float32 embeddings. Will be L2-normalized.
-        metadatas : list[Mapping]
-            Metadata aligned with vectors; must include meeting_id.
+        This keeps backward compatibility but now delegates to ``add_batch``
+        so that callers can also stream with repeated ``add_batch`` calls.
         """
+
+        # reset state so build() remains idempotent
+        self.index = None
+        self.metadatas = []
+        self._id_to_meta = {}
+        self.add_batch(vectors, metadatas)
+
+    def add_batch(self, vectors: np.ndarray, metadatas: List[Mapping]) -> None:
+        """Add a batch of vectors + metadata to the index incrementally."""
+
         if vectors is None:
             raise ValueError("vectors must not be None")
         arr = np.asarray(vectors, dtype=np.float32)
@@ -42,12 +48,19 @@ class FaissStore:
             raise ValueError("vectors and metadatas length mismatch")
 
         faiss.normalize_L2(arr)
-        dim = arr.shape[1]
-        self.index = faiss.IndexFlatIP(dim)
+
+        if self.index is None:
+            dim = arr.shape[1]
+            self.index = faiss.IndexFlatIP(dim)
+        elif arr.shape[1] != self.index.d:
+            raise ValueError(
+                f"dimension mismatch: index dim {self.index.d} vs batch dim {arr.shape[1]}"
+            )
+
         self.index.add(arr)
 
-        self.metadatas = list(metadatas)
-        self._id_to_meta = {int(meta["meeting_id"]): meta for meta in self.metadatas}
+        self.metadatas.extend(metadatas)
+        self._id_to_meta.update({int(meta["meeting_id"]): meta for meta in metadatas})
 
     def search(self, query_vec: np.ndarray, top_k: int) -> List[dict]:
         """

@@ -40,6 +40,51 @@ class RecommendationRepo:
         rows = db.execute(sql).mappings().all()
         return [self._convert_json_fields(row) for row in rows]
 
+    def iter_users(self, db: Session, *, chunk_size: int = 500):
+        """
+        Stream users in chunks to reduce peak memory.
+
+        Uses LIMIT/OFFSET paging; acceptable for batch workloads and avoids
+        materializing the full result set.
+        """
+
+        base_sql = text(
+            """
+            SELECT
+                u.id AS user_id,
+                rv.code AS reading_volume_code,
+                (
+                    SELECT JSON_ARRAYAGG(rp.code)
+                    FROM user_reading_purposes urp
+                    JOIN reading_purposes rp ON urp.reading_purpose_id = rp.id
+                    WHERE urp.user_id = u.id
+                ) AS purpose_codes,
+                (
+                    SELECT JSON_ARRAYAGG(rg.code)
+                    FROM user_reading_genres urg
+                    JOIN reading_genres rg ON urg.reading_genre_id = rg.id
+                    WHERE urg.user_id = u.id
+                ) AS genre_codes
+            FROM users u
+            LEFT JOIN user_preferences up ON up.user_id = u.id
+            LEFT JOIN reading_volumes rv ON rv.id = up.reading_volume_id
+            WHERE u.deleted_at IS NULL
+            LIMIT :limit OFFSET :offset
+            """
+        )
+
+        offset = 0
+        while True:
+            rows = (
+                db.execute(base_sql, {"limit": chunk_size, "offset": offset})
+                .mappings()
+                .all()
+            )
+            if not rows:
+                break
+            yield [self._convert_json_fields(row) for row in rows]
+            offset += chunk_size
+
     def fetch_meetings(self, db: Session) -> list[dict]:
         sql = text(
             """

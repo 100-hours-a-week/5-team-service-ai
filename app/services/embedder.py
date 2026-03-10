@@ -42,7 +42,13 @@ class Embedder:
             observe_model_load_fail(stage="init")
             raise
 
-    def encode(self, texts: Iterable[str]) -> np.ndarray:
+    def encode(
+        self,
+        texts: Iterable[str],
+        *,
+        batch_size: int | None = None,
+        show_progress_bar: bool = True,
+    ) -> np.ndarray:
         """
         Encode a list of texts into float32 embeddings.
 
@@ -55,17 +61,19 @@ class Embedder:
         text_list: List[str] = list(texts)
         # Prefer no worker pool to avoid leaked semaphore warnings; fall back if the
         # installed sentence-transformers version does not support num_workers.
+        common_kwargs = {
+            "convert_to_numpy": True,
+            "device": self.model.device,
+            "show_progress_bar": show_progress_bar,
+        }
+        encode_kwargs = {**common_kwargs, "num_workers": 0}
+        if batch_size is not None:
+            encode_kwargs["batch_size"] = batch_size
+
         try:
-            embeddings = self.model.encode(
-                text_list,
-                convert_to_numpy=True,
-                device=self.model.device,
-                num_workers=0,
-            )
+            embeddings = self.model.encode(text_list, **encode_kwargs)
         except TypeError:
-            embeddings = self.model.encode(
-                text_list,
-                convert_to_numpy=True,
-                device=self.model.device,
-            )
+            # Older sentence-transformers may not accept num_workers.
+            encode_kwargs.pop("num_workers", None)
+            embeddings = self.model.encode(text_list, **encode_kwargs)
         return embeddings.astype(np.float32, copy=False)
