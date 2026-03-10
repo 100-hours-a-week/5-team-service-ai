@@ -25,7 +25,7 @@ def _job(top_k: int, search_k: int) -> None:
         logger.info(
             "reco batch completed",
             extra={
-                "rows": len(result.get("rows", [])),
+                "rows": result.get("row_count"),
                 "users": result.get("users"),
                 "inserted": result.get("inserted"),
                 "timings": result.get("timings"),

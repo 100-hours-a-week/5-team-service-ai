@@ -42,9 +42,8 @@ def generate_recommendations_post(
             status_code=503, detail="recommendation generation failed"
         ) from exc
 
-    rows = result.get("rows") or []
     return {
         "users": result.get("users"),
-        "rows_count": len(rows),
+        "rows_count": result.get("row_count"),
         "inserted": result.get("inserted"),
     }

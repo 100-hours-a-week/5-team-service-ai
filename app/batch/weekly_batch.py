@@ -6,7 +6,10 @@ import argparse
 import logging
 import time
 from datetime import date, timedelta
-from typing import Iterable, List, Mapping, Optional
+from typing import Iterable, List, Mapping, Optional, Sequence
+
+import faulthandler
+import os
 
 from app.core.ssm import load_ssm_parameters
 
@@ -29,6 +32,13 @@ from app.services.recommender import (
 
 logger = logging.getLogger(__name__)
 
+# Enable crash tracebacks for native segfaults and tame thread explosion on macOS/OpenMP.
+faulthandler.enable()
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("VECLIB_MAXIMUM_THREADS", "1")
+
 # Lazily initialize and reuse a single Embedder instance per process to avoid
 # repeated model downloads/loads on every batch invocation.
 # CI 배치 경로 검증 시 이 모듈 변경이 배치 배포 트리거로 잡히도록 유지한다.
@@ -50,31 +60,53 @@ def week_start_iso(today: Optional[date] = None) -> str:
     return monday.isoformat()
 
 
-def embed_meetings(meetings: List[Mapping], embedder: Embedder) -> list:
+def embed_meetings(
+    meetings: Sequence[Mapping], embedder: Embedder, *, batch_size: int | None = None
+) -> list:
     """
     Embed meeting texts into vectors.
     """
     meeting_texts = [build_meeting_text(m) for m in meetings]
-    return embedder.encode(meeting_texts)
+    return embedder.encode(meeting_texts, batch_size=batch_size)
 
 
-def build_index(meeting_vecs, meetings: List[Mapping]) -> FaissStore:
-    """
-    Build FAISS index from meeting vectors and metadata.
-    """
+def build_index_streaming(
+    meetings: List[Mapping],
+    embedder: Embedder,
+    *,
+    meeting_batch_size: int = 800,
+    embed_batch_size: int | None = None,
+) -> FaissStore:
+    """Build a FAISS index without materializing all embeddings at once."""
+
     store = FaissStore()
-    store.build(
-        meeting_vecs, [{"meeting_id": m["id"], "status": m["status"]} for m in meetings]
-    )
+    for idx in range(0, len(meetings), meeting_batch_size):
+        chunk = meetings[idx : idx + meeting_batch_size]
+        meeting_texts = [build_meeting_text(m) for m in chunk]
+        vecs = embedder.encode(
+            meeting_texts, batch_size=embed_batch_size, show_progress_bar=False
+        )
+        store.add_batch(
+            vecs,
+            [{"meeting_id": m["id"], "status": m["status"]} for m in chunk],
+        )
+        logger.info(
+            "faiss index chunk built",
+            extra={"start": idx, "count": len(chunk), "ntotal": store.index.ntotal},
+        )
     return store
 
 
-def embed_users(users: List[Mapping], embedder: Embedder) -> list:
+def embed_users(
+    users: Sequence[Mapping], embedder: Embedder, *, batch_size: int | None = None
+) -> list:
     """
     Embed user preference queries into vectors.
     """
     user_queries = [build_user_query(u) for u in users]
-    return embedder.encode(user_queries)
+    return embedder.encode(
+        user_queries, batch_size=batch_size, show_progress_bar=False
+    )
 
 
 def search_candidates(store: FaissStore, user_vec, search_k: int) -> dict[int, float]:
@@ -85,82 +117,6 @@ def search_candidates(store: FaissStore, user_vec, search_k: int) -> dict[int, f
     return {h["meeting_id"]: h["score"] for h in hits}
 
 
-def generate_rows(
-    *,
-    top_k: int,
-    search_k: int,
-    meetings: List[Mapping],
-    users: List[Mapping],
-    embedder: Embedder | None = None,
-) -> tuple[List[dict], dict]:
-    """Generate recommendation rows using FAISS + genre-aware reranking."""
-
-    embedder = embedder or get_embedder()
-
-    t0 = time.perf_counter()
-    meeting_vecs = embed_meetings(meetings, embedder)
-    t1 = time.perf_counter()
-
-    store = build_index(meeting_vecs, meetings)
-
-    t2 = time.perf_counter()
-    user_vecs = embed_users(users, embedder)
-    t3 = time.perf_counter()
-
-    owner_by_meeting = {m["id"]: m.get("leader_user_id") for m in meetings}
-
-    logger.info(
-        "reco batch data loaded",
-        extra={"meetings": len(meetings), "users": len(users)},
-    )
-    logger.info(
-        "reco batch embeddings ready",
-        extra={
-            "embed_meeting_ms": int((t1 - t0) * 1000),
-            "embed_user_ms": int((t3 - t2) * 1000),
-        },
-    )
-
-    rows: List[dict] = []
-    week_start_date = week_start_iso()
-    processed = 0
-    for user, vec in zip(users, user_vecs):
-        scores = search_candidates(store, vec, search_k)
-        # 필터: 사용자가 만든 모임은 제외
-        scores = {
-            mid: score
-            for mid, score in scores.items()
-            if owner_by_meeting.get(mid) is None
-            or owner_by_meeting.get(mid) != user["user_id"]
-        }
-        meeting_ids = rerank_recruiting_with_genre_bonus(
-            scores,
-            meetings,
-            user_genres=user.get("genre_codes") or user.get("genre_ids") or [],
-            user_id=user.get("user_id"),
-            top_k=top_k,
-            candidate_pool=search_k,
-        )
-        for rank, mid in enumerate(meeting_ids, start=1):
-            rows.append(
-                {
-                    "user_id": user["user_id"],
-                    "meeting_id": mid,
-                    "week_start_date": week_start_date,
-                    "rank": rank,
-                }
-            )
-        processed += 1
-        if processed % 20 == 0:
-            logger.info("reco batch progress: %s users processed", processed)
-
-    timings = {
-        "embed_meeting_ms": int((t1 - t0) * 1000),
-        "embed_user_ms": int((t3 - t2) * 1000),
-    }
-    return rows, timings
-
-
 def generate_from_db(
     *,
     top_k: int,
@@ -168,6 +124,11 @@ def generate_from_db(
     db=None,
     repo: Optional[RecommendationRepo] = None,
     persist: bool = True,
+    meeting_batch_size: int = 50,
+    user_batch_size: int = 500,
+    embed_batch_size: int | None = 64,
+    sample_rows: int = 3,
+    collect_rows: bool = False,
 ) -> dict:
     """Fetch data from DB, generate rows, and optionally persist them."""
 
@@ -180,26 +141,99 @@ def generate_from_db(
 
     try:
         meetings_raw = repo.fetch_meetings(db)
-        users_raw = repo.fetch_users(db)
-
         meetings = [normalize_meeting_row(m) for m in meetings_raw]
-        users = [normalize_user_row(u) for u in users_raw]
 
-        if not meetings or not users:
-            raise RuntimeError("meetings or users not available")
+        if not meetings:
+            raise RuntimeError("meetings not available")
 
-        rows, timings = generate_rows(
-            top_k=top_k,
-            search_k=search_k,
-            meetings=meetings,
-            users=users,
+        embedder = get_embedder()
+
+        # Build index in streaming fashion to avoid double-buffering all vectors.
+        t0 = time.perf_counter()
+        store = build_index_streaming(
+            meetings,
+            embedder,
+            meeting_batch_size=meeting_batch_size,
+            embed_batch_size=embed_batch_size,
         )
+        t1 = time.perf_counter()
 
-        inserted = repo.upsert_recommendations(db, rows) if persist else 0
+        owner_by_meeting = {m["id"]: m.get("leader_user_id") for m in meetings}
+
+        week_start_date = week_start_iso()
+        total_users = 0
+        total_rows = 0
+        inserted = 0
+        sample: list[dict] = []
+        all_rows: list[dict] | None = [] if collect_rows else None
+        user_embed_ms = 0
+
+        for user_batch in repo.iter_users(db, chunk_size=user_batch_size):
+            users = [normalize_user_row(u) for u in user_batch]
+            if not users:
+                continue
+            total_users += len(users)
+
+            t2 = time.perf_counter()
+            user_vecs = embed_users(
+                users, embedder, batch_size=embed_batch_size
+            )
+            user_embed_ms += int((time.perf_counter() - t2) * 1000)
+
+            rows_batch: list[dict] = []
+            for user, vec in zip(users, user_vecs):
+                scores = search_candidates(store, vec, search_k)
+                scores = {
+                    mid: score
+                    for mid, score in scores.items()
+                    if owner_by_meeting.get(mid) is None
+                    or owner_by_meeting.get(mid) != user["user_id"]
+                }
+                meeting_ids = rerank_recruiting_with_genre_bonus(
+                    scores,
+                    meetings,
+                    user_genres=user.get("genre_codes") or user.get("genre_ids") or [],
+                    user_id=user.get("user_id"),
+                    top_k=top_k,
+                    candidate_pool=search_k,
+                )
+                for rank, mid in enumerate(meeting_ids, start=1):
+                    row = {
+                        "user_id": user["user_id"],
+                        "meeting_id": mid,
+                        "week_start_date": week_start_date,
+                        "rank": rank,
+                    }
+                    rows_batch.append(row)
+                    if collect_rows and all_rows is not None:
+                        all_rows.append(row)
+                    elif len(sample) < sample_rows:
+                        sample.append(row)
+
+                total_rows += len(meeting_ids)
+
+            if persist and rows_batch:
+                inserted += repo.upsert_recommendations(db, rows_batch)
+
+            if total_users % 100 == 0:
+                logger.info(
+                    "reco batch progress",
+                    extra={"users": total_users, "rows": total_rows},
+                )
+
+        if total_users == 0:
+            raise RuntimeError("users not available")
+
+        timings = {
+            "embed_meeting_ms": int((t1 - t0) * 1000),
+            "embed_user_ms": user_embed_ms,
+        }
+
         return {
-            "rows": rows,
-            "users": len(users),
-            "inserted": inserted,
+            "rows": all_rows if collect_rows else sample,
+            "row_count": total_rows,
+            "users": total_users,
+            "inserted": inserted if persist else total_rows,
             "timings": timings,
         }
     finally:
@@ -239,6 +273,30 @@ def main(argv: Iterable[str] | None = None) -> int:
         default=20,
         help="Initial search candidates before rerank",
     )
+    parser.add_argument(
+        "--meeting-batch-size",
+        type=int,
+        default=50,
+        help="Chunk size for meeting embeddings/index build",
+    )
+    parser.add_argument(
+        "--user-batch-size",
+        type=int,
+        default=500,
+        help="Chunk size for user fetch/embedding/recommendation",
+    )
+    parser.add_argument(
+        "--embed-batch-size",
+        type=int,
+        default=64,
+        help="Batch size for model.encode",
+    )
+    parser.add_argument(
+        "--sample-rows",
+        type=int,
+        default=3,
+        help="Number of sample rows to print in dry-run",
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     logging.basicConfig(
@@ -247,27 +305,34 @@ def main(argv: Iterable[str] | None = None) -> int:
 
     try:
         result = generate_from_db(
-            top_k=args.top_k, search_k=args.search_k, persist=not args.dry_run
+            top_k=args.top_k,
+            search_k=args.search_k,
+            persist=not args.dry_run,
+            meeting_batch_size=args.meeting_batch_size,
+            user_batch_size=args.user_batch_size,
+            embed_batch_size=args.embed_batch_size,
+            sample_rows=args.sample_rows,
+            collect_rows=args.push,
         )
     except Exception as exc:  # noqa: BLE001
         logger.error("DB batch failed: %s", exc)
         return 1
 
-    rows = result["rows"]
+    rows_output = result.get("rows", [])
     print(
-        f"rows={len(rows)} users={result['users']} inserted={result['inserted']} "
+        f"rows={result.get('row_count')} users={result.get('users')} inserted={result.get('inserted')} "
         f"embed_ms={result['timings']['embed_meeting_ms']} / {result['timings']['embed_user_ms']}"
     )
 
     if args.push:
         if not args.base_url:
             parser.error("--base-url is required when --push is set")
-        resp = _push(args.base_url, rows)
+        resp = _push(args.base_url, rows_output)
         print(
             f"push status={resp.get('status_code')} ok={resp.get('ok')} text={resp.get('text')}"
         )
     else:
-        print(f"dry-run: sample rows -> {rows[:3]}")
+        print(f"dry-run: sample rows -> {rows_output[:3]}")
 
     return 0
 
