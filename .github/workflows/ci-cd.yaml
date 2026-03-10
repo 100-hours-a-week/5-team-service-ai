@@ -45,26 +45,22 @@ jobs:
 
       - name: Detect batch-related changes
         id: filter
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "batch_changed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          BEFORE_SHA="${{ github.event.before }}"
-          if [ -z "$BEFORE_SHA" ] || [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
-            BEFORE_SHA="$(git rev-parse HEAD^)"
-          fi
-
-          CHANGED_FILES="$(git diff --name-only "$BEFORE_SHA" "${{ github.sha }}")"
-          echo "$CHANGED_FILES"
-
-          if echo "$CHANGED_FILES" | grep -E '^(app/batch/|app/clients/spring_client\.py|app/core/config\.py|app/core/ssm\.py|app/db/|app/services/embedder\.py|app/services/faiss_store\.py|app/services/recommender\.py|Dockerfile|requirements\.txt|requirements-torch\.txt|\.github/workflows/ci-cd\.yaml)$' >/dev/null; then
-            echo "batch_changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "batch_changed=false" >> "$GITHUB_OUTPUT"
-          fi
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            batch_changed:
+              - 'app/batch/**'
+              - 'app/clients/spring_client.py'
+              - 'app/core/config.py'
+              - 'app/core/ssm.py'
+              - 'app/db/**'
+              - 'app/services/embedder.py'
+              - 'app/services/faiss_store.py'
+              - 'app/services/recommender.py'
+              - 'Dockerfile'
+              - 'requirements.txt'
+              - 'requirements-torch.txt'
+              - '.github/workflows/ci-cd.yaml'
 
   #  ci:
   #    needs: [check-source-branch]
