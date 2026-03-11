@@ -25,7 +25,7 @@ class RunpodClient:
         endpoint_id: str,
         api_key: str,
         poll_interval: int = 2,
-        poll_timeout: int = 120,
+        poll_timeout: int = 300,
         cold_start_queue_threshold: int = 10,
     ):
         self.endpoint_id = endpoint_id
