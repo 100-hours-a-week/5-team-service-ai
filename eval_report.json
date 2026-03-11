@@ -1,0 +1,24 @@
+{
+  "base": {
+    "total": 1,
+    "json_parse_success_rate": 0.0,
+    "json_only_rate": 0.0,
+    "schema_pass_rate": 0.0,
+    "exact_3_items_rate": 0.0,
+    "empty_string_rate": 0,
+    "cumulative_consistency_score": 0,
+    "latency_ms_avg": 0,
+    "latency_ms_p95": 0
+  },
+  "finetuned": {
+    "total": 1,
+    "json_parse_success_rate": 0.0,
+    "json_only_rate": 0.0,
+    "schema_pass_rate": 0.0,
+    "exact_3_items_rate": 0.0,
+    "empty_string_rate": 0,
+    "cumulative_consistency_score": 0,
+    "latency_ms_avg": 0,
+    "latency_ms_p95": 0
+  }
+}

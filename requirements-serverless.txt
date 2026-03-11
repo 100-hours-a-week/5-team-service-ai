@@ -1,6 +1,6 @@
-runpod
-torch
-transformers
+runpod==1.7.13
+transformers>=4.44.0
 accelerate
 safetensors
+sentencepiece
 huggingface_hub
