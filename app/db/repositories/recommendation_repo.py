@@ -101,7 +101,7 @@ class RecommendationRepo:
             FROM meetings m
             JOIN reading_genres rg ON rg.id = m.reading_genre_id
             WHERE m.deleted_at IS NULL
-              -- AND m.status = 'RECRUITING'  -- 모집중 필터 (임시 비활성화)
+              AND m.status = 'RECRUITING'
             """
         )
         rows = db.execute(sql).mappings().all()

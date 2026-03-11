@@ -11,6 +11,12 @@ from typing import Iterable, List, Mapping, Optional, Sequence
 import faulthandler
 import os
 
+from app.core.ssm import load_ssm_parameters
+
+# Load SSM-backed settings for one-shot batch execution before importing modules
+# that initialize settings-dependent clients such as the DB session.
+load_ssm_parameters()
+
 from app.clients.spring_client import post_recommendations
 from app.db.repositories.recommendation_repo import RecommendationRepo
 from app.db.session import SessionLocal
@@ -35,6 +41,7 @@ os.environ.setdefault("VECLIB_MAXIMUM_THREADS", "1")
 
 # Lazily initialize and reuse a single Embedder instance per process to avoid
 # repeated model downloads/loads on every batch invocation.
+# CI 배치 경로 검증 시 이 모듈 변경이 배치 배포 트리거로 잡히도록 유지한다.
 _embedder: Embedder | None = None
 
 
