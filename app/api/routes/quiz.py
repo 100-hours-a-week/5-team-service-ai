@@ -31,7 +31,8 @@ class QuizGenerateRequest(BaseModel):
 @lru_cache
 def _quiz_service() -> QuizService:
     settings = get_settings()
-    endpoint_id = settings.base_endpoint_id or settings.runpod_endpoint_id
+    # Prefer FT endpoint for quiz generation as requested; fall back to existing values.
+    endpoint_id = settings.ft_endpoint_id or settings.base_endpoint_id or settings.runpod_endpoint_id
     if not endpoint_id or not settings.runpod_api_key:
         raise HTTPException(
             status_code=503, detail="RUNPOD endpoint or API key not configured"
@@ -44,7 +45,8 @@ def _quiz_service() -> QuizService:
         poll_timeout=settings.runpod_poll_timeout_seconds,
     )
     embedder = Embedder()
-    redis_client = get_redis_client(settings)
+    # Avoid passing Settings to lru_cache (unhashable); let it pull from get_settings().
+    redis_client = get_redis_client()
     return QuizService(
         runpod_client=client,
         embedder=embedder,

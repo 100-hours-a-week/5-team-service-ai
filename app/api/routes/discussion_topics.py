@@ -26,7 +26,8 @@ router = APIRouter(
 @lru_cache
 def _discussion_service() -> DiscussionTopicService:
     settings = get_settings()
-    endpoint_id = settings.base_endpoint_id or settings.runpod_endpoint_id
+    # Prefer FT endpoint for topic generation as requested; fall back to existing values.
+    endpoint_id = settings.ft_endpoint_id or settings.base_endpoint_id or settings.runpod_endpoint_id
     if not endpoint_id or not settings.runpod_api_key:
         raise HTTPException(
             status_code=503, detail="RUNPOD endpoint or API key not configured"

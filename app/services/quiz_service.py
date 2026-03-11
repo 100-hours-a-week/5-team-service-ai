@@ -199,8 +199,10 @@ class QuizService:
         context = "\n".join(f"- {s}" for s in sentences)
         return (
             "너는 한국어 객관식 퀴즈를 한 문제만 생성하는 출제자다.\n"
-            "아래 책 정보와 컨텍스트 문장만 사용해 문제를 만들고, 반드시 JSON만 출력해라.\n"
-            "질문은 세 문장, 각 보기는 한문장으로 간결하게 써라.\n"
+            "아래 책 정보와 컨텍스트 문장만 사용해 문제를 만들고, 반드시 JSON 한 덩어리만 출력해라.\n"
+            "코드펜스(````), 주석, 설명, 앞뒤 문구 금지. 무조건 순수 JSON 문자열만 반환.\n"
+            "JSON은 꼭 더블쿼트만 사용하고, 트레일링 콤마 금지. 보기 4개 고정, 한 문장씩.\n"
+            "질문은 세 문장, 각 보기는 한 문장으로 간결하게 써라.\n"
             "출력 형식 예시:\n"
             "{\n"
             '  "quiz": {"question": "질문", "correct_choice_number": 2},\n'
@@ -300,18 +302,24 @@ class QuizService:
         return match.group(0) if match else None
 
     def _parse_quiz_response(self, raw_text: str) -> QuizGenerateResponse:
-        json_block = self._extract_json_block(raw_text)
+        text = raw_text or ""
+        json_block = self._extract_json_block(text) or text.strip()
         if not json_block:
             raise ValueError("LLM output did not contain JSON")
 
         try:
             payload = json.loads(json_block)
-        except json.JSONDecodeError:
-            # 관찰되는 패턴: 키/문자열에 작은따옴표 사용. literal_eval로 보정 시도.
+        except json.JSONDecodeError as exc:
+            # try to parse the first JSON object only
             try:
-                payload = ast.literal_eval(json_block)
-            except Exception as exc:  # noqa: BLE001
-                raise ValueError(f"Failed to parse LLM JSON: {exc}") from exc
+                decoder = json.JSONDecoder()
+                payload, _ = decoder.raw_decode(json_block)
+            except Exception:
+                # 관찰되는 패턴: 키/문자열에 작은따옴표 사용. literal_eval로 보정 시도.
+                try:
+                    payload = ast.literal_eval(json_block)
+                except Exception as inner:  # noqa: BLE001
+                    raise ValueError(f"Failed to parse LLM JSON: {inner}") from inner
 
         normalized = self._normalize_payload(payload)
         response = QuizGenerateResponse(**normalized)
