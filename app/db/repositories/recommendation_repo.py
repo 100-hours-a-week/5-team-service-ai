@@ -123,7 +123,8 @@ class RecommendationRepo:
             VALUES (:user_id, :meeting_id, :week_start_date, :rank)
             ON DUPLICATE KEY UPDATE
                 week_start_date = VALUES(week_start_date),
-                `rank` = VALUES(`rank`);
+                `rank` = VALUES(`rank`),
+                created_at = CURRENT_TIMESTAMP;
             """
         )
         result = db.execute(sql, rows)
