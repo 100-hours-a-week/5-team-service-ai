@@ -115,11 +115,14 @@ class RecommendationRepo:
         if not rows:
             return 0
 
+        # NOTE: DB는 (user_id, meeting_id, week_start_date) 유니크 키를 가져야 주차별 적재가 정상 동작한다.
+        # 만약 week_start_date가 유니크 키에 포함되지 않으면 과거 주차 행이 업데이트되어 날짜가 뒤틀린다.
         sql = text(
             """
             INSERT INTO user_meeting_recommendations (user_id, meeting_id, week_start_date, `rank`)
             VALUES (:user_id, :meeting_id, :week_start_date, :rank)
             ON DUPLICATE KEY UPDATE
+                week_start_date = VALUES(week_start_date),
                 `rank` = VALUES(`rank`);
             """
         )
