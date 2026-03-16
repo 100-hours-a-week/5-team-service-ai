@@ -5,7 +5,8 @@ from __future__ import annotations
 import argparse
 import logging
 import time
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 from typing import Iterable, List, Mapping, Optional, Sequence
 
 import faulthandler
@@ -52,10 +53,20 @@ def get_embedder() -> Embedder:
     return _embedder
 
 
-def week_start_iso(today: Optional[date] = None) -> str:
-    """Return ISO string for Monday of the given week (or this week)."""
+def week_start_iso(today: Optional[date] = None, tz_name: str | None = "Asia/Seoul") -> str:
+    """Return ISO string for Monday of the given week (or this week).
 
-    today = today or date.today()
+    Note: The batch runs on servers configured to UTC. Without an explicit
+    timezone this would use Sunday (UTC) when it's already Monday in KST,
+    causing `week_start_date` to point to the previous week. Default to
+    Asia/Seoul but allow override via `tz_name`.
+    """
+
+    if today is None:
+        if tz_name:
+            today = datetime.now(ZoneInfo(tz_name)).date()
+        else:
+            today = date.today()
     monday = today - timedelta(days=today.weekday())
     return monday.isoformat()
 
