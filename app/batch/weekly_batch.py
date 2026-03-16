@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import logging
 import time
+from collections import Counter
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 from typing import Iterable, List, Mapping, Optional, Sequence
@@ -175,7 +176,12 @@ def generate_from_db(
         total_users = 0
         total_rows = 0
         inserted = 0
+        users_with_recs = 0
+        users_zero_recs = 0
+        recs_per_user: list[int] = []
+        user_ids_in_rows: set[int] = set()
         sample: list[dict] = []
+        log_rows_sample: list[dict] = []
         all_rows: list[dict] | None = [] if collect_rows else None
         user_embed_ms = 0
 
@@ -208,20 +214,36 @@ def generate_from_db(
                     top_k=top_k,
                     candidate_pool=search_k,
                 )
-                for rank, mid in enumerate(meeting_ids, start=1):
-                    row = {
-                        "user_id": user["user_id"],
-                        "meeting_id": mid,
-                        "week_start_date": week_start_date,
-                        "rank": rank,
-                    }
-                    rows_batch.append(row)
-                    if collect_rows and all_rows is not None:
-                        all_rows.append(row)
-                    elif len(sample) < sample_rows:
-                        sample.append(row)
+                rec_count = len(meeting_ids)
+                recs_per_user.append(rec_count)
+                if rec_count == 0:
+                    users_zero_recs += 1
+                    continue
 
-                total_rows += len(meeting_ids)
+                users_with_recs += 1
+                rows_for_user: list[dict] = []
+                for rank, mid in enumerate(meeting_ids, start=1):
+                    rows_for_user.append(
+                        {
+                            "user_id": user["user_id"],
+                            "meeting_id": mid,
+                            "week_start_date": week_start_date,
+                            "rank": rank,
+                        }
+                    )
+
+                rows_batch.extend(rows_for_user)
+                user_ids_in_rows.add(user["user_id"])
+
+                if collect_rows and all_rows is not None:
+                    all_rows.extend(rows_for_user)
+                elif len(sample) < sample_rows:
+                    sample.extend(rows_for_user[: sample_rows - len(sample)])
+
+                if len(log_rows_sample) < 10:
+                    log_rows_sample.extend(rows_for_user[: 10 - len(log_rows_sample)])
+
+                total_rows += rec_count
 
             if persist and rows_batch:
                 inserted += repo.upsert_recommendations(db, rows_batch)
@@ -234,6 +256,20 @@ def generate_from_db(
 
         if total_users == 0:
             raise RuntimeError("users not available")
+
+        rec_dist = Counter(recs_per_user)
+        logger.info(
+            "reco coverage summary",
+            extra={
+                "total_users": total_users,
+                "users_with_recs": users_with_recs,
+                "users_zero_recs": users_zero_recs,
+                "unique_users_in_rows": len(user_ids_in_rows),
+                "rows_generated": total_rows,
+                "rec_count_distribution": dict(rec_dist.most_common()),
+                "rows_sample": log_rows_sample,
+            },
+        )
 
         timings = {
             "embed_meeting_ms": int((t1 - t0) * 1000),
