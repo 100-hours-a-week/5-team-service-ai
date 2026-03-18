@@ -23,7 +23,7 @@ from app.clients.spring_client import post_recommendations
 from app.db.repositories.recommendation_repo import RecommendationRepo
 from app.db.session import SessionLocal
 from app.services.embedder import Embedder
-from app.services.faiss_store import FaissStore
+from app.services.qdrant_store import QdrantStore
 from app.services.recommender import (
     build_meeting_text,
     build_user_query,
@@ -88,10 +88,19 @@ def build_index_streaming(
     *,
     meeting_batch_size: int = 800,
     embed_batch_size: int | None = None,
-) -> FaissStore:
-    """Build a FAISS index without materializing all embeddings at once."""
+    collection_name: str = "reco_meetings",
+    qdrant_url: str | None = None,
+    qdrant_api_key: str | None = None,
+    qdrant_location: str | None = ":memory:",
+) -> QdrantStore:
+    """Build a Qdrant index without materializing all embeddings at once."""
 
-    store = FaissStore()
+    store = QdrantStore(
+        collection=collection_name,
+        url=qdrant_url,
+        api_key=qdrant_api_key,
+        location=qdrant_location,
+    )
     for idx in range(0, len(meetings), meeting_batch_size):
         chunk = meetings[idx : idx + meeting_batch_size]
         meeting_texts = [build_meeting_text(m) for m in chunk]
@@ -103,8 +112,8 @@ def build_index_streaming(
             [{"meeting_id": m["id"], "status": m["status"]} for m in chunk],
         )
         logger.info(
-            "faiss index chunk built",
-            extra={"start": idx, "count": len(chunk), "ntotal": store.index.ntotal},
+            "qdrant index chunk built",
+            extra={"start": idx, "count": len(chunk), "ntotal": store.ntotal},
         )
     return store
 
@@ -121,9 +130,9 @@ def embed_users(
     )
 
 
-def search_candidates(store: FaissStore, user_vec, search_k: int) -> dict[int, float]:
+def search_candidates(store: QdrantStore, user_vec, search_k: int) -> dict[int, float]:
     """
-    Search FAISS store and return meeting_id -> score mapping.
+    Search Qdrant store and return meeting_id -> score mapping.
     """
     hits = store.search(user_vec, top_k=search_k)
     return {h["meeting_id"]: h["score"] for h in hits}
@@ -167,6 +176,10 @@ def generate_from_db(
             embedder,
             meeting_batch_size=meeting_batch_size,
             embed_batch_size=embed_batch_size,
+            collection_name=os.getenv("QDRANT_COLLECTION_RECO", "reco_meetings"),
+            qdrant_url=os.getenv("QDRANT_URL"),
+            qdrant_api_key=os.getenv("QDRANT_API_KEY"),
+            qdrant_location=os.getenv("QDRANT_LOCATION", ":memory:"),
         )
         t1 = time.perf_counter()
 

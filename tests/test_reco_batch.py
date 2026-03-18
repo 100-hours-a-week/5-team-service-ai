@@ -3,7 +3,7 @@ from collections import Counter
 from pathlib import Path
 
 from app.services.embedder import Embedder
-from app.services.faiss_store import FaissStore
+from app.services.qdrant_store import QdrantStore
 from app.services.recommender import build_meeting_text, build_user_query, load_jsonl
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -66,7 +66,7 @@ def test_semantic_retrieval_top20():
     meeting_vecs = embedder.encode(meeting_texts)
     t1 = time.perf_counter()
 
-    store = FaissStore()
+    store = QdrantStore(collection="test_reco", location=":memory:")
     store.build(meeting_vecs, [{"meeting_id": m["id"], "status": m["status"]} for m in meetings])
 
     user_queries = [build_user_query(u) for u in users]
