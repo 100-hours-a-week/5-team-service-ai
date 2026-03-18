@@ -9,14 +9,16 @@ numpy==1.26.4
 pandas==2.2.2
 
 sentence-transformers==3.3.1
-# faiss는 conda-forge 빌드를 권장합니다. pip로 설치해야 한다면 1.7.x를 사용하세요.
-faiss-cpu==1.7.4
+qdrant-client==1.9.2
 
 SQLAlchemy==2.0.32
 PyMySQL==1.1.1
 
 google-genai==0.3.0
 tenacity==8.5.0
+
+# Pin protobuf to satisfy google-ai-generativelanguage (<5.0.0)
+protobuf>=4.23.4,<5.0.0
 
 
 google-api-core
@@ -27,3 +29,5 @@ apscheduler==3.10.4
 pytz==2024.1
 prometheus-client==0.22.1
 redis==5.0.4
+
+pillow>=10,<12

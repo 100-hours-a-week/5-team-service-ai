@@ -7,11 +7,11 @@ import logging
 import random
 import re
 from collections import deque
-from pathlib import Path
 from typing import Iterable
 
-import faiss
 import numpy as np
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, FieldCondition, Filter, MatchValue, PointStruct, VectorParams
 
 from app.clients.runpod_client import RunpodClient
 from app.schemas.discussion_topic_schema import (
@@ -40,8 +40,11 @@ class DiscussionTopicService:
         top_p: float = 0.9,
         top_k: int = 5,
         max_context_chars: int = 1200,
-        index_path: str = "data/discussion_topics.faiss",
-        meta_path: str = "data/discussion_topics_meta.json",
+        qdrant_client: QdrantClient | None = None,
+        qdrant_url: str | None = None,
+        qdrant_api_key: str | None = None,
+        qdrant_collection: str = "discussion_topics",
+        qdrant_location: str | None = ":memory:",
     ) -> None:
         self.runpod_client = runpod_client
         self.max_tokens = max_tokens
@@ -51,11 +54,16 @@ class DiscussionTopicService:
         self.rag_score_threshold = 0.25
         self.max_context_chars = max_context_chars
         self.embedder = Embedder()
-        self.index_path = Path(index_path)
-        self.meta_path = Path(meta_path)
-        self.index: faiss.Index | None = None
-        self.metadatas: list[dict] = []
-        self._load_index()
+        self.qdrant_collection = qdrant_collection
+        if qdrant_client:
+            self.qdrant_client = qdrant_client
+        elif qdrant_url:
+            self.qdrant_client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
+        else:
+            self.qdrant_client = QdrantClient(location=qdrant_location)
+
+        self._vector_dim: int | None = None
+        self._indexed_count: int = 0
         self.topic_pool_size = 5
         self._topic_pools: dict[str, deque[str]] = {}
         self._locks: dict[str, asyncio.Lock] = {}
@@ -265,27 +273,32 @@ class DiscussionTopicService:
         top_idx = np.argsort(sims)[::-1][: self.top_k]
         current_hits = [contents[i][:300] for i in top_idx]
 
-        # 2) 기존 FAISS 인덱스 RAG (있을 때만)
+        # 2) 기존 Qdrant 인덱스 RAG (있을 때만)
         retrieved_hits: list[str] = []
-        if self.index is not None and getattr(self.index, "ntotal", 0) > 0:
+        if self._indexed_count > 0 and self._vector_dim:
             try:
-                query = query_vec.astype(np.float32, copy=False)[None, :]
-                k = min(self.top_k, self.index.ntotal)
-                scores, idxs = self.index.search(query, k)
-                for score, idx in zip(scores[0], idxs[0]):
-                    if idx == -1 or idx >= len(self.metadatas):
-                        continue
-                    # 다른 토론방(meeting_round_id)이면 제외해 오염 방지
-                    meta = self.metadatas[idx]
-                    if meta.get("meeting_round_id") != meeting_round_id:
-                        continue
-                    if score < self.rag_score_threshold:
-                        continue
-                    content = meta.get("content")
+                self._ensure_collection(self._vector_dim)
+                hits = self.qdrant_client.search(
+                    collection_name=self.qdrant_collection,
+                    query_vector=query_vec.astype(np.float32, copy=False).tolist(),
+                    limit=self.top_k,
+                    score_threshold=self.rag_score_threshold,
+                    with_payload=True,
+                    filter=Filter(
+                        must=[
+                            FieldCondition(
+                                key="meeting_round_id", match=MatchValue(value=meeting_round_id)
+                            )
+                        ]
+                    ),
+                )
+                for hit in hits:
+                    payload = hit.payload or {}
+                    content = payload.get("content")
                     if content:
                         retrieved_hits.append(content)
             except Exception as exc:  # pragma: no cover
-                logger.warning("faiss search failed: %s", exc)
+                logger.warning("qdrant search failed: %s", exc)
 
         # 3) 중복 제거 후 길이 제한 내에서 컨텍스트 구성
         context_lines: list[str] = []
@@ -299,41 +312,54 @@ class DiscussionTopicService:
                 break
         return context_lines
 
-    def _load_index(self):
-        if self.index_path.exists():
-            self.index = faiss.read_index(str(self.index_path))
-        else:
-            self.index = None
-        if self.meta_path.exists():
-            try:
-                self.metadatas = json.loads(self.meta_path.read_text())
-            except Exception:
-                self.metadatas = []
-        else:
-            self.metadatas = []
+    def _ensure_collection(self, dim: int):
+        if self._vector_dim is None:
+            self._vector_dim = dim
+        elif self._vector_dim != dim:
+            raise ValueError(
+                f"dimension mismatch: collection dim {self._vector_dim} vs batch dim {dim}"
+            )
 
-    def _save_index(self):
-        if self.index is not None:
-            self.index_path.parent.mkdir(parents=True, exist_ok=True)
-            faiss.write_index(self.index, str(self.index_path))
-        self.meta_path.parent.mkdir(parents=True, exist_ok=True)
-        self.meta_path.write_text(json.dumps(self.metadatas, ensure_ascii=False))
+        try:
+            self.qdrant_client.get_collection(self.qdrant_collection)
+        except Exception:
+            self.qdrant_client.recreate_collection(
+                collection_name=self.qdrant_collection,
+                vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
+            )
 
     def _add_to_index(self, contents: list[str], meeting_round_id: int):
         if not contents:
             return
         normalized = [self._normalize_text(c) for c in contents]
         vecs = self.embedder.encode(normalized)
-        faiss.normalize_L2(vecs)
-        if self.index is None:
-            dim = vecs.shape[1]
-            self.index = faiss.IndexFlatIP(dim)
-        self.index.add(vecs)
-        for c in contents:
-            self.metadatas.append(
-                {"meeting_round_id": meeting_round_id, "content": c[:300]}
+        vecs = vecs / (np.linalg.norm(vecs, axis=1, keepdims=True) + 1e-8)
+        dim = vecs.shape[1]
+        self._ensure_collection(dim)
+
+        points: list[PointStruct] = []
+        for idx, (vec, content) in enumerate(zip(vecs, contents)):
+            pid = int(
+                hashlib.sha1(f"{meeting_round_id}:{idx}:{content}".encode("utf-8"))
+                .hexdigest()[:12],
+                16,
             )
-        self._save_index()
+            points.append(
+                PointStruct(
+                    id=pid,
+                    vector=vec.tolist(),
+                    payload={
+                        "meeting_round_id": meeting_round_id,
+                        "content": content[:300],
+                    },
+                )
+            )
+
+        self.qdrant_client.upsert(
+            collection_name=self.qdrant_collection,
+            points=points,
+        )
+        self._indexed_count += len(points)
 
     # ------------- Topic pool helpers ---------------- #
     def _build_cache_key(self, meeting_round_id: int, reports: list[DiscussionReport]) -> str:
@@ -401,6 +427,6 @@ class DiscussionTopicService:
         try:
             self._add_to_index(contents, meeting_round_id)
         except Exception as exc:  # pragma: no cover
-            logger.warning("faiss add failed: %s", exc)
+            logger.warning("qdrant add failed: %s", exc)
 
         return deque(topics)

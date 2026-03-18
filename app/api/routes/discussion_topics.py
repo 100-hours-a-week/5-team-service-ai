@@ -39,7 +39,13 @@ def _discussion_service() -> DiscussionTopicService:
         poll_interval=settings.runpod_poll_interval_seconds,
         poll_timeout=settings.runpod_poll_timeout_seconds,
     )
-    return DiscussionTopicService(runpod_client=client)
+    return DiscussionTopicService(
+        runpod_client=client,
+        qdrant_url=settings.qdrant_url,
+        qdrant_api_key=settings.qdrant_api_key,
+        qdrant_collection=settings.qdrant_collection_discussion,
+        qdrant_location=settings.qdrant_location,
+    )
 
 
 def get_discussion_topic_service() -> DiscussionTopicService:

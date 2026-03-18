@@ -53,6 +53,15 @@ class Settings(BaseSettings):
     runpod_poll_interval_seconds: int = Field(2, alias="RUNPOD_POLL_INTERVAL_SECONDS")
     runpod_poll_timeout_seconds: int = Field(300, alias="RUNPOD_POLL_TIMEOUT_SECONDS")
 
+    # Qdrant
+    qdrant_url: str | None = Field(None, alias="QDRANT_URL")
+    qdrant_api_key: str | None = Field(None, alias="QDRANT_API_KEY")
+    qdrant_location: str = Field(":memory:", alias="QDRANT_LOCATION")
+    qdrant_collection_discussion: str = Field(
+        "discussion_topics", alias="QDRANT_COLLECTION_DISCUSSION"
+    )
+    qdrant_collection_reco: str = Field("reco_meetings", alias="QDRANT_COLLECTION_RECO")
+
     # Redis (quiz cache)
     redis_url: str | None = Field(None, alias="REDIS_URL")
     quiz_cache_ttl_seconds: int = Field(604_800, alias="QUIZ_CACHE_TTL_SECONDS")
