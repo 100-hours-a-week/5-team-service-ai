@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 # SSM 파라미터 이름 → 환경변수 이름 매핑
 _PARAM_MAP: dict[str, str] = {
     "AI_DB_URL": "DB_URL",
+    "MONGO_URI": "MONGO_URI",
     "AI_API_KEY": "API_KEY",
     "GEMINI_API_KEY": "GEMINI_API_KEY",
     "GEMINI_MODEL": "GEMINI_MODEL",
