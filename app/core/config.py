@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     )
 
     db_url: str = Field(..., alias="DB_URL")
+    mongo_uri: str | None = Field(None, alias="MONGO_URI")
     gemini_api_key: str = Field(..., alias="GEMINI_API_KEY")
     gemini_model: str = Field("models/gemini-2.5-flash", alias="GEMINI_MODEL")
     gemini_model_preferences: list[str] = Field(
