@@ -178,8 +178,8 @@ jobs:
           cache-to: type=gha,mode=max,scope=ai
 
   deploy-dev-batch:
-    needs: [detect-batch-changes, build-and-push]
-    if: github.ref == 'refs/heads/develop' && needs.detect-batch-changes.outputs.batch_changed == 'true'
+    needs: [build-and-push, deploy-dev]
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
