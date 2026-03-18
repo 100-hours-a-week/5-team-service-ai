@@ -248,6 +248,12 @@ jobs:
             ("aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin " + $registry),
             ("docker pull " + $registry + "/doktori/ai:" + $tag),
             ("mkdir -p /home/ubuntu/app && printf '\''AI_BATCH_IMAGE=" + $registry + "/doktori/ai:" + $tag + "\\n'\'' > /home/ubuntu/app/.batch-image.env"),
+            "cd /home/ubuntu/app",
+            "set -a",
+            ". ./.batch-image.env",
+            "set +a",
+            "docker compose -f /home/ubuntu/app/docker-compose.yml up -d --force-recreate ai",
+            "docker compose -f /home/ubuntu/app/docker-compose.yml ps ai",
             "docker image prune -f"
           ]')
 
