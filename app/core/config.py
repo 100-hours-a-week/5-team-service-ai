@@ -73,7 +73,9 @@ class Settings(BaseSettings):
     behavior_lookback_days: int = Field(30, alias="BEHAVIOR_LOOKBACK_DAYS")
 
     # LightGBM reranker
-    lgbm_model_path: str | None = Field(None, alias="LGBM_MODEL_PATH")
+    lgbm_model_path: str | None = Field(
+        "/tmp/models/lgbm_rerank.txt", alias="LGBM_MODEL_PATH"
+    )
 
     # Feature cache
     feature_cache_ttl_seconds: int = Field(600, alias="FEATURE_CACHE_TTL_SECONDS")
