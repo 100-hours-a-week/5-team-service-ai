@@ -36,6 +36,7 @@ import lightgbm as lgb
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, SearchParams, VectorParams
 
+from app.core.ssm import load_ssm_parameters
 from app.core.config import get_settings
 from app.core.mongo import get_mongo_db
 from app.db.repositories.recommendation_repo import RecommendationRepo
@@ -45,6 +46,8 @@ from app.services.candidate_v2 import CandidateGeneratorV2
 from app.services.embedder import Embedder
 from app.services.lgbm_reranker import FEATURE_COLUMNS, LGBMReranker
 from app.services.recommender import build_user_query, normalize_meeting_row, normalize_user_row
+
+load_ssm_parameters()
 
 logger = logging.getLogger(__name__)
 
