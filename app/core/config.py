@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     reco_scheduler_timezone: str = Field("Asia/Seoul", alias="RECO_SCHEDULER_TZ")
     reco_scheduler_top_k: int = Field(4, alias="RECO_SCHEDULER_TOP_K")
     reco_scheduler_search_k: int = Field(20, alias="RECO_SCHEDULER_SEARCH_K")
+    reco_scheduler_use_v2: bool = Field(False, alias="RECO_SCHEDULER_USE_V2")
 
     # Tuning points: adjust thresholds to tighten/loosen the rule-based guardrails.
     min_content_length: int = Field(50, alias="RULE_MIN_CONTENT_LENGTH")
@@ -62,6 +63,20 @@ class Settings(BaseSettings):
         "discussion_topics", alias="QDRANT_COLLECTION_DISCUSSION"
     )
     qdrant_collection_reco: str = Field("reco_meetings", alias="QDRANT_COLLECTION_RECO")
+
+    # Mongo (behavior logs)
+    mongo_uri: str | None = Field(None, alias="MONGO_URI")
+    mongo_db: str | None = Field(None, alias="MONGO_DB")
+    mongo_interaction_collection: str = Field(
+        "interaction_logs", alias="MONGO_INTERACTION_COLLECTION"
+    )
+    behavior_lookback_days: int = Field(30, alias="BEHAVIOR_LOOKBACK_DAYS")
+
+    # LightGBM reranker
+    lgbm_model_path: str | None = Field(None, alias="LGBM_MODEL_PATH")
+
+    # Feature cache
+    feature_cache_ttl_seconds: int = Field(600, alias="FEATURE_CACHE_TTL_SECONDS")
 
     # Redis (quiz cache)
     redis_url: str | None = Field(None, alias="REDIS_URL")

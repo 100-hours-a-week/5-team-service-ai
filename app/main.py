@@ -20,6 +20,7 @@ from app.routers.book_report_validation_router import (
 from app.api.routes.discussion_topics import router as discussion_topic_router
 from app.api.routes.discussion_summary import router as discussion_summary_router
 from app.api.routes.recommendation import router as recommendation_router
+from app.api.routes.recommendation_v2 import router as recommendation_v2_router
 from app.api.routes.quiz import router as quiz_router
 from app.core.config import get_settings
 from app.core.metrics import (
@@ -56,6 +57,7 @@ app.include_router(book_report_validation_router)
 app.include_router(discussion_topic_router)
 app.include_router(discussion_summary_router)
 app.include_router(recommendation_router)
+app.include_router(recommendation_v2_router)
 app.include_router(quiz_router)
 
 settings = get_settings()
