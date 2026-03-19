@@ -69,7 +69,9 @@ class QuizService:
     ) -> QuizGenerateResponse:
         book = BookRepository.search_one(db, title=title, author=author)
         if not book:
-            raise ValueError("book not found")
+            # 책 메타가 없더라도 제목/저자만으로 기본 퀴즈를 내려준다.
+            logger.warning("book not found for title=%s author=%s; using fallback", title, author)
+            return self._fallback_quiz(title=title, author=author)
 
         # 세션을 길게 붙잡지 않도록 필요한 데이터만 복사해 둔 뒤 세션 정리
         summary = book.summary or ""
@@ -347,13 +349,29 @@ class QuizService:
                 {"choice_number": idx, "choice_text": f"보기 {idx}"}
             )
 
-        # correct_choice_number 보정
-        if "correct_choice_number" not in quiz or not (
-            1 <= int(quiz["correct_choice_number"]) <= 4
-        ):
-            quiz["correct_choice_number"] = 1
+        # choice_number 순으로 정렬한 뒤 1~4로 재배열해
+        # UI가 리스트 순서만 신뢰해도 정답 번호가 어긋나지 않도록 한다.
+        normalized_choices.sort(key=lambda c: int(c.get("choice_number", 0)))
 
-        return {"quiz": quiz, "quiz_choices": normalized_choices[:4]}
+        # correct_choice_number를 재계산하기 위해 기존 번호를 기억해 둔다.
+        target_choice_num = None
+        try:
+            target_choice_num = int(quiz.get("correct_choice_number"))
+        except Exception:
+            target_choice_num = None
+
+        corrected_choices: list[dict] = []
+        corrected_answer = 1  # fallback
+        for new_idx, choice in enumerate(normalized_choices[:4], start=1):
+            if target_choice_num is not None and int(choice.get("choice_number", 0)) == target_choice_num:
+                corrected_answer = new_idx
+            choice["choice_number"] = new_idx
+            corrected_choices.append(choice)
+
+        # correct_choice_number 보정
+        quiz["correct_choice_number"] = corrected_answer
+
+        return {"quiz": quiz, "quiz_choices": corrected_choices}
 
     def _fallback_quiz(
         self, *, title: str, author: str

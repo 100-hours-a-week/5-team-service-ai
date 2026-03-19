@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.db.models.book import Book
@@ -14,13 +13,21 @@ class BookRepository:
         db: Session, *, title: str | None, author: str | None, limit: int = 5
     ) -> List[Book]:
         query = db.query(Book)
-        filters = []
-        if title:
-            filters.append(Book.title.ilike(f"%{title}%"))
-        if author:
-            filters.append(Book.authors.ilike(f"%{author}%"))
-        if filters:
-            query = query.filter(or_(*filters))
+
+        # When both title and author are provided we should match **both** to
+        # avoid returning a different book by the same author (e.g., 요청이
+        # '싯다르타'인데 '데미안'이 반환되는 문제). Only fall back to single-field
+        # filtering when one side is missing.
+        if title and author:
+            query = query.filter(
+                Book.title.ilike(f"%{title}%"),
+                Book.authors.ilike(f"%{author}%"),
+            )
+        elif title:
+            query = query.filter(Book.title.ilike(f"%{title}%"))
+        elif author:
+            query = query.filter(Book.authors.ilike(f"%{author}%"))
+
         return query.limit(limit).all()
 
     @staticmethod
