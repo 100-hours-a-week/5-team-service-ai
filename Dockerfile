@@ -7,6 +7,10 @@ ENV VENV_PATH=/opt/venv
 ENV PATH="${VENV_PATH}/bin:${PATH}"
 WORKDIR /app
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libgomp1 && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt requirements-torch.txt ./
 
 RUN --mount=type=cache,target=/root/.cache/pip \
@@ -20,6 +24,10 @@ ENV VENV_PATH=/opt/venv
 ENV PATH="${VENV_PATH}/bin:${PATH}"
 ENV PORT=8000
 WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libgomp1 && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN adduser --disabled-password --gecos "" appuser
 
