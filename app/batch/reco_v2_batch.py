@@ -265,21 +265,69 @@ def build_training_rows(
 # Training and save
 
 
-def train_lgbm(df: pd.DataFrame, group_sizes: list[int], model_path: str) -> None:
+def train_lgbm(df: pd.DataFrame, model_path: str) -> None:
     features = FEATURE_COLUMNS
-    train_set = lgb.Dataset(df[features], label=df["label"], group=group_sizes)
+
+    # Lambdarank은 한 그룹 안에 양·음 라벨이 모두 있어야 유효한 pairwise loss를 만들 수 있다.
+    label_diversity = df.groupby("user_id")["label"].nunique().value_counts().to_dict()
+    total_users = df["user_id"].nunique()
+    logger.info(
+        "label diversity per user before filter",
+        extra={"counts": label_diversity, "total_users": total_users},
+    )
+
+    df = df[df.groupby("user_id")["label"].transform("nunique") > 1]
+    if df.empty:
+        raise RuntimeError("모든 그룹이 단일 라벨이라 학습 불가")
+
+    group_sizes = df.groupby("user_id").size().tolist()
+    kept_users = df["user_id"].nunique()
+    dropped_users = total_users - kept_users
+    logger.info(
+        "users kept after removing single-label groups",
+        extra={"kept": kept_users, "dropped": dropped_users},
+    )
+
+    # 상수 피처 제거로 분할 불가 상황을 방지한다.
+    nunique_per_feature = df[features].nunique()
+    constant_features = [f for f, n in nunique_per_feature.items() if n <= 1]
+    if constant_features:
+        logger.info("dropping constant features", extra={"features": constant_features})
+        features = [f for f in features if f not in constant_features]
+    if not features:
+        raise RuntimeError("모든 피처가 상수여서 학습할 수 없음")
+
+    train_set = lgb.Dataset(
+        df[features],
+        label=df["label"],
+        group=group_sizes,
+        free_raw_data=False,
+    )
+
     params = {
         "objective": "lambdarank",
-        "metric": ["ndcg@10"],
+        "metric": "ndcg@10",
         "learning_rate": 0.05,
-        "num_leaves": 63,
-        "min_data_in_leaf": 20,
+        "num_leaves": 31,
+        "max_depth": -1,
+        "min_data_in_leaf": 5,
+        "min_sum_hessian_in_leaf": 1e-3,
+        "min_gain_to_split": 0.0,
         "feature_fraction": 0.9,
         "bagging_fraction": 0.8,
         "bagging_freq": 5,
+        "feature_pre_filter": False,
         "verbosity": 1,
+        "seed": 42,
     }
-    booster = lgb.train(params, train_set, num_boost_round=300, valid_sets=[train_set])
+
+    booster = lgb.train(
+        params,
+        train_set,
+        num_boost_round=400,
+        valid_sets=[train_set],
+        valid_names=["train"],
+    )
     Path(model_path).parent.mkdir(parents=True, exist_ok=True)
     booster.save_model(model_path)
     logger.info("LightGBM model saved", extra={"path": model_path})
@@ -383,7 +431,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         model_path = settings.lgbm_model_path or "./models/lgbm_rerank.txt"
 
         if args.train:
-            df, group_sizes = build_training_rows(
+            df, _ = build_training_rows(
                 users=users,
                 meetings=meetings,
                 qdrant=qdrant,
@@ -392,7 +440,7 @@ def main(argv: Iterable[str] | None = None) -> int:
                 positives=positives,
                 search_k=args.search_k,
             )
-            train_lgbm(df, group_sizes, model_path)
+            train_lgbm(df, model_path)
         else:
             logger.info(
                 "train step skipped (no --train)",
