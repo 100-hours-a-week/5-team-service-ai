@@ -112,11 +112,21 @@ def aggregate_behavior_profiles(
 ) -> tuple[dict[int, BehaviorProfile], "pd.DataFrame"]:
     """Aggregate Mongo interaction logs into per-user behavior profiles and user-meeting interactions."""
 
+    empty_cols = [
+        "user_id",
+        "session_id",
+        "meeting_id",
+        "impressionCount",
+        "detailClickCount",
+        "detailDwellTimeMs",
+        "hasJoinRequest",
+    ]
+
     settings = get_settings()
     db = get_mongo_db()
     if db is None:
         logger.warning("Mongo not configured; behavior profiles empty")
-        return {}, {}
+        return {}, pd.DataFrame(columns=empty_cols)
 
     coll = db[settings.mongo_interaction_collection]
     horizon = datetime.now(timezone.utc) - timedelta(days=settings.behavior_lookback_days)
@@ -138,7 +148,7 @@ def aggregate_behavior_profiles(
             "Mongo cursor creation failed; skipping behavior features",
             extra={"error": str(exc)},
         )
-        return {}, {}
+        return {}, pd.DataFrame(columns=empty_cols)
 
     per_user_genre: dict[int, dict[str, float]] = defaultdict(lambda: defaultdict(float))
     per_user_last: dict[int, datetime] = {}
@@ -181,7 +191,7 @@ def aggregate_behavior_profiles(
             "Mongo cursor iteration failed; skipping behavior features",
             extra={"error": str(exc)},
         )
-        return {}, pd.DataFrame()
+        return {}, pd.DataFrame(columns=empty_cols)
 
     profiles: dict[int, BehaviorProfile] = {}
     for user_id, genre_scores in per_user_genre.items():
@@ -200,6 +210,7 @@ def aggregate_behavior_profiles(
         rows.append(
             {
                 "user_id": user_id,
+                "session_id": _session,
                 "meeting_id": meeting_id,
                 "impressionCount": acc["impressionCount"],
                 "detailClickCount": acc["detailClickCount"],
@@ -207,7 +218,7 @@ def aggregate_behavior_profiles(
                 "hasJoinRequest": acc["hasJoinRequest"],
             }
         )
-    inter_df = pd.DataFrame(rows) if rows else pd.DataFrame()
+    inter_df = pd.DataFrame(rows) if rows else pd.DataFrame(columns=empty_cols)
     if not inter_df.empty:
         inter_df = (
             inter_df.groupby(["user_id", "meeting_id"], as_index=False)
@@ -220,6 +231,7 @@ def aggregate_behavior_profiles(
                 }
             )
         )
+        inter_df["session_id"] = None
 
     return profiles, inter_df
 
@@ -239,6 +251,19 @@ def build_training_rows(
     search_k: int,
 ) -> pd.DataFrame:
     """Generate candidate rows and labels for lambdarank training."""
+
+    if not isinstance(interactions, pd.DataFrame):
+        interactions = pd.DataFrame(
+            columns=[
+                "user_id",
+                "session_id",
+                "meeting_id",
+                "impressionCount",
+                "detailClickCount",
+                "detailDwellTimeMs",
+                "hasJoinRequest",
+            ]
+        )
 
     meeting_map = {int(m["id"]): m for m in meetings}
     generator = CandidateGeneratorV2(
