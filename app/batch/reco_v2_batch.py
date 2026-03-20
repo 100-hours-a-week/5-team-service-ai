@@ -15,6 +15,7 @@ import logging
 import os
 import random
 from collections import defaultdict
+import math
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable, Mapping, Sequence
@@ -106,8 +107,10 @@ def build_reco_collection(
 # Mongo aggregation
 
 
-def aggregate_behavior_profiles(meeting_meta: Mapping[int, Mapping]) -> dict[int, BehaviorProfile]:
-    """Aggregate Mongo interaction logs into per-user behavior profiles."""
+def aggregate_behavior_profiles(
+    meeting_meta: Mapping[int, Mapping],
+) -> tuple[dict[int, BehaviorProfile], "pd.DataFrame"]:
+    """Aggregate Mongo interaction logs into per-user behavior profiles and user-meeting interactions."""
 
     settings = get_settings()
     db = get_mongo_db()
@@ -139,7 +142,16 @@ def aggregate_behavior_profiles(meeting_meta: Mapping[int, Mapping]) -> dict[int
 
     per_user_genre: dict[int, dict[str, float]] = defaultdict(lambda: defaultdict(float))
     per_user_last: dict[int, datetime] = {}
-    positives: dict[int, set[int]] = defaultdict(set)
+
+    # interaction accumulator keyed by (user, session, meeting)
+    interactions = defaultdict(
+        lambda: {
+            "impressionCount": 0,
+            "detailClickCount": 0,
+            "detailDwellTimeMs": 0,
+            "hasJoinRequest": False,
+        }
+    )
 
     try:
         for log in cursor:
@@ -158,15 +170,18 @@ def aggregate_behavior_profiles(meeting_meta: Mapping[int, Mapping]) -> dict[int
                 if prev is None or sent_at > prev:
                     per_user_last[user_id] = sent_at
 
-            # mark positives
-            if log.get("hasJoinRequest") or log.get("detailClickCount", 0) > 0 or log.get("detailDwellTimeMs", 0) >= 5000:
-                positives[user_id].add(meeting_id)
+            key = (user_id, str(log.get("sessionId", "")), meeting_id)
+            acc = interactions[key]
+            acc["impressionCount"] += int(log.get("impressionCount", 0) or 0)
+            acc["detailClickCount"] += int(log.get("detailClickCount", 0) or 0)
+            acc["detailDwellTimeMs"] += int(log.get("detailDwellTimeMs", 0) or 0)
+            acc["hasJoinRequest"] = acc["hasJoinRequest"] or bool(log.get("hasJoinRequest"))
     except Exception as exc:  # noqa: BLE001
         logger.warning(
             "Mongo cursor iteration failed; skipping behavior features",
             extra={"error": str(exc)},
         )
-        return {}, {}
+        return {}, pd.DataFrame()
 
     profiles: dict[int, BehaviorProfile] = {}
     for user_id, genre_scores in per_user_genre.items():
@@ -179,7 +194,34 @@ def aggregate_behavior_profiles(meeting_meta: Mapping[int, Mapping]) -> dict[int
             last_event_at=per_user_last.get(user_id),
         )
 
-    return profiles, positives
+    # Build interaction dataframe aggregated to user-meeting level
+    rows = []
+    for (user_id, _session, meeting_id), acc in interactions.items():
+        rows.append(
+            {
+                "user_id": user_id,
+                "meeting_id": meeting_id,
+                "impressionCount": acc["impressionCount"],
+                "detailClickCount": acc["detailClickCount"],
+                "detailDwellTimeMs": acc["detailDwellTimeMs"],
+                "hasJoinRequest": acc["hasJoinRequest"],
+            }
+        )
+    inter_df = pd.DataFrame(rows) if rows else pd.DataFrame()
+    if not inter_df.empty:
+        inter_df = (
+            inter_df.groupby(["user_id", "meeting_id"], as_index=False)
+            .agg(
+                {
+                    "impressionCount": "sum",
+                    "detailClickCount": "sum",
+                    "detailDwellTimeMs": "sum",
+                    "hasJoinRequest": "max",
+                }
+            )
+        )
+
+    return profiles, inter_df
 
 
 # ---------------------------------------------------------------------------
@@ -193,7 +235,7 @@ def build_training_rows(
     qdrant: QdrantClient,
     embedder: Embedder,
     behavior_profiles: Mapping[int, BehaviorProfile],
-    positives: Mapping[int, set[int]],
+    interactions: pd.DataFrame,
     search_k: int,
 ) -> pd.DataFrame:
     """Generate candidate rows and labels for lambdarank training."""
@@ -207,6 +249,9 @@ def build_training_rows(
 
     records = []
     group_sizes = []
+    interactions_by_user: dict[int, pd.DataFrame] = {}
+    if not interactions.empty:
+        interactions_by_user = {uid: df for uid, df in interactions.groupby("user_id")}
 
     for user in users:
         uid = int(user.get("user_id") or user.get("id"))
@@ -222,9 +267,24 @@ def build_training_rows(
             final_limit=50,
         )
 
-        pos_set = positives.get(uid, set())
         if not candidates:
             continue
+
+        inter_df = interactions_by_user.get(uid)
+        if inter_df is None:
+            inter_lookup = {}
+        else:
+            inter_lookup = {
+                int(row.meeting_id): {
+                    "impressionCount": int(row.impressionCount),
+                    "detailClickCount": int(row.detailClickCount),
+                    "detailDwellTimeMs": int(row.detailDwellTimeMs),
+                    "hasJoinRequest": bool(row.hasJoinRequest),
+                }
+                for row in inter_df.itertuples()
+            }
+
+        user_rows: list[dict] = []
 
         for cand in candidates:
             meta = meeting_map.get(int(cand.meeting_id), {})
@@ -234,12 +294,23 @@ def build_training_rows(
             pop_ratio = float(cur) / float(cap) if cap else 0.0
             recent_prob = beh.genre_scores.get(str(genre), 0.0) if beh and genre is not None else 0.0
             onboard_match = 1.0 if genre and genre in (user.get("genre_codes") or []) else 0.0
+            inter = inter_lookup.get(int(cand.meeting_id), {})
+            impression = inter.get("impressionCount", 0)
+            click = inter.get("detailClickCount", 0)
+            dwell = inter.get("detailDwellTimeMs", 0)
+            join = inter.get("hasJoinRequest", False)
+            inter_score = (
+                min(impression, 10) * 0.1
+                + min(click, 5) * 1.0
+                + min(dwell / 5000.0, 6) * 0.8
+                + (1.5 if join else 0.0)
+            )
 
-            records.append(
+            user_rows.append(
                 {
                     "user_id": uid,
                     "meeting_id": int(cand.meeting_id),
-                    "label": 1 if int(cand.meeting_id) in pos_set else 0,
+                    "label": 0,  # placeholder; set after scoring
                     "source_onboard": 1.0 if cand.source == "onboard" else 0.0,
                     "source_behavior": 1.0 if cand.source == "behavior" else 0.0,
                     "source_popular": 1.0 if cand.source == "popular" else 0.0,
@@ -250,8 +321,20 @@ def build_training_rows(
                     "is_new_flag": 1.0 if cand.source == "new" else 0.0,
                     "recent_genre_prob": recent_prob,
                     "onboard_genre_match": onboard_match,
+                    "interaction_score": inter_score,
                 }
             )
+
+        # relative labeling within user
+        if user_rows:
+            user_rows.sort(key=lambda r: r["interaction_score"], reverse=True)
+            n = len(user_rows)
+            pos_cut = max(1, int(math.ceil(n * 0.4)))
+            if n >= 2 and pos_cut == n:
+                pos_cut = n - 1
+            for idx, row in enumerate(user_rows):
+                row["label"] = 1 if idx < pos_cut else 0
+            records.extend(user_rows)
 
         group_sizes.append(len(candidates))
 
@@ -272,12 +355,18 @@ def build_training_rows(
 def train_lgbm(df: pd.DataFrame, model_path: str) -> None:
     features = FEATURE_COLUMNS
 
-    # Lambdarank은 한 그룹 안에 양·음 라벨이 모두 있어야 유효한 pairwise loss를 만들 수 있다.
-    label_diversity = df.groupby("user_id")["label"].nunique().value_counts().to_dict()
+    # Lambdarank은 한 그룹 안에 양·음 라벨이 모두 있어야 유효한 pairwise loss를 만든다.
     total_users = df["user_id"].nunique()
+    user_stats = df.groupby("user_id")["label"].agg(size="size", pos="sum")
+    user_stats["neg"] = user_stats["size"] - user_stats["pos"]
+    single_label_users = int(((user_stats["pos"] == 0) | (user_stats["pos"] == user_stats["size"])).sum())
     logger.info(
         "label diversity per user before filter",
-        extra={"counts": label_diversity, "total_users": total_users},
+        extra={
+            "total_users": total_users,
+            "single_label_users": single_label_users,
+            "examples": user_stats.head(5).to_dict("index"),
+        },
     )
 
     multi_label_mask = df.groupby("user_id")["label"].transform("nunique") > 1
@@ -292,18 +381,12 @@ def train_lgbm(df: pd.DataFrame, model_path: str) -> None:
             "users kept after removing single-label groups",
             extra={"kept": kept_users, "dropped": dropped_users},
         )
-        mode = "lambdarank"
     else:
-        # 그룹 내 다양성이 없을 때는 binary classification으로 다운그레이드한다.
-        if df["label"].nunique() < 2:
-            logger.warning("전체 라벨이 단일 클래스라 모델을 학습할 수 없습니다. fallback 사용")
-            return
-        group_sizes = None
-        mode = "binary"
         logger.warning(
-            "모든 그룹이 단일 라벨입니다. objective를 binary로 전환하여 학습합니다.",
+            "모든 그룹이 단일 라벨입니다. LightGBM 학습을 건너뛰고 heuristic fallback을 사용합니다.",
             extra={"total_users": total_users},
         )
+        return
 
     # 상수 피처 제거로 분할 불가 상황을 방지한다.
     nunique_per_feature = df[features].nunique()
@@ -324,45 +407,22 @@ def train_lgbm(df: pd.DataFrame, model_path: str) -> None:
         **train_set_kwargs,
     )
 
-    if mode == "lambdarank":
-        params = {
-            "objective": "lambdarank",
-            "metric": "ndcg@10",
-            "learning_rate": 0.05,
-            "num_leaves": 31,
-            "max_depth": -1,
-            "min_data_in_leaf": 5,
-            "min_sum_hessian_in_leaf": 1e-3,
-            "min_gain_to_split": 0.0,
-            "feature_fraction": 0.9,
-            "bagging_fraction": 0.8,
-            "bagging_freq": 5,
-            "feature_pre_filter": False,
-            "verbosity": 1,
-            "seed": 42,
-        }
-    else:
-        # binary classification fallback
-        pos_rate = df["label"].mean()
-        scale_pos = (1 - pos_rate) / pos_rate if pos_rate > 0 else 1.0
-        params = {
-            "objective": "binary",
-            "metric": ["auc", "binary_logloss"],
-            "learning_rate": 0.05,
-            "num_leaves": 31,
-            "max_depth": -1,
-            "min_data_in_leaf": 5,
-            "min_sum_hessian_in_leaf": 1e-3,
-            "min_gain_to_split": 0.0,
-            "feature_fraction": 0.9,
-            "bagging_fraction": 0.8,
-            "bagging_freq": 5,
-            "feature_pre_filter": False,
-            "verbosity": 1,
-            "seed": 42,
-            "is_unbalance": True,
-            "scale_pos_weight": scale_pos if scale_pos > 0 else 1.0,
-        }
+    params = {
+        "objective": "lambdarank",
+        "metric": "ndcg@10",
+        "learning_rate": 0.05,
+        "num_leaves": 31,
+        "max_depth": -1,
+        "min_data_in_leaf": 5,
+        "min_sum_hessian_in_leaf": 1e-3,
+        "min_gain_to_split": 0.0,
+        "feature_fraction": 0.9,
+        "bagging_fraction": 0.8,
+        "bagging_freq": 5,
+        "feature_pre_filter": False,
+        "verbosity": 1,
+        "seed": 42,
+    }
 
     booster = lgb.train(
         params,
@@ -373,7 +433,7 @@ def train_lgbm(df: pd.DataFrame, model_path: str) -> None:
     )
     Path(model_path).parent.mkdir(parents=True, exist_ok=True)
     booster.save_model(model_path)
-    logger.info("LightGBM model saved", extra={"path": model_path, "objective": mode})
+    logger.info("LightGBM model saved", extra={"path": model_path, "objective": "lambdarank"})
 
 
 # ---------------------------------------------------------------------------
@@ -469,7 +529,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         embedder = Embedder()
         qdrant = build_reco_collection(meetings=meetings, embedder=embedder, settings=settings)
 
-        behavior_profiles, positives = aggregate_behavior_profiles({int(m["id"]): m for m in meetings})
+        behavior_profiles, interactions = aggregate_behavior_profiles({int(m["id"]): m for m in meetings})
 
         model_path = settings.lgbm_model_path or "./models/lgbm_rerank.txt"
 
@@ -480,7 +540,7 @@ def main(argv: Iterable[str] | None = None) -> int:
                 qdrant=qdrant,
                 embedder=embedder,
                 behavior_profiles=behavior_profiles,
-                positives=positives,
+                interactions=interactions,
                 search_k=args.search_k,
             )
             train_lgbm(df, model_path)
