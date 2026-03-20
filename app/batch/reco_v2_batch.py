@@ -276,17 +276,30 @@ def train_lgbm(df: pd.DataFrame, model_path: str) -> None:
         extra={"counts": label_diversity, "total_users": total_users},
     )
 
-    df = df[df.groupby("user_id")["label"].transform("nunique") > 1]
-    if df.empty:
-        raise RuntimeError("모든 그룹이 단일 라벨이라 학습 불가")
+    multi_label_mask = df.groupby("user_id")["label"].transform("nunique") > 1
+    has_multi_label_group = multi_label_mask.any()
 
-    group_sizes = df.groupby("user_id").size().tolist()
-    kept_users = df["user_id"].nunique()
-    dropped_users = total_users - kept_users
-    logger.info(
-        "users kept after removing single-label groups",
-        extra={"kept": kept_users, "dropped": dropped_users},
-    )
+    if has_multi_label_group:
+        df = df[multi_label_mask]
+        group_sizes = df.groupby("user_id").size().tolist()
+        kept_users = df["user_id"].nunique()
+        dropped_users = total_users - kept_users
+        logger.info(
+            "users kept after removing single-label groups",
+            extra={"kept": kept_users, "dropped": dropped_users},
+        )
+        mode = "lambdarank"
+    else:
+        # 그룹 내 다양성이 없을 때는 binary classification으로 다운그레이드한다.
+        if df["label"].nunique() < 2:
+            logger.warning("전체 라벨이 단일 클래스라 모델을 학습할 수 없습니다. fallback 사용")
+            return
+        group_sizes = None
+        mode = "binary"
+        logger.warning(
+            "모든 그룹이 단일 라벨입니다. objective를 binary로 전환하여 학습합니다.",
+            extra={"total_users": total_users},
+        )
 
     # 상수 피처 제거로 분할 불가 상황을 방지한다.
     nunique_per_feature = df[features].nunique()
@@ -297,29 +310,55 @@ def train_lgbm(df: pd.DataFrame, model_path: str) -> None:
     if not features:
         raise RuntimeError("모든 피처가 상수여서 학습할 수 없음")
 
+    train_set_kwargs = {"free_raw_data": False}
+    if group_sizes is not None:
+        train_set_kwargs["group"] = group_sizes
+
     train_set = lgb.Dataset(
         df[features],
         label=df["label"],
-        group=group_sizes,
-        free_raw_data=False,
+        **train_set_kwargs,
     )
 
-    params = {
-        "objective": "lambdarank",
-        "metric": "ndcg@10",
-        "learning_rate": 0.05,
-        "num_leaves": 31,
-        "max_depth": -1,
-        "min_data_in_leaf": 5,
-        "min_sum_hessian_in_leaf": 1e-3,
-        "min_gain_to_split": 0.0,
-        "feature_fraction": 0.9,
-        "bagging_fraction": 0.8,
-        "bagging_freq": 5,
-        "feature_pre_filter": False,
-        "verbosity": 1,
-        "seed": 42,
-    }
+    if mode == "lambdarank":
+        params = {
+            "objective": "lambdarank",
+            "metric": "ndcg@10",
+            "learning_rate": 0.05,
+            "num_leaves": 31,
+            "max_depth": -1,
+            "min_data_in_leaf": 5,
+            "min_sum_hessian_in_leaf": 1e-3,
+            "min_gain_to_split": 0.0,
+            "feature_fraction": 0.9,
+            "bagging_fraction": 0.8,
+            "bagging_freq": 5,
+            "feature_pre_filter": False,
+            "verbosity": 1,
+            "seed": 42,
+        }
+    else:
+        # binary classification fallback
+        pos_rate = df["label"].mean()
+        scale_pos = (1 - pos_rate) / pos_rate if pos_rate > 0 else 1.0
+        params = {
+            "objective": "binary",
+            "metric": ["auc", "binary_logloss"],
+            "learning_rate": 0.05,
+            "num_leaves": 31,
+            "max_depth": -1,
+            "min_data_in_leaf": 5,
+            "min_sum_hessian_in_leaf": 1e-3,
+            "min_gain_to_split": 0.0,
+            "feature_fraction": 0.9,
+            "bagging_fraction": 0.8,
+            "bagging_freq": 5,
+            "feature_pre_filter": False,
+            "verbosity": 1,
+            "seed": 42,
+            "is_unbalance": True,
+            "scale_pos_weight": scale_pos if scale_pos > 0 else 1.0,
+        }
 
     booster = lgb.train(
         params,
@@ -330,7 +369,7 @@ def train_lgbm(df: pd.DataFrame, model_path: str) -> None:
     )
     Path(model_path).parent.mkdir(parents=True, exist_ok=True)
     booster.save_model(model_path)
-    logger.info("LightGBM model saved", extra={"path": model_path})
+    logger.info("LightGBM model saved", extra={"path": model_path, "objective": mode})
 
 
 # ---------------------------------------------------------------------------
