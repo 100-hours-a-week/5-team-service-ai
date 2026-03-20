@@ -68,7 +68,7 @@ class Settings(BaseSettings):
     mongo_uri: str | None = Field(None, alias="MONGO_URI")
     mongo_db: str | None = Field(None, alias="MONGO_DB")
     mongo_interaction_collection: str = Field(
-        "interaction_logs", alias="MONGO_INTERACTION_COLLECTION"
+        "user_behavior_logs", alias="MONGO_INTERACTION_COLLECTION"
     )
     behavior_lookback_days: int = Field(30, alias="BEHAVIOR_LOOKBACK_DAYS")
 
