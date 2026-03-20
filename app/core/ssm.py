@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 _PARAM_MAP: dict[str, str] = {
     "AI_DB_URL": "DB_URL",
     "MONGO_URI": "MONGO_URI",
+    "MONGO_DB": "MONGO_DB",
     "AI_API_KEY": "API_KEY",
     "GEMINI_API_KEY": "GEMINI_API_KEY",
     "GEMINI_MODEL": "GEMINI_MODEL",
