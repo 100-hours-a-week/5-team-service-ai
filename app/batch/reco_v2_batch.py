@@ -462,6 +462,59 @@ def train_lgbm(df: pd.DataFrame, model_path: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Metrics logging
+
+
+def _log_reco_metrics(rows: list[dict], interactions: pd.DataFrame, k: int) -> None:
+    if not isinstance(interactions, pd.DataFrame) or interactions.empty:
+        logger.info("reco metrics skipped (no interactions to compare)")
+        return
+
+    rec_df = pd.DataFrame(rows)
+    if rec_df.empty:
+        return
+
+    # recompute interaction score to align with label logic
+    inter_df = interactions.copy()
+    inter_df["interaction_score"] = (
+        inter_df["impressionCount"].clip(upper=10) * 0.1
+        + inter_df["detailClickCount"].clip(upper=5) * 1.0
+        + (inter_df["detailDwellTimeMs"] / 5000.0).clip(upper=6) * 0.8
+        + inter_df["hasJoinRequest"].astype(float) * 1.5
+    )
+    inter_df["positive"] = (
+        (inter_df["interaction_score"] > 0)
+    )
+
+    topk = rec_df[rec_df["rank"] <= k]
+    joined = topk.merge(inter_df[["user_id", "meeting_id", "interaction_score", "positive"]], on=["user_id", "meeting_id"], how="left")
+    joined[["interaction_score"]] = joined[["interaction_score"]].fillna(0.0)
+    joined["positive"] = joined["positive"].fillna(False)
+
+    def per_user(group: pd.DataFrame) -> tuple[float, float, float]:
+        pos = group["positive"].sum()
+        precision = pos / k
+        hit = 1.0 if pos > 0 else 0.0
+        rels = group["interaction_score"].to_numpy()
+        ranks = group["rank"].to_numpy()
+        dcg = np.sum(rels / np.log2(ranks + 1))
+        ideal = np.sort(rels)[::-1][: k]
+        idcg = np.sum(ideal / np.log2(np.arange(1, len(ideal) + 1) + 1))
+        ndcg = dcg / idcg if idcg > 0 else 0.0
+        return precision, hit, ndcg
+
+    metrics = np.array([per_user(g) for _, g in joined.groupby("user_id")]) if not joined.empty else np.zeros((0, 3))
+    if metrics.size == 0:
+        logger.info("reco metrics skipped (no joined rows)")
+        return
+    prec, hit, ndcg = metrics.mean(axis=0)
+    logger.info(
+        "offline reco metrics @%d" % k,
+        extra={"precision": round(float(prec), 4), "hit_rate": round(float(hit), 4), "ndcg": round(float(ndcg), 4)},
+    )
+
+
+# ---------------------------------------------------------------------------
 # Recommendation generation (v2) with trained model
 
 
@@ -472,6 +525,7 @@ def generate_recommendations(
     qdrant: QdrantClient,
     embedder: Embedder,
     behavior_profiles: Mapping[int, BehaviorProfile],
+    interactions: pd.DataFrame,
     top_k: int,
     search_k: int,
     repo: RecommendationRepo,
@@ -519,6 +573,7 @@ def generate_recommendations(
 
     if rows:
         repo.upsert_recommendations(db, rows)
+        _log_reco_metrics(rows, interactions, k=top_k)
     logger.info("recommendations generated", extra={"rows": len(rows)})
 
 
@@ -582,6 +637,7 @@ def main(argv: Iterable[str] | None = None) -> int:
                 qdrant=qdrant,
                 embedder=embedder,
                 behavior_profiles=behavior_profiles,
+                interactions=interactions,
                 top_k=args.top_k,
                 search_k=args.search_k,
                 repo=repo,
