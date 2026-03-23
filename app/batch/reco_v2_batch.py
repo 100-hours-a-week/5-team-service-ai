@@ -252,6 +252,16 @@ def build_training_rows(
 ) -> pd.DataFrame:
     """Generate candidate rows and labels for lambdarank training."""
 
+    # configurable scoring weights and label ratio
+    w_impr = float(os.getenv("INTER_WEIGHT_IMPRESSION", 0.1))
+    w_click = float(os.getenv("INTER_WEIGHT_CLICK", 1.0))
+    w_dwell = float(os.getenv("INTER_WEIGHT_DWELL", 0.8))
+    w_join = float(os.getenv("INTER_WEIGHT_JOIN", 1.5))
+    dwell_unit = float(os.getenv("INTER_DWELL_UNIT_MS", 5000.0))
+    dwell_cap = float(os.getenv("INTER_DWELL_CAP", 6.0))
+    top_ratio = float(os.getenv("LABEL_TOP_RATIO", 0.4))
+    top_ratio = min(max(top_ratio, 0.1), 0.9)  # clamp to [0.1, 0.9]
+
     if not isinstance(interactions, pd.DataFrame):
         interactions = pd.DataFrame(
             columns=[
@@ -325,10 +335,10 @@ def build_training_rows(
             dwell = inter.get("detailDwellTimeMs", 0)
             join = inter.get("hasJoinRequest", False)
             inter_score = (
-                min(impression, 10) * 0.1
-                + min(click, 5) * 1.0
-                + min(dwell / 5000.0, 6) * 0.8
-                + (1.5 if join else 0.0)
+                min(impression, 10) * w_impr
+                + min(click, 5) * w_click
+                + min(dwell / dwell_unit, dwell_cap) * w_dwell
+                + (w_join if join else 0.0)
             )
 
             user_rows.append(
@@ -354,7 +364,7 @@ def build_training_rows(
         if user_rows:
             user_rows.sort(key=lambda r: r["interaction_score"], reverse=True)
             n = len(user_rows)
-            pos_cut = max(1, int(math.ceil(n * 0.4)))
+            pos_cut = max(1, int(math.ceil(n * top_ratio)))
             if n >= 2 and pos_cut == n:
                 pos_cut = n - 1
             for idx, row in enumerate(user_rows):
@@ -379,6 +389,8 @@ def build_training_rows(
 
 def train_lgbm(df: pd.DataFrame, model_path: str) -> None:
     features = FEATURE_COLUMNS
+
+    _log_dataset_stats(df, features)
 
     # Lambdarank은 한 그룹 안에 양·음 라벨이 모두 있어야 유효한 pairwise loss를 만든다.
     total_users = df["user_id"].nunique()
@@ -432,17 +444,23 @@ def train_lgbm(df: pd.DataFrame, model_path: str) -> None:
         **train_set_kwargs,
     )
 
+    # allow env overrides for quick tuning without code changes
+    num_leaves = int(os.getenv("LGBM_NUM_LEAVES", 15))
+    min_data_in_leaf = int(os.getenv("LGBM_MIN_DATA_IN_LEAF", 2))
+    feature_fraction = float(os.getenv("LGBM_FEATURE_FRACTION", 1.0))
+    bagging_fraction = float(os.getenv("LGBM_BAGGING_FRACTION", 1.0))
+
     params = {
         "objective": "lambdarank",
         "metric": "ndcg@10",
         "learning_rate": 0.05,
-        "num_leaves": 31,
+        "num_leaves": num_leaves,
         "max_depth": -1,
-        "min_data_in_leaf": 5,
+        "min_data_in_leaf": min_data_in_leaf,
         "min_sum_hessian_in_leaf": 1e-3,
         "min_gain_to_split": 0.0,
-        "feature_fraction": 0.9,
-        "bagging_fraction": 0.8,
+        "feature_fraction": feature_fraction,
+        "bagging_fraction": bagging_fraction,
         "bagging_freq": 5,
         "feature_pre_filter": False,
         "verbosity": 1,
@@ -476,11 +494,18 @@ def _log_reco_metrics(rows: list[dict], interactions: pd.DataFrame, k: int) -> N
 
     # recompute interaction score to align with label logic
     inter_df = interactions.copy()
+    w_impr = float(os.getenv("INTER_WEIGHT_IMPRESSION", 0.1))
+    w_click = float(os.getenv("INTER_WEIGHT_CLICK", 1.0))
+    w_dwell = float(os.getenv("INTER_WEIGHT_DWELL", 0.8))
+    w_join = float(os.getenv("INTER_WEIGHT_JOIN", 1.5))
+    dwell_unit = float(os.getenv("INTER_DWELL_UNIT_MS", 5000.0))
+    dwell_cap = float(os.getenv("INTER_DWELL_CAP", 6.0))
+
     inter_df["interaction_score"] = (
-        inter_df["impressionCount"].clip(upper=10) * 0.1
-        + inter_df["detailClickCount"].clip(upper=5) * 1.0
-        + (inter_df["detailDwellTimeMs"] / 5000.0).clip(upper=6) * 0.8
-        + inter_df["hasJoinRequest"].astype(float) * 1.5
+        inter_df["impressionCount"].clip(upper=10) * w_impr
+        + inter_df["detailClickCount"].clip(upper=5) * w_click
+        + (inter_df["detailDwellTimeMs"] / dwell_unit).clip(upper=dwell_cap) * w_dwell
+        + inter_df["hasJoinRequest"].astype(float) * w_join
     )
     inter_df["positive"] = (
         (inter_df["interaction_score"] > 0)
@@ -512,6 +537,25 @@ def _log_reco_metrics(rows: list[dict], interactions: pd.DataFrame, k: int) -> N
         "offline reco metrics @%d" % k,
         extra={"precision": round(float(prec), 4), "hit_rate": round(float(hit), 4), "ndcg": round(float(ndcg), 4)},
     )
+
+
+def _log_dataset_stats(df: pd.DataFrame, features: list[str]) -> None:
+    try:
+        label_counts = df["label"].value_counts().to_dict()
+        diverse_users = int((df.groupby("user_id")["label"].nunique() > 1).sum())
+        feature_nunique = df[df.columns.intersection(features + ["interaction_score"])].nunique().to_dict()
+        logger.info(
+            "dataset snapshot before training",
+            extra={
+                "rows": len(df),
+                "users": df["user_id"].nunique(),
+                "label_counts": label_counts,
+                "diverse_users": diverse_users,
+                "feature_nunique": feature_nunique,
+            },
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("failed to log dataset stats", extra={"error": str(exc)})
 
 
 # ---------------------------------------------------------------------------
